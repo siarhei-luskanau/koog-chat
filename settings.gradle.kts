@@ -7,6 +7,8 @@ include(
     ":app:webApp",
     ":core:coreCommon",
     ":core:corePref",
+    ":core:coreDatabaseApi",
+    ":core:coreDatabaseRoom",
     ":diApp",
     ":navigation",
     ":ui:uiCommon",
