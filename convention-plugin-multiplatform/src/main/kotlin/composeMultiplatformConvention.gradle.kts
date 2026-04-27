@@ -63,6 +63,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.androidx.paging.compose)
             implementation(libs.jetbrains.compose.animation)
             implementation(libs.jetbrains.compose.animation.graphics)
             implementation(libs.jetbrains.compose.components.resources)
