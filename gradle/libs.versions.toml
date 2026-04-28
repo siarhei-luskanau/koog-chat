@@ -23,7 +23,7 @@ kotlinx-serialization = "1.11.0"
 ktlint = "1.8.0"
 leakcanary = "2.14"
 robolectric = "4.16.1"
-roborazzi = "1.59.0"
+roborazzi = "1.60.0"
 
 [libraries]
 android-tools-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
