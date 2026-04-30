@@ -4,4 +4,6 @@ interface ChatListNavigationCallback {
     fun openChat(chatId: String)
 
     fun openNewChat()
+
+    fun openLlmConfigList()
 }

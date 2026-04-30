@@ -15,6 +15,7 @@ include(
     ":ui:uiChat",
     ":ui:uiChatList",
     ":ui:uiCommon",
+    ":ui:uiLlmConfig",
     ":ui:uiSplash",
 )
 

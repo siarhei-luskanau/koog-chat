@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.navigation3.runtime.NavKey
 import koog.chat.ui.chat.ChatNavigationCallback
 import koog.chat.ui.chatlist.ChatListNavigationCallback
+import koog.chat.ui.llmconfig.LlmConfigNavigationCallback
 import koog.chat.ui.splash.SplashNavigationCallback
 import org.koin.core.annotation.Single
 
@@ -11,6 +12,7 @@ import org.koin.core.annotation.Single
 internal class AppNavigation :
     ChatListNavigationCallback,
     ChatNavigationCallback,
+    LlmConfigNavigationCallback,
     SplashNavigationCallback {
     val backStack = mutableStateListOf<NavKey>(AppRoutes.Splash)
 
@@ -31,5 +33,13 @@ internal class AppNavigation :
 
     override fun openNewChat() {
         backStack.add(AppRoutes.Chat(chatId = "new"))
+    }
+
+    override fun openLlmConfigList() {
+        backStack.add(AppRoutes.LlmConfigList)
+    }
+
+    override fun openConfigDetails(configId: String?) {
+        backStack.add(AppRoutes.LlmConfigDetails(configId = configId))
     }
 }

@@ -14,4 +14,12 @@ internal sealed interface AppRoutes : NavKey {
     data class Chat(
         val chatId: String,
     ) : AppRoutes
+
+    @Serializable
+    data object LlmConfigList : AppRoutes
+
+    @Serializable
+    data class LlmConfigDetails(
+        val configId: String?,
+    ) : AppRoutes
 }

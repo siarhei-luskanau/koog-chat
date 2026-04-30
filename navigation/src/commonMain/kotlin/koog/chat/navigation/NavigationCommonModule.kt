@@ -2,6 +2,8 @@ package koog.chat.navigation
 
 import koog.chat.ui.chat.ChatScreen
 import koog.chat.ui.chatlist.ChatListScreen
+import koog.chat.ui.llmconfig.details.LlmConfigDetailsScreen
+import koog.chat.ui.llmconfig.list.LlmConfigListScreen
 import koog.chat.ui.splash.SplashScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.ComponentScan
@@ -26,5 +28,11 @@ val navigationModule =
         }
         navigation<AppRoutes.Chat> { route ->
             ChatScreen(viewModel = koinViewModel(key = route.chatId) { parametersOf(route.chatId) })
+        }
+        navigation<AppRoutes.LlmConfigList> {
+            LlmConfigListScreen(viewModel = koinViewModel())
+        }
+        navigation<AppRoutes.LlmConfigDetails> { route ->
+            LlmConfigDetailsScreen(viewModel = koinViewModel(key = route.configId ?: "new") { parametersOf(route.configId) })
         }
     }

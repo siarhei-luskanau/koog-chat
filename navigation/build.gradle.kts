@@ -17,6 +17,7 @@ kotlin {
             implementation(projects.ui.uiChat)
             implementation(projects.ui.uiChatList)
             implementation(projects.ui.uiCommon)
+            implementation(projects.ui.uiLlmConfig)
             implementation(projects.ui.uiSplash)
         }
     }
