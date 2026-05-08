@@ -9,9 +9,9 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class KoinAppJvmTest {
     @Test
-    fun preview() =
+    fun previewLight() =
         runDesktopComposeUiTest {
-            setContent { KoinApp() }
+            setContent { KoinAppPreviewLight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }

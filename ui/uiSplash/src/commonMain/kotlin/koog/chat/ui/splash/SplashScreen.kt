@@ -1,10 +1,14 @@
 package koog.chat.ui.splash
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import koog.chat.ui.common.theme.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,23 +28,25 @@ internal fun SplashContent(
     onEvent: (SplashViewEvent) -> Unit,
 ) {
     val viewState = viewStateFlow.collectAsState()
-    Scaffold {
-        val text =
-            when (val viewStateValue = viewState.value) {
-                is SplashViewState.Error -> viewStateValue.error.message
-                SplashViewState.Loading -> "Loading"
-                is SplashViewState.Success -> viewStateValue.data
-            }
-        Text("Splash: $text")
+    Scaffold { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            val text =
+                when (val viewStateValue = viewState.value) {
+                    is SplashViewState.Error -> viewStateValue.error.message
+                    SplashViewState.Loading -> "Loading"
+                    is SplashViewState.Success -> viewStateValue.data
+                }
+            Text("Splash: $text")
+        }
     }
     LaunchedEffect(Unit) {
         onEvent(SplashViewEvent.Launched)
     }
 }
 
-@Preview
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
-internal fun SplashScreenLoadingPreview() =
+internal fun SplashScreenLoadingPreviewLight() =
     AppTheme {
         SplashContent(
             viewStateFlow = MutableStateFlow(SplashViewState.Loading),
@@ -48,9 +54,19 @@ internal fun SplashScreenLoadingPreview() =
         )
     }
 
-@Preview
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
-internal fun SplashScreenSuccessPreview() =
+internal fun SplashScreenLoadingPreviewNight() =
+    AppTheme {
+        SplashContent(
+            viewStateFlow = MutableStateFlow(SplashViewState.Loading),
+            onEvent = {},
+        )
+    }
+
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
+@Composable
+internal fun SplashScreenSuccessPreviewLight() =
     AppTheme {
         SplashContent(
             viewStateFlow = MutableStateFlow(SplashViewState.Success("Preview")),
@@ -58,9 +74,29 @@ internal fun SplashScreenSuccessPreview() =
         )
     }
 
-@Preview
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
-internal fun SplashScreenErrorPreview() =
+internal fun SplashScreenSuccessPreviewNight() =
+    AppTheme {
+        SplashContent(
+            viewStateFlow = MutableStateFlow(SplashViewState.Success("Preview")),
+            onEvent = {},
+        )
+    }
+
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
+@Composable
+internal fun SplashScreenErrorPreviewLight() =
+    AppTheme {
+        SplashContent(
+            viewStateFlow = MutableStateFlow(SplashViewState.Error(RuntimeException("Error"))),
+            onEvent = {},
+        )
+    }
+
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
+@Composable
+internal fun SplashScreenErrorPreviewNight() =
     AppTheme {
         SplashContent(
             viewStateFlow = MutableStateFlow(SplashViewState.Error(RuntimeException("Error"))),

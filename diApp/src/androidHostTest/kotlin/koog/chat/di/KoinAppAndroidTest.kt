@@ -17,9 +17,18 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class KoinAppAndroidTest {
     @Test
-    fun preview() =
+    fun previewLight() =
         runComposeUiTest {
-            setContent { KoinApp() }
+            setContent { KoinAppPreviewLight() }
+            waitForIdle()
+            onRoot().captureRoboImage()
+        }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun previewNight() =
+        runComposeUiTest {
+            setContent { KoinAppPreviewNight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }

@@ -17,9 +17,18 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class MainScreenAndroidTest {
     @Test
-    fun preview() =
+    fun previewLight() =
         runComposeUiTest {
-            setContent { MainScreenPreview() }
+            setContent { MainScreenPreviewLight() }
+            waitForIdle()
+            onRoot().captureRoboImage()
+        }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun previewNight() =
+        runComposeUiTest {
+            setContent { MainScreenPreviewNight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }

@@ -89,6 +89,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.jetbrains.compose.ui.tooling)
         }
 
         getByName("androidHostTest") {

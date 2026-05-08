@@ -10,26 +10,26 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class, ExperimentalRoborazziApi::class)
 internal class SplashScreenIosTest {
     @Test
-    fun loading() =
+    fun loadingLight() =
         runSkikoComposeUiTest {
-            setContent { SplashScreenLoadingPreview() }
+            setContent { SplashScreenLoadingPreviewLight() }
             waitForIdle()
-            onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.loading.png")
+            onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.loadingLight.png")
         }
 
     @Test
-    fun success() =
+    fun successLight() =
         runSkikoComposeUiTest {
-            setContent { SplashScreenSuccessPreview() }
+            setContent { SplashScreenSuccessPreviewLight() }
             waitForIdle()
-            onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.success.png")
+            onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.successLight.png")
         }
 
     @Test
-    fun error() =
+    fun errorLight() =
         runSkikoComposeUiTest {
-            setContent { SplashScreenErrorPreview() }
+            setContent { SplashScreenErrorPreviewLight() }
             waitForIdle()
-            onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.error.png")
+            onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.errorLight.png")
         }
 }

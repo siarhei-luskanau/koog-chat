@@ -10,6 +10,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import koog.chat.ui.common.resources.Res
 import koog.chat.ui.common.resources.back_button
@@ -63,9 +64,19 @@ internal fun MainContent(
     }
 }
 
-@Preview
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
-internal fun MainScreenPreview() =
+internal fun MainScreenPreviewLight() =
+    AppTheme {
+        MainContent(
+            viewStateFlow = MutableStateFlow(MainViewState.Success("Preview")),
+            onEvent = {},
+        )
+    }
+
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
+@Composable
+internal fun MainScreenPreviewNight() =
     AppTheme {
         MainContent(
             viewStateFlow = MutableStateFlow(MainViewState.Success("Preview")),

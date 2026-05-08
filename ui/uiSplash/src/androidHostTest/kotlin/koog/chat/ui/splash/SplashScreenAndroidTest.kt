@@ -17,25 +17,52 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class SplashScreenAndroidTest {
     @Test
-    fun loading() =
+    fun loadingLight() =
         runComposeUiTest {
-            setContent { SplashScreenLoadingPreview() }
+            setContent { SplashScreenLoadingPreviewLight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
-    fun success() =
+    @Config(qualifiers = "+night")
+    fun loadingNight() =
         runComposeUiTest {
-            setContent { SplashScreenSuccessPreview() }
+            setContent { SplashScreenLoadingPreviewNight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
-    fun error() =
+    fun successLight() =
         runComposeUiTest {
-            setContent { SplashScreenErrorPreview() }
+            setContent { SplashScreenSuccessPreviewLight() }
+            waitForIdle()
+            onRoot().captureRoboImage()
+        }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun successNight() =
+        runComposeUiTest {
+            setContent { SplashScreenSuccessPreviewNight() }
+            waitForIdle()
+            onRoot().captureRoboImage()
+        }
+
+    @Test
+    fun errorLight() =
+        runComposeUiTest {
+            setContent { SplashScreenErrorPreviewLight() }
+            waitForIdle()
+            onRoot().captureRoboImage()
+        }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun errorNight() =
+        runComposeUiTest {
+            setContent { SplashScreenErrorPreviewNight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }

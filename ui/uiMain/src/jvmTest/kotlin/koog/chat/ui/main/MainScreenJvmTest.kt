@@ -9,9 +9,9 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class MainScreenJvmTest {
     @Test
-    fun preview() =
+    fun previewLight() =
         runDesktopComposeUiTest {
-            setContent { MainScreenPreview() }
+            setContent { MainScreenPreviewLight() }
             waitForIdle()
             onRoot().captureRoboImage()
         }
