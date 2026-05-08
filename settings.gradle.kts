@@ -11,6 +11,7 @@ include(
     ":core:coreDatabaseRoom",
     ":diApp",
     ":navigation",
+    ":ui:uiChat",
     ":ui:uiCommon",
     ":ui:uiMain",
     ":ui:uiSplash",
