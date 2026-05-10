@@ -2,7 +2,7 @@ package koog.chat.ui.common.components
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import io.github.takahirom.roborazzi.captureRoboImage
 import kotlin.test.Test
 
@@ -10,49 +10,49 @@ import kotlin.test.Test
 internal class BubblesJvmTest {
     @Test
     fun userBubbleLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { UserBubblePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun assistantBubbleSimpleLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { AssistantBubbleSimplePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun assistantBubbleAdvancedLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { AssistantBubbleAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun thinkingBlockStreamingLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { ThinkingBlockStreamingPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun thinkingBlockAdvancedLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { ThinkingBlockAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun errorBubbleLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { ErrorBubblePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

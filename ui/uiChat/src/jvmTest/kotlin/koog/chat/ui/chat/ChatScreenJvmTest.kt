@@ -2,7 +2,7 @@ package koog.chat.ui.chat
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import io.github.takahirom.roborazzi.captureRoboImage
 import kotlin.test.Test
 
@@ -10,25 +10,25 @@ import kotlin.test.Test
 internal class ChatScreenJvmTest {
     @Test
     fun previewSimpleLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun previewAdvancedLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun previewLoadingLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { ChatScreenLoadingPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

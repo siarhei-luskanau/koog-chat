@@ -20,7 +20,7 @@ internal class MetricsRowAndroidTest {
     fun metricsRowLight() =
         runComposeUiTest {
             setContent { MetricsRowPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class MetricsRowAndroidTest {
     fun metricsRowNight() =
         runComposeUiTest {
             setContent { MetricsRowPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

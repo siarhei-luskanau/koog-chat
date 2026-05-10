@@ -20,7 +20,7 @@ internal class ChatListItemAndroidTest {
     fun chatListItemLight() =
         runComposeUiTest {
             setContent { ChatListItemPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class ChatListItemAndroidTest {
     fun chatListItemNight() =
         runComposeUiTest {
             setContent { ChatListItemPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

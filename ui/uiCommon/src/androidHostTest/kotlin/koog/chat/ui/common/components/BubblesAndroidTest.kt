@@ -20,7 +20,7 @@ internal class BubblesAndroidTest {
     fun userBubbleLight() =
         runComposeUiTest {
             setContent { UserBubblePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class BubblesAndroidTest {
     fun userBubbleNight() =
         runComposeUiTest {
             setContent { UserBubblePreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -37,7 +37,7 @@ internal class BubblesAndroidTest {
     fun assistantBubbleSimpleLight() =
         runComposeUiTest {
             setContent { AssistantBubbleSimplePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -46,7 +46,7 @@ internal class BubblesAndroidTest {
     fun assistantBubbleSimpleNight() =
         runComposeUiTest {
             setContent { AssistantBubbleSimplePreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -54,7 +54,7 @@ internal class BubblesAndroidTest {
     fun assistantBubbleAdvancedLight() =
         runComposeUiTest {
             setContent { AssistantBubbleAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -63,7 +63,7 @@ internal class BubblesAndroidTest {
     fun assistantBubbleAdvancedNight() =
         runComposeUiTest {
             setContent { AssistantBubbleAdvancedPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -71,7 +71,7 @@ internal class BubblesAndroidTest {
     fun thinkingBlockStreamingLight() =
         runComposeUiTest {
             setContent { ThinkingBlockStreamingPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -80,7 +80,7 @@ internal class BubblesAndroidTest {
     fun thinkingBlockStreamingNight() =
         runComposeUiTest {
             setContent { ThinkingBlockStreamingPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -88,7 +88,7 @@ internal class BubblesAndroidTest {
     fun thinkingBlockAdvancedLight() =
         runComposeUiTest {
             setContent { ThinkingBlockAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -97,7 +97,7 @@ internal class BubblesAndroidTest {
     fun thinkingBlockAdvancedNight() =
         runComposeUiTest {
             setContent { ThinkingBlockAdvancedPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -105,7 +105,7 @@ internal class BubblesAndroidTest {
     fun errorBubbleLight() =
         runComposeUiTest {
             setContent { ErrorBubblePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -114,7 +114,7 @@ internal class BubblesAndroidTest {
     fun errorBubbleNight() =
         runComposeUiTest {
             setContent { ErrorBubblePreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

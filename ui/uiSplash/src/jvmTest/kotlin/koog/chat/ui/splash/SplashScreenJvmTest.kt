@@ -2,7 +2,7 @@ package koog.chat.ui.splash
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import io.github.takahirom.roborazzi.captureRoboImage
 import kotlin.test.Test
 
@@ -10,25 +10,25 @@ import kotlin.test.Test
 internal class SplashScreenJvmTest {
     @Test
     fun loadingLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { SplashScreenLoadingPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun successLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { SplashScreenSuccessPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
     @Test
     fun errorLight() =
-        runDesktopComposeUiTest {
+        runComposeUiTest {
             setContent { SplashScreenErrorPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

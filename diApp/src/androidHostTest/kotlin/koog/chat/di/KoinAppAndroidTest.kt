@@ -20,7 +20,7 @@ internal class KoinAppAndroidTest {
     fun previewLight() =
         runComposeUiTest {
             setContent { KoinAppPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class KoinAppAndroidTest {
     fun previewNight() =
         runComposeUiTest {
             setContent { KoinAppPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

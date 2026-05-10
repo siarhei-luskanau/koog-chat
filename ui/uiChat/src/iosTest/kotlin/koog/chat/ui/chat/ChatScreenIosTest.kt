@@ -2,7 +2,7 @@ package koog.chat.ui.chat
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.runSkikoComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import io.github.takahirom.roborazzi.captureRoboImage
 import kotlin.test.Test
@@ -11,25 +11,25 @@ import kotlin.test.Test
 internal class ChatScreenIosTest {
     @Test
     fun previewSimpleLight() =
-        runSkikoComposeUiTest {
+        runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewSimpleLight.png")
         }
 
     @Test
     fun previewAdvancedLight() =
-        runSkikoComposeUiTest {
+        runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewAdvancedLight.png")
         }
 
     @Test
     fun previewLoadingLight() =
-        runSkikoComposeUiTest {
+        runComposeUiTest {
             setContent { ChatScreenLoadingPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewLoadingLight.png")
         }
 }

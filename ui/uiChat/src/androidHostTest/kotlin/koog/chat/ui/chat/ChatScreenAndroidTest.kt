@@ -20,7 +20,7 @@ internal class ChatScreenAndroidTest {
     fun previewSimpleLight() =
         runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class ChatScreenAndroidTest {
     fun previewSimpleNight() =
         runComposeUiTest {
             setContent { ChatScreenSimplePreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -37,7 +37,7 @@ internal class ChatScreenAndroidTest {
     fun previewAdvancedLight() =
         runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -46,7 +46,7 @@ internal class ChatScreenAndroidTest {
     fun previewAdvancedNight() =
         runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -54,7 +54,7 @@ internal class ChatScreenAndroidTest {
     fun previewLoadingLight() =
         runComposeUiTest {
             setContent { ChatScreenLoadingPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -62,7 +62,7 @@ internal class ChatScreenAndroidTest {
     fun previewLoadingNight() =
         runComposeUiTest {
             setContent { ChatScreenLoadingPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

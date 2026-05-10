@@ -20,7 +20,7 @@ internal class ChatHeaderAndroidTest {
     fun chatHeaderSimpleLight() =
         runComposeUiTest {
             setContent { ChatHeaderSimplePreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class ChatHeaderAndroidTest {
     fun chatHeaderSimpleNight() =
         runComposeUiTest {
             setContent { ChatHeaderSimplePreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -37,7 +37,7 @@ internal class ChatHeaderAndroidTest {
     fun chatHeaderAdvancedLight() =
         runComposeUiTest {
             setContent { ChatHeaderAdvancedPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -46,7 +46,7 @@ internal class ChatHeaderAndroidTest {
     fun chatHeaderAdvancedNight() =
         runComposeUiTest {
             setContent { ChatHeaderAdvancedPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

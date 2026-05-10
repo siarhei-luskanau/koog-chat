@@ -1,6 +1,7 @@
 package koog.chat.navigation
 
-import koog.chat.ui.main.MainScreen
+import koog.chat.ui.chat.ChatScreen
+import koog.chat.ui.chatlist.ChatListScreen
 import koog.chat.ui.splash.SplashScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.ComponentScan
@@ -21,6 +22,9 @@ val navigationModule =
             SplashScreen(viewModel = koinViewModel())
         }
         navigation<AppRoutes.Main> { route ->
-            MainScreen(viewModel = koinViewModel { parametersOf(route.initArg) })
+            ChatListScreen(viewModel = koinViewModel { parametersOf(route.initArg) })
+        }
+        navigation<AppRoutes.Chat> { route ->
+            ChatScreen(viewModel = koinViewModel { parametersOf(route.chatId) })
         }
     }

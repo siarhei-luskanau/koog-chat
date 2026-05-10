@@ -14,8 +14,9 @@ kotlin {
             implementation(libs.koin.compose.navigation3)
             implementation(libs.kotlinx.serialization.json)
             implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(projects.ui.uiChat)
+            implementation(projects.ui.uiChatList)
             implementation(projects.ui.uiCommon)
-            implementation(projects.ui.uiMain)
             implementation(projects.ui.uiSplash)
         }
     }

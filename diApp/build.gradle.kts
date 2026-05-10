@@ -13,8 +13,9 @@ kotlin {
             implementation(projects.core.coreDatabaseRoom)
             implementation(projects.core.corePref)
             implementation(projects.navigation)
+            implementation(projects.ui.uiChat)
+            implementation(projects.ui.uiChatList)
             implementation(projects.ui.uiCommon)
-            implementation(projects.ui.uiMain)
             implementation(projects.ui.uiSplash)
         }
 

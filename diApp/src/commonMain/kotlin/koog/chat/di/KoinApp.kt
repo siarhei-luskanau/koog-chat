@@ -1,6 +1,10 @@
 package koog.chat.di
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import koog.chat.navigation.NavApp
@@ -19,7 +23,9 @@ fun KoinApp() =
                 modules(navigationModule)
             },
     ) {
-        NavApp()
+        Box(Modifier.semantics { contentDescription = "KoinApp" }) {
+            NavApp()
+        }
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)

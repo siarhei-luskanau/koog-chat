@@ -2,13 +2,15 @@ package koog.chat.navigation
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.navigation3.runtime.NavKey
-import koog.chat.ui.main.MainNavigationCallback
+import koog.chat.ui.chat.ChatNavigationCallback
+import koog.chat.ui.chatlist.ChatListNavigationCallback
 import koog.chat.ui.splash.SplashNavigationCallback
 import org.koin.core.annotation.Single
 
 @Single
 internal class AppNavigation :
-    MainNavigationCallback,
+    ChatListNavigationCallback,
+    ChatNavigationCallback,
     SplashNavigationCallback {
     val backStack = mutableStateListOf<NavKey>(AppRoutes.Splash)
 
@@ -21,5 +23,13 @@ internal class AppNavigation :
     override fun goMainScreen(initArg: String) {
         backStack.add(AppRoutes.Main(initArg = initArg))
         backStack.remove(AppRoutes.Splash)
+    }
+
+    override fun openChat(chatId: String) {
+        backStack.add(AppRoutes.Chat(chatId = chatId))
+    }
+
+    override fun openNewChat() {
+        backStack.add(AppRoutes.Chat(chatId = "new"))
     }
 }

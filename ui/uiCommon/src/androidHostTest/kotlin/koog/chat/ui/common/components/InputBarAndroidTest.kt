@@ -20,7 +20,7 @@ internal class InputBarAndroidTest {
     fun inputBarEmptyLight() =
         runComposeUiTest {
             setContent { InputBarEmptyPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -29,7 +29,7 @@ internal class InputBarAndroidTest {
     fun inputBarEmptyNight() =
         runComposeUiTest {
             setContent { InputBarEmptyPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -37,7 +37,7 @@ internal class InputBarAndroidTest {
     fun inputBarFilledLight() =
         runComposeUiTest {
             setContent { InputBarFilledPreviewLight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 
@@ -46,7 +46,7 @@ internal class InputBarAndroidTest {
     fun inputBarFilledNight() =
         runComposeUiTest {
             setContent { InputBarFilledPreviewNight() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }

@@ -2,7 +2,7 @@ package koog.chat.ui.common.theme
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.runSkikoComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import io.github.takahirom.roborazzi.captureRoboImage
 import kotlin.test.Test
@@ -11,9 +11,9 @@ import kotlin.test.Test
 internal class AppThemeIosTest {
     @Test
     fun colors() =
-        runSkikoComposeUiTest {
+        runComposeUiTest {
             setContent { AppThemeColorsPreview() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.theme.AppThemeIosTest.colors.png")
         }
 }

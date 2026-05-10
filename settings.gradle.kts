@@ -6,14 +6,14 @@ include(
     ":app:desktopApp",
     ":app:webApp",
     ":core:coreCommon",
-    ":core:corePref",
     ":core:coreDatabaseApi",
     ":core:coreDatabaseRoom",
+    ":core:corePref",
     ":diApp",
     ":navigation",
     ":ui:uiChat",
+    ":ui:uiChatList",
     ":ui:uiCommon",
-    ":ui:uiMain",
     ":ui:uiSplash",
 )
 

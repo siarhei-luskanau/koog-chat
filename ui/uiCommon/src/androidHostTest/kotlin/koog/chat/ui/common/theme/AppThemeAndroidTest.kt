@@ -20,7 +20,7 @@ internal class AppThemeAndroidTest {
     fun colors() =
         runComposeUiTest {
             setContent { AppThemeColorsPreview() }
-            waitForIdle()
+            awaitIdle()
             onRoot().captureRoboImage()
         }
 }
