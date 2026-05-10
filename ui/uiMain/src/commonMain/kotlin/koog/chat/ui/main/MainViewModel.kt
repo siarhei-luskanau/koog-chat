@@ -23,8 +23,8 @@ class MainViewModel(
 
     init {
         viewModelScope.launch(dispatcherSet.defaultDispatcher()) {
-            prefService.getKey().collect { pref ->
-                viewState.value = MainViewState.Success(data = "initArg=$initArg pref=$pref")
+            prefService.getAppMode().collect { appMode ->
+                viewState.value = MainViewState.Success(data = "initArg=$initArg appMode=$appMode")
             }
         }
     }

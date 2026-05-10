@@ -24,10 +24,19 @@ internal class PrefServiceDataStore(
         )
     }
 
-    override fun getKey(): Flow<String?> = getFlowFromDataStore { it.key }
+    override fun getAppMode(): Flow<AppMode> =
+        dataStore.data.map {
+            it.appMode?.let { appModeString -> AppMode.valueOf(appModeString) } ?: AppMode.Simple
+        }
 
-    override suspend fun setKey(key: String?) {
-        updateDataStore { it.copy(key = key) }
+    override suspend fun setAppMode(mode: AppMode) {
+        updateDataStore { it.copy(appMode = mode.name) }
+    }
+
+    override fun getSelectedLlmConfigId(): Flow<String?> = getFlowFromDataStore { it.selectedLlmConfigId }
+
+    override suspend fun setSelectedLlmConfigId(id: String?) {
+        updateDataStore { it.copy(selectedLlmConfigId = id) }
     }
 
     private fun <T : Any> getFlowFromDataStore(mapData: (PrefData) -> T?): Flow<T?> = dataStore.data.map { mapData(it) }

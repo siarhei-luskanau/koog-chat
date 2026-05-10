@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import koog.chat.core.common.DispatcherSet
 import koog.chat.core.pref.PrefService
-import koog.chat.ui.common.theme.AppMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -24,12 +23,12 @@ class ChatViewModel(
 
     init {
         viewModelScope.launch(dispatcherSet.defaultDispatcher()) {
-            prefService.getKey().collect {
+            prefService.getAppMode().collect { appMode ->
                 viewState.value =
                     ChatViewState.Success(
                         chatTitle = "Chat",
                         selectedModel = "qwen3.5:0.8b",
-                        appMode = AppMode.Simple,
+                        isAdvancedMode = appMode == koog.chat.core.pref.AppMode.Advanced,
                         totalTokens = null,
                     )
             }

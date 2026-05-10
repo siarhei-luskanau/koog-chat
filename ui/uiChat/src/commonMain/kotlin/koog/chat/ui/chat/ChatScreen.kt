@@ -34,7 +34,6 @@ import koog.chat.ui.common.components.UserBubble
 import koog.chat.ui.common.resources.Res
 import koog.chat.ui.common.resources.back_button
 import koog.chat.ui.common.resources.ic_arrow_back
-import koog.chat.ui.common.theme.AppMode
 import koog.chat.ui.common.theme.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,10 +72,7 @@ internal fun ChatContent(
                     }
                 },
                 actions = {
-                    if (state is ChatViewState.Success &&
-                        state.appMode == AppMode.Advanced &&
-                        state.totalTokens != null
-                    ) {
+                    if (state is ChatViewState.Success && state.isAdvancedMode && state.totalTokens != null) {
                         Box(Modifier.padding(end = AppTheme.spacing.sm)) {
                             TotalTokensChip(totalTokens = state.totalTokens)
                         }
@@ -153,7 +149,7 @@ private fun ChatSuccessContent(
                         ThinkingBlock(
                             content = message.content,
                             isStreaming = message.isStreaming,
-                            appMode = state.appMode,
+                            isAdvancedMode = state.isAdvancedMode,
                         )
                     }
 
@@ -161,7 +157,7 @@ private fun ChatSuccessContent(
                         AssistantBubble(
                             text = message.content,
                             metrics = message.metrics,
-                            appMode = state.appMode,
+                            isAdvancedMode = state.isAdvancedMode,
                         )
                     }
 
@@ -217,12 +213,12 @@ private val previewMessages =
         ),
     )
 
-private fun successState(appMode: AppMode) =
+private fun successState(isAdvancedMode: Boolean) =
     ChatViewState.Success(
         chatTitle = "Compose Multiplatform",
         messages = previewMessages,
         selectedModel = "qwen3.5:0.8b",
-        appMode = appMode,
+        isAdvancedMode = isAdvancedMode,
         totalTokens = 1284,
     )
 
@@ -230,28 +226,28 @@ private fun successState(appMode: AppMode) =
 @Composable
 internal fun ChatScreenSimplePreviewLight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(appMode = AppMode.Simple)), onEvent = {})
+        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = false)), onEvent = {})
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
 internal fun ChatScreenSimplePreviewNight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(appMode = AppMode.Simple)), onEvent = {})
+        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = false)), onEvent = {})
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
 internal fun ChatScreenAdvancedPreviewLight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(appMode = AppMode.Advanced)), onEvent = {})
+        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = true)), onEvent = {})
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
 internal fun ChatScreenAdvancedPreviewNight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(appMode = AppMode.Advanced)), onEvent = {})
+        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = true)), onEvent = {})
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)

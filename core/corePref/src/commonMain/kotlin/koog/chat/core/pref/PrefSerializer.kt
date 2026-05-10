@@ -9,7 +9,7 @@ internal class PrefSerializer : OkioSerializer<PrefData> {
     private val parser = Json { ignoreUnknownKeys = true }
 
     override val defaultValue: PrefData
-        get() = PrefData(key = null)
+        get() = PrefData(appMode = null, selectedLlmConfigId = null)
 
     override suspend fun readFrom(source: BufferedSource): PrefData =
         try {

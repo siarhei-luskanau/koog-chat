@@ -7,20 +7,19 @@ import org.koin.plugin.module.dsl.koinApplication
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 expect fun cleanUpTestStorage()
 
 internal class PrefServiceCommonTest {
     @Test
-    fun writeAndReadKey() =
+    fun writeAndReadAppMode() =
         runTest {
             cleanUpTestStorage()
             val koinApplication = koinApplication<TestKoinApplication>()
             val service = koinApplication.koin.get<PrefService>()
-            assertNull(service.getKey().first())
-            service.setKey("test-value")
-            assertEquals("test-value", service.getKey().first())
+            assertEquals(AppMode.Simple, service.getAppMode().first())
+            service.setAppMode(AppMode.Advanced)
+            assertEquals(AppMode.Advanced, service.getAppMode().first())
             koinApplication.close()
         }
 
@@ -30,13 +29,13 @@ internal class PrefServiceCommonTest {
         cleanUpTestStorage()
         runTest {
             val koinApplication1 = koinApplication<TestKoinApplication>()
-            koinApplication1.koin.get<PrefService>().setKey("alice")
+            koinApplication1.koin.get<PrefService>().setAppMode(AppMode.Advanced)
             stopKoin()
         }
         runTest {
             val koinApplication2 = koinApplication<TestKoinApplication>()
             val service = koinApplication2.koin.get<PrefService>()
-            assertEquals("alice", service.getKey().first())
+            assertEquals(AppMode.Advanced, service.getAppMode().first())
             stopKoin()
         }
     }

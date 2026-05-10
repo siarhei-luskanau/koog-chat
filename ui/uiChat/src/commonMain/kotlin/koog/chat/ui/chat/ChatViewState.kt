@@ -2,7 +2,6 @@ package koog.chat.ui.chat
 
 import androidx.compose.runtime.Immutable
 import koog.chat.ui.common.components.Metrics
-import koog.chat.ui.common.theme.AppMode
 
 sealed interface ChatViewState {
     data object Loading : ChatViewState
@@ -13,7 +12,7 @@ sealed interface ChatViewState {
         val inputText: String = "",
         val isGenerating: Boolean = false,
         val selectedModel: String = "qwen3.5:0.8b",
-        val appMode: AppMode,
+        val isAdvancedMode: Boolean,
         val totalTokens: Int?,
     ) : ChatViewState
 

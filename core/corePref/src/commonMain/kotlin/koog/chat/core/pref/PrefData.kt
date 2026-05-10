@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class PrefData(
-    @SerialName("key") val key: String?,
+    @SerialName("app_mode") val appMode: String?,
+    @SerialName("selected_llm_config_id") val selectedLlmConfigId: String?,
 )

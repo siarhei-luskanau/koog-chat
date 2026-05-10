@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import koog.chat.ui.common.theme.AppMode
 import koog.chat.ui.common.theme.AppTheme
 
 @Composable
@@ -25,7 +24,7 @@ fun ChatHeader(
     subtitle: String? = null,
     totalTokens: Int? = null,
     modifier: Modifier = Modifier,
-    appMode: AppMode,
+    isAdvancedMode: Boolean,
 ) {
     Row(
         modifier =
@@ -54,7 +53,7 @@ fun ChatHeader(
                 )
             }
         }
-        if (appMode == AppMode.Advanced && totalTokens != null) {
+        if (isAdvancedMode && totalTokens != null) {
             TotalTokensChip(totalTokens)
         }
     }
@@ -86,12 +85,12 @@ fun TotalTokensChip(
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
 internal fun ChatHeaderSimplePreviewLight() =
-    AppTheme { ChatHeader(title = "Compose tokens", subtitle = "qwen3.5:0.8b · Ollama", appMode = AppMode.Simple) }
+    AppTheme { ChatHeader(title = "Compose tokens", subtitle = "qwen3.5:0.8b · Ollama", isAdvancedMode = false) }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
 internal fun ChatHeaderSimplePreviewNight() =
-    AppTheme { ChatHeader(title = "Compose tokens", subtitle = "qwen3.5:0.8b · Ollama", appMode = AppMode.Simple) }
+    AppTheme { ChatHeader(title = "Compose tokens", subtitle = "qwen3.5:0.8b · Ollama", isAdvancedMode = false) }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
@@ -101,7 +100,7 @@ internal fun ChatHeaderAdvancedPreviewLight() =
             title = "Compose tokens",
             subtitle = "qwen3.5:0.8b · Ollama",
             totalTokens = 1284,
-            appMode = AppMode.Advanced,
+            isAdvancedMode = true,
         )
     }
 
@@ -113,7 +112,7 @@ internal fun ChatHeaderAdvancedPreviewNight() =
             title = "Compose tokens",
             subtitle = "qwen3.5:0.8b · Ollama",
             totalTokens = 1284,
-            appMode = AppMode.Advanced,
+            isAdvancedMode = true,
         )
     }
 

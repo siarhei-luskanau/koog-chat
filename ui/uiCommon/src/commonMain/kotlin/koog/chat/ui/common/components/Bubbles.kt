@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import koog.chat.ui.common.resources.Res
 import koog.chat.ui.common.resources.reasoning_label
 import koog.chat.ui.common.resources.thinking_label
-import koog.chat.ui.common.theme.AppMode
 import koog.chat.ui.common.theme.AppTheme
 import koog.chat.ui.common.theme.AssistantBubbleShape
 import koog.chat.ui.common.theme.ThinkingBubbleShape
@@ -69,7 +68,7 @@ fun AssistantBubble(
     text: String,
     metrics: Metrics? = null,
     modifier: Modifier = Modifier,
-    appMode: AppMode,
+    isAdvancedMode: Boolean,
 ) {
     Row(
         modifier =
@@ -89,7 +88,7 @@ fun AssistantBubble(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                 )
             }
-            if (appMode == AppMode.Advanced && metrics != null) {
+            if (isAdvancedMode && metrics != null) {
                 MetricsRow(metrics)
             }
         }
@@ -101,9 +100,9 @@ fun ThinkingBlock(
     content: String,
     isStreaming: Boolean,
     modifier: Modifier = Modifier,
-    appMode: AppMode,
+    isAdvancedMode: Boolean,
 ) {
-    if (appMode == AppMode.Simple && !isStreaming) return
+    if (!isAdvancedMode && !isStreaming) return
     Surface(
         shape = ThinkingBubbleShape,
         color = MaterialTheme.colorScheme.tertiaryContainer,
@@ -123,7 +122,7 @@ fun ThinkingBlock(
                 }
                 Text(
                     text =
-                        if (appMode == AppMode.Simple) {
+                        if (!isAdvancedMode) {
                             stringResource(Res.string.thinking_label)
                         } else {
                             stringResource(Res.string.reasoning_label)
@@ -131,7 +130,7 @@ fun ThinkingBlock(
                     style = MaterialTheme.typography.labelMedium,
                 )
             }
-            if (appMode == AppMode.Advanced) {
+            if (isAdvancedMode) {
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = content,
@@ -214,7 +213,7 @@ internal fun AssistantBubbleSimplePreviewLight() =
     AppTheme {
         AssistantBubble(
             text = "Put Color, Type, Shape and Theme in commonMain. Use expect/actual only for fonts.",
-            appMode = AppMode.Simple,
+            isAdvancedMode = false,
         )
     }
 
@@ -224,7 +223,7 @@ internal fun AssistantBubbleSimplePreviewNight() =
     AppTheme {
         AssistantBubble(
             text = "Put Color, Type, Shape and Theme in commonMain. Use expect/actual only for fonts.",
-            appMode = AppMode.Simple,
+            isAdvancedMode = false,
         )
     }
 
@@ -235,7 +234,7 @@ internal fun AssistantBubbleAdvancedPreviewLight() =
         AssistantBubble(
             text = "Put Color, Type, Shape and Theme in commonMain.",
             metrics = Metrics(responseTimeMs = 1420, tokensPerSecond = 38f, tokensUsed = 512),
-            appMode = AppMode.Advanced,
+            isAdvancedMode = true,
         )
     }
 
@@ -246,17 +245,17 @@ internal fun AssistantBubbleAdvancedPreviewNight() =
         AssistantBubble(
             text = "Put Color, Type, Shape and Theme in commonMain.",
             metrics = Metrics(responseTimeMs = 1420, tokensPerSecond = 38f, tokensUsed = 512),
-            appMode = AppMode.Advanced,
+            isAdvancedMode = true,
         )
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
-internal fun ThinkingBlockStreamingPreviewLight() = AppTheme { ThinkingBlock(content = "", isStreaming = true, appMode = AppMode.Simple) }
+internal fun ThinkingBlockStreamingPreviewLight() = AppTheme { ThinkingBlock(content = "", isStreaming = true, isAdvancedMode = false) }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
-internal fun ThinkingBlockStreamingPreviewNight() = AppTheme { ThinkingBlock(content = "", isStreaming = true, appMode = AppMode.Simple) }
+internal fun ThinkingBlockStreamingPreviewNight() = AppTheme { ThinkingBlock(content = "", isStreaming = true, isAdvancedMode = false) }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
@@ -265,7 +264,7 @@ internal fun ThinkingBlockAdvancedPreviewLight() =
         ThinkingBlock(
             content = "The user is asking about Compose Multiplatform.\nI'll explain the theme file structure.",
             isStreaming = false,
-            appMode = AppMode.Advanced,
+            isAdvancedMode = true,
         )
     }
 
@@ -276,7 +275,7 @@ internal fun ThinkingBlockAdvancedPreviewNight() =
         ThinkingBlock(
             content = "The user is asking about Compose Multiplatform.\nI'll explain the theme file structure.",
             isStreaming = false,
-            appMode = AppMode.Advanced,
+            isAdvancedMode = true,
         )
     }
 
