@@ -79,6 +79,8 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.markdown.renderer)
             implementation(project.dependencies.platform(libs.koin.bom))
         }
 

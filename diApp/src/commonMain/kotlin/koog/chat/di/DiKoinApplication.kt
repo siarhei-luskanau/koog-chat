@@ -11,6 +11,7 @@ import org.koin.core.annotation.KoinApplication
 @KoinApplication(
     modules = [
         ChatCommonModule::class,
+        ChatCommonModule::class,
         ChatListCommonModule::class,
         CoreCommonCommonModule::class,
         CorePrefCommonModule::class,

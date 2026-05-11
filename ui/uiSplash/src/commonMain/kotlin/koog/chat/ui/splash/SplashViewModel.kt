@@ -19,7 +19,7 @@ class SplashViewModel(
         when (event) {
             SplashViewEvent.Launched -> {
                 viewModelScope.launch {
-                    navigationCallback.goMainScreen(initArg = "initArg")
+                    navigationCallback.goMainScreen()
                 }
             }
         }

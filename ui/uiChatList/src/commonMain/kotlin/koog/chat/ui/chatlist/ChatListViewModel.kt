@@ -2,116 +2,142 @@ package koog.chat.ui.chatlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.insertSeparators
+import androidx.paging.map
 import koog.chat.core.common.DispatcherSet
+import koog.chat.core.database.api.entity.Chat
+import koog.chat.core.database.api.repository.ChatRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Provided
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 @KoinViewModel
 class ChatListViewModel(
-    @InjectedParam private val initArg: String,
     @Provided private val navigationCallback: ChatListNavigationCallback,
-    @Provided private val dispatcherSet: DispatcherSet,
+    // @Provided private val chatRepository: ChatRepository,
 ) : ViewModel() {
-    val viewState: StateFlow<ChatListViewState>
-        field = MutableStateFlow<ChatListViewState>(ChatListViewState.Loading)
+    val isSearchVisible: StateFlow<Boolean>
+        field = MutableStateFlow(false)
 
-    init {
-        viewModelScope.launch(dispatcherSet.defaultDispatcher()) {
-            viewState.value = ChatListViewState.Success(groups = sampleGroups())
-        }
-    }
+    val searchQuery: StateFlow<String>
+        field = MutableStateFlow("")
+
+    val pagingDataFlow: Flow<PagingData<ChatPagingItem>> =
+//        Pager(config = PagingConfig(pageSize = 20)) {
+//            chatRepository.pagingSource()
+//        }.flow
+        flowOf(
+            PagingData.from(
+                data =
+                    Clock.System.now().let { now ->
+                        listOf<Chat>(
+                            // Chat(id = "1", title = "Compose design system", createdAt = now.toEpochMilliseconds()),
+                            // Chat(id = "2", title = "Kotlin coroutines", createdAt = now.minus(86400000.milliseconds).toEpochMilliseconds()),
+                        )
+                    },
+                sourceLoadStates =
+                    LoadStates(
+                        refresh = LoadState.NotLoading(endOfPaginationReached = false),
+                        prepend = LoadState.NotLoading(endOfPaginationReached = false),
+                        append = LoadState.NotLoading(endOfPaginationReached = false),
+                    ),
+            ),
+        ).map { pagingData ->
+            pagingData
+                .map { chat ->
+                    ChatPagingItem.Entry(
+                        chat = chat.toChatListEntry(),
+                        createdAt = Instant.fromEpochMilliseconds(chat.createdAt),
+                    )
+                }.insertSeparators { before, after ->
+                    if (after == null) return@insertSeparators null
+                    val afterLabel = dateGroupLabel(after.createdAt)
+                    if (before == null || dateGroupLabel(before.createdAt) != afterLabel) {
+                        ChatPagingItem.Header(afterLabel)
+                    } else {
+                        null
+                    }
+                }
+        }.cachedIn(viewModelScope)
 
     fun onEvent(event: ChatListViewEvent) {
         viewModelScope.launch {
             when (event) {
                 is ChatListViewEvent.OpenChat -> navigationCallback.openChat(event.chatId)
                 ChatListViewEvent.NewChat -> navigationCallback.openNewChat()
-                ChatListViewEvent.ToggleSearch -> toggleSearch()
-                is ChatListViewEvent.SearchQueryChanged -> updateSearch(event.query)
+                ChatListViewEvent.ToggleSearch -> isSearchVisible.value = !isSearchVisible.value
+                is ChatListViewEvent.SearchQueryChanged -> searchQuery.value = event.query
             }
         }
     }
 
-    private fun toggleSearch() {
-        val current = viewState.value
-        if (current is ChatListViewState.Success) {
-            viewState.value = current.copy(isSearchVisible = !current.isSearchVisible)
+    private fun dateGroupLabel(createdAt: Instant): String {
+        val tz = TimeZone.currentSystemDefault()
+        val today =
+            Clock.System
+                .now()
+                .toLocalDateTime(tz)
+                .date
+        val chatDate = createdAt.toLocalDateTime(tz).date
+        val daysDiff = (today.toEpochDays() - chatDate.toEpochDays()).toInt()
+        return when {
+            daysDiff == 0 -> "Today"
+            daysDiff == 1 -> "Yesterday"
+            daysDiff < 7 -> "This week"
+            else -> "Older"
         }
     }
 
-    private fun updateSearch(query: String) {
-        val current = viewState.value
-        if (current is ChatListViewState.Success) {
-            viewState.value = current.copy(searchQuery = query)
-        }
-    }
+    private fun Chat.toChatListEntry(): ChatListEntry {
+        val tz = TimeZone.currentSystemDefault()
+        val localDateTime = Instant.fromEpochMilliseconds(createdAt).toLocalDateTime(tz)
+        val today =
+            Clock.System
+                .now()
+                .toLocalDateTime(tz)
+                .date
+        val chatDate = localDateTime.date
+        val daysDiff = (today.toEpochDays() - chatDate.toEpochDays()).toInt()
+        val timestamp =
+            when {
+                daysDiff == 0 -> {
+                    "${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
+                }
 
-    private fun sampleGroups() =
-        listOf(
-            ChatDateGroup(
-                label = "Today",
-                items =
-                    listOf(
-                        ChatListEntry(
-                            id = "1",
-                            title = "Compose design system",
-                            timestamp = "14:32",
-                            preview = "How do I set up Material3 with custom tokens in Compose Multiplatform?",
-                            modelName = "claude-3-5-sonnet",
-                            messageCount = 12,
-                            avatarColorIndex = 1,
-                        ),
-                        ChatListEntry(
-                            id = "2",
-                            title = "Kotlin coroutines",
-                            timestamp = "11:05",
-                            preview = "Explain the difference between launch and async in Kotlin coroutines.",
-                            modelName = "claude-3-haiku",
-                            messageCount = 8,
-                            avatarColorIndex = 0,
-                        ),
-                    ),
-            ),
-            ChatDateGroup(
-                label = "Yesterday",
-                items =
-                    listOf(
-                        ChatListEntry(
-                            id = "3",
-                            title = "KMP build setup",
-                            timestamp = "Yesterday",
-                            preview = "How to configure Gradle for Kotlin Multiplatform with iOS and Android targets?",
-                            modelName = "claude-3-5-haiku",
-                            messageCount = 5,
-                            avatarColorIndex = 2,
-                        ),
-                    ),
-            ),
-            ChatDateGroup(
-                label = "This week",
-                items =
-                    listOf(
-                        ChatListEntry(
-                            id = "4",
-                            title = "SQL optimization tips",
-                            timestamp = "Mon",
-                            preview = "What are the best practices for optimizing slow SQL queries on large tables?",
-                            avatarColorIndex = 0,
-                        ),
-                        ChatListEntry(
-                            id = "5",
-                            title = "SwiftUI vs Compose",
-                            timestamp = "Sun",
-                            preview = "Compare SwiftUI and Compose Multiplatform for cross-platform development.",
-                            modelName = "claude-3-opus",
-                            messageCount = 22,
-                            avatarColorIndex = 1,
-                        ),
-                    ),
-            ),
-        )
+                daysDiff == 1 -> {
+                    "Yesterday"
+                }
+
+                daysDiff < 7 -> {
+                    localDateTime.dayOfWeek.name
+                        .take(3)
+                        .lowercase()
+                        .replaceFirstChar { it.uppercase() }
+                }
+
+                else -> {
+                    "${chatDate.year}-${chatDate.monthNumber.toString().padStart(
+                        2,
+                        '0',
+                    )}-${chatDate.dayOfMonth.toString().padStart(2, '0')}"
+                }
+            }
+        return ChatListEntry(id = id, title = title, timestamp = timestamp)
+    }
 }

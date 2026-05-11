@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.android.application).apply(false)
+    alias(libs.plugins.androidx.room3).apply(false)
     alias(libs.plugins.compose.compiler).apply(false)
     alias(libs.plugins.compose.multiplatform).apply(false)
     alias(libs.plugins.detekt)

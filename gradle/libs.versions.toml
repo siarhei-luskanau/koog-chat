@@ -23,6 +23,7 @@ koin-plugin = "1.0.0-RC2"
 koog = "0.8.0"
 kotlin = "2.3.21"
 kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.11.0"
 ksp = "2.3.7"
 ktlint = "1.8.0"
@@ -39,8 +40,13 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-datastore-core-okio = { module = "androidx.datastore:datastore-core-okio", version.ref = "androidx-datastore" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "androidx-room3" }
+androidx-room3-migration  = { module = "androidx.room3:room3-migration ", version.ref = "androidx-room3" }
+androidx-room3-paging = { module = "androidx.room3:room3-paging", version.ref = "androidx-room3" }
 androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "androidx-room3" }
 androidx-sqlite = { module = "androidx.sqlite:sqlite", version.ref = "androidx-sqlite" }
+androidx-sqlite-async = { module = "androidx.sqlite:sqlite-async", version.ref = "androidx-sqlite" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidx-sqlite" }
+androidx-sqlite-web = { module = "androidx.sqlite:sqlite-web", version.ref = "androidx-sqlite" }
 androidx-uitest-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
 androidx-uitest-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 jetbrains-compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "compose-multiplatform" }
@@ -73,6 +79,7 @@ kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
@@ -91,6 +98,7 @@ roborazzi-compose-ios = { module = "io.github.takahirom.roborazzi:roborazzi-comp
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+androidx-room3 = { id = "androidx.room3", version.ref = "androidx-room3" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
