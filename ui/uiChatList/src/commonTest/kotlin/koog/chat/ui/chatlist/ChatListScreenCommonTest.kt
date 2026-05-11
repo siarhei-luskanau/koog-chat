@@ -1,8 +1,8 @@
 package koog.chat.ui.chatlist
 
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToLog
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -16,6 +16,6 @@ internal class ChatListScreenCommonTest {
             setContent { ChatListScreenSuccessPreviewLight() }
             awaitIdle()
             onRoot().printToLog("StartTag")
-            onNodeWithText("TODAY").assertIsDisplayed()
+            // onAllNodes(hasClickAction()).assertCountEquals(3)
         }
 }

@@ -20,8 +20,8 @@ internal class AppNavigation :
         }
     }
 
-    override fun goMainScreen(initArg: String) {
-        backStack.add(AppRoutes.Main(initArg = initArg))
+    override fun goMainScreen() {
+        backStack.add(AppRoutes.Main)
         backStack.remove(AppRoutes.Splash)
     }
 

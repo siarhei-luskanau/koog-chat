@@ -8,9 +8,7 @@ internal sealed interface AppRoutes : NavKey {
     data object Splash : AppRoutes
 
     @Serializable
-    data class Main(
-        val initArg: String,
-    ) : AppRoutes
+    data object Main : AppRoutes
 
     @Serializable
     data class Chat(

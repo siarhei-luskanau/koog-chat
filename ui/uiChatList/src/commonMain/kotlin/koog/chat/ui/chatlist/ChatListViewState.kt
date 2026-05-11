@@ -13,21 +13,13 @@ data class ChatListEntry(
     val avatarColorIndex: Int = 0,
 )
 
-data class ChatDateGroup(
-    val label: String,
-    val items: List<ChatListEntry>,
-)
+sealed interface ChatPagingItem {
+    data class Header(
+        val label: String,
+    ) : ChatPagingItem
 
-sealed interface ChatListViewState {
-    data object Loading : ChatListViewState
-
-    data class Success(
-        val groups: List<ChatDateGroup>,
-        val searchQuery: String = "",
-        val isSearchVisible: Boolean = false,
-    ) : ChatListViewState
-
-    data class Error(
-        val error: Throwable,
-    ) : ChatListViewState
+    data class Entry(
+        val chat: ChatListEntry,
+        val createdAt: kotlin.time.Instant,
+    ) : ChatPagingItem
 }

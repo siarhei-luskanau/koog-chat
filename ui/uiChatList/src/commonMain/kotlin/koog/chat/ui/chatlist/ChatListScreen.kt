@@ -1,7 +1,6 @@
 package koog.chat.ui.chatlist
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,16 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -30,6 +25,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,39 +33,52 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
+import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import koog.chat.ui.common.components.ChatListItem
 import koog.chat.ui.common.resources.Res
-import koog.chat.ui.common.resources.app_name
 import koog.chat.ui.common.resources.ic_add
 import koog.chat.ui.common.resources.ic_chat
 import koog.chat.ui.common.resources.ic_search
-import koog.chat.ui.common.resources.ic_settings
 import koog.chat.ui.common.resources.new_chat
 import koog.chat.ui.common.resources.no_chats_yet
 import koog.chat.ui.common.resources.search_chats
-import koog.chat.ui.common.resources.settings
 import koog.chat.ui.common.resources.start_conversation
 import koog.chat.ui.common.theme.AppTheme
 import koog.chat.ui.common.theme.KoogShapes
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun ChatListScreen(viewModel: ChatListViewModel) {
     ChatListContent(
-        viewStateFlow = viewModel.viewState,
+        pagingDataFlow = viewModel.pagingDataFlow,
+        isSearchVisible = viewModel.isSearchVisible,
+        searchQuery = viewModel.searchQuery,
         onEvent = viewModel::onEvent,
     )
 }
 
 @Composable
 internal fun ChatListContent(
-    viewStateFlow: StateFlow<ChatListViewState>,
+    pagingDataFlow: Flow<PagingData<ChatPagingItem>>,
+    isSearchVisible: StateFlow<Boolean>,
+    searchQuery: StateFlow<String>,
     onEvent: (ChatListViewEvent) -> Unit,
 ) {
-    val viewState = viewStateFlow.collectAsState()
+    val lazyPagingItems = pagingDataFlow.collectAsLazyPagingItems()
+    val isSearchShown by isSearchVisible.collectAsState()
+    val query by searchQuery.collectAsState()
 
     Scaffold(
         topBar = {
@@ -93,8 +102,8 @@ internal fun ChatListContent(
             )
         },
     ) { contentPadding ->
-        when (val state = viewState.value) {
-            ChatListViewState.Loading -> {
+        when {
+            lazyPagingItems.loadState.refresh is LoadState.Loading && lazyPagingItems.itemCount == 0 -> {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(contentPadding),
                     contentAlignment = Alignment.Center,
@@ -103,74 +112,81 @@ internal fun ChatListContent(
                 }
             }
 
-            is ChatListViewState.Success -> {
-                ChatListSuccessContent(
-                    state = state,
-                    onEvent = onEvent,
-                    modifier = Modifier.padding(contentPadding),
-                )
-            }
-
-            is ChatListViewState.Error -> {
+            lazyPagingItems.loadState.refresh is LoadState.Error -> {
+                val error = (lazyPagingItems.loadState.refresh as LoadState.Error).error
                 Box(
                     modifier = Modifier.fillMaxSize().padding(contentPadding),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = state.error.message ?: "Unknown error",
+                        text = error.message ?: "Unknown error",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(AppTheme.spacing.lg),
                     )
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun ChatListSuccessContent(
-    state: ChatListViewState.Success,
-    onEvent: (ChatListViewEvent) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.fillMaxSize()) {
-        AnimatedVisibility(visible = state.isSearchVisible) {
-            SearchField(
-                query = state.searchQuery,
-                onQueryChange = { onEvent(ChatListViewEvent.SearchQueryChanged(it)) },
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 8.dp),
-            )
-        }
-
-        if (state.groups.isEmpty()) {
-            ChatListEmpty(
-                onNewChat = { onEvent(ChatListViewEvent.NewChat) },
-                modifier = Modifier.weight(1f),
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            ) {
-                state.groups.forEach { group ->
-                    item(key = "header_${group.label}") {
-                        GroupHeader(label = group.label)
-                    }
-                    items(group.items, key = { it.id }) { entry ->
-                        ChatListItem(
-                            title = entry.title,
-                            timestamp = entry.timestamp,
-                            preview = entry.preview,
-                            modelName = entry.modelName,
-                            messageCount = entry.messageCount,
-                            avatarColorIndex = entry.avatarColorIndex,
-                            onClick = { onEvent(ChatListViewEvent.OpenChat(entry.id)) },
+            else -> {
+                Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+                    AnimatedVisibility(visible = isSearchShown) {
+                        SearchField(
+                            query = query,
+                            onQueryChange = { onEvent(ChatListViewEvent.SearchQueryChanged(it)) },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 8.dp),
                         )
+                    }
+
+                    if (lazyPagingItems.itemCount == 0 &&
+                        lazyPagingItems.loadState.refresh is LoadState.NotLoading
+                    ) {
+                        ChatListEmpty(
+                            onNewChat = { onEvent(ChatListViewEvent.NewChat) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        ) {
+                            items(lazyPagingItems.itemCount) { index ->
+                                when (val item = lazyPagingItems[index]) {
+                                    is ChatPagingItem.Header -> {
+                                        GroupHeader(label = item.label)
+                                    }
+
+                                    is ChatPagingItem.Entry -> {
+                                        ChatListItem(
+                                            title = item.chat.title,
+                                            timestamp = item.chat.timestamp,
+                                            preview = item.chat.preview,
+                                            modelName = item.chat.modelName,
+                                            messageCount = item.chat.messageCount,
+                                            avatarColorIndex = item.chat.avatarColorIndex,
+                                            onClick = { onEvent(ChatListViewEvent.OpenChat(item.chat.id)) },
+                                        )
+                                    }
+
+                                    null -> {
+                                        Unit
+                                    }
+                                }
+                            }
+                            if (lazyPagingItems.loadState.append is LoadState.Loading) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -279,12 +295,12 @@ private fun ChatListEmpty(
     }
 }
 
-private val previewGroups =
-    listOf(
-        ChatDateGroup(
-            label = "Today",
-            items =
-                listOf(
+private val previewSuccessItems =
+    Clock.System.now().let { now ->
+        listOf(
+            ChatPagingItem.Header("Today"),
+            ChatPagingItem.Entry(
+                chat =
                     ChatListEntry(
                         id = "1",
                         title = "Compose design system",
@@ -294,6 +310,10 @@ private val previewGroups =
                         messageCount = 12,
                         avatarColorIndex = 1,
                     ),
+                createdAt = now,
+            ),
+            ChatPagingItem.Entry(
+                chat =
                     ChatListEntry(
                         id = "2",
                         title = "Kotlin coroutines",
@@ -303,12 +323,11 @@ private val previewGroups =
                         messageCount = 8,
                         avatarColorIndex = 0,
                     ),
-                ),
-        ),
-        ChatDateGroup(
-            label = "Yesterday",
-            items =
-                listOf(
+                createdAt = now,
+            ),
+            ChatPagingItem.Header("Yesterday"),
+            ChatPagingItem.Entry(
+                chat =
                     ChatListEntry(
                         id = "3",
                         title = "KMP build setup",
@@ -318,16 +337,19 @@ private val previewGroups =
                         messageCount = 5,
                         avatarColorIndex = 2,
                     ),
-                ),
-        ),
-    )
+                createdAt = now.minus(86400000.milliseconds),
+            ),
+        )
+    }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
 internal fun ChatListScreenSuccessPreviewLight() =
     AppTheme {
         ChatListContent(
-            viewStateFlow = MutableStateFlow(ChatListViewState.Success(groups = previewGroups)),
+            pagingDataFlow = flowOf(PagingData.from(previewSuccessItems)),
+            isSearchVisible = MutableStateFlow(false),
+            searchQuery = MutableStateFlow(""),
             onEvent = {},
         )
     }
@@ -337,7 +359,9 @@ internal fun ChatListScreenSuccessPreviewLight() =
 internal fun ChatListScreenSuccessPreviewNight() =
     AppTheme {
         ChatListContent(
-            viewStateFlow = MutableStateFlow(ChatListViewState.Success(groups = previewGroups)),
+            pagingDataFlow = flowOf(PagingData.from(previewSuccessItems)),
+            isSearchVisible = MutableStateFlow(false),
+            searchQuery = MutableStateFlow(""),
             onEvent = {},
         )
     }
@@ -347,7 +371,20 @@ internal fun ChatListScreenSuccessPreviewNight() =
 internal fun ChatListScreenEmptyPreviewLight() =
     AppTheme {
         ChatListContent(
-            viewStateFlow = MutableStateFlow(ChatListViewState.Success(groups = emptyList())),
+            pagingDataFlow =
+                flowOf(
+                    PagingData.from(
+                        data = emptyList(),
+                        sourceLoadStates =
+                            LoadStates(
+                                refresh = LoadState.NotLoading(endOfPaginationReached = false),
+                                prepend = LoadState.NotLoading(endOfPaginationReached = false),
+                                append = LoadState.NotLoading(endOfPaginationReached = false),
+                            ),
+                    ),
+                ),
+            isSearchVisible = MutableStateFlow(false),
+            searchQuery = MutableStateFlow(""),
             onEvent = {},
         )
     }
@@ -357,7 +394,20 @@ internal fun ChatListScreenEmptyPreviewLight() =
 internal fun ChatListScreenEmptyPreviewNight() =
     AppTheme {
         ChatListContent(
-            viewStateFlow = MutableStateFlow(ChatListViewState.Success(groups = emptyList())),
+            pagingDataFlow =
+                flowOf(
+                    PagingData.from(
+                        data = emptyList(),
+                        sourceLoadStates =
+                            LoadStates(
+                                refresh = LoadState.NotLoading(endOfPaginationReached = false),
+                                prepend = LoadState.NotLoading(endOfPaginationReached = false),
+                                append = LoadState.NotLoading(endOfPaginationReached = false),
+                            ),
+                    ),
+                ),
+            isSearchVisible = MutableStateFlow(false),
+            searchQuery = MutableStateFlow(""),
             onEvent = {},
         )
     }
@@ -367,7 +417,9 @@ internal fun ChatListScreenEmptyPreviewNight() =
 internal fun ChatListScreenLoadingPreviewLight() =
     AppTheme {
         ChatListContent(
-            viewStateFlow = MutableStateFlow(ChatListViewState.Loading),
+            pagingDataFlow = flow { },
+            isSearchVisible = MutableStateFlow(false),
+            searchQuery = MutableStateFlow(""),
             onEvent = {},
         )
     }
@@ -377,7 +429,9 @@ internal fun ChatListScreenLoadingPreviewLight() =
 internal fun ChatListScreenLoadingPreviewNight() =
     AppTheme {
         ChatListContent(
-            viewStateFlow = MutableStateFlow(ChatListViewState.Loading),
+            pagingDataFlow = flow { },
+            isSearchVisible = MutableStateFlow(false),
+            searchQuery = MutableStateFlow(""),
             onEvent = {},
         )
     }

@@ -21,8 +21,8 @@ val navigationModule =
         navigation<AppRoutes.Splash> {
             SplashScreen(viewModel = koinViewModel())
         }
-        navigation<AppRoutes.Main> { route ->
-            ChatListScreen(viewModel = koinViewModel { parametersOf(route.initArg) })
+        navigation<AppRoutes.Main> {
+            ChatListScreen(viewModel = koinViewModel())
         }
         navigation<AppRoutes.Chat> { route ->
             ChatScreen(viewModel = koinViewModel { parametersOf(route.chatId) })

@@ -1,6 +1,7 @@
 plugins {
     id("composeMultiplatformConvention")
     alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room3)
 }
 
 kotlin.android.namespace = "koog.chat.core.database.room"
@@ -8,12 +9,37 @@ kotlin.android.namespace = "koog.chat.core.database.room"
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.androidx.room3.migration)
+            implementation(libs.androidx.room3.paging)
             implementation(libs.androidx.room3.runtime)
             implementation(libs.androidx.sqlite)
+            implementation(libs.androidx.sqlite.async)
+            implementation(projects.core.coreDatabaseApi)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.sqlite.bundled)
+        }
+        iosMain.dependencies {
+            implementation(libs.androidx.sqlite.bundled)
+        }
+        jvmMain.dependencies {
+            implementation(libs.androidx.sqlite.bundled)
+        }
+        webMain.dependencies {
+            implementation(libs.androidx.sqlite.web)
         }
     }
 }
 
+room3 {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
-    ksp(libs.androidx.room3.compiler)
+    add("kspAndroid", libs.androidx.room3.compiler)
+    add("kspJvm", libs.androidx.room3.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room3.compiler)
+    add("kspIosArm64", libs.androidx.room3.compiler)
+    add("kspWasmJs", libs.androidx.room3.compiler)
+    add("kspJs", libs.androidx.room3.compiler)
 }
