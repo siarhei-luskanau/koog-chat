@@ -56,7 +56,6 @@ import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import kotlin.time.Clock
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
