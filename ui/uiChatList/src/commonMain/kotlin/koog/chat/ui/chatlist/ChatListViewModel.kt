@@ -2,21 +2,17 @@ package koog.chat.ui.chatlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
-import androidx.paging.LoadStates
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
-import koog.chat.core.common.DispatcherSet
 import koog.chat.core.database.api.entity.Chat
 import koog.chat.core.database.api.repository.ChatRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -24,13 +20,12 @@ import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Provided
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 
 @KoinViewModel
 class ChatListViewModel(
     @Provided private val navigationCallback: ChatListNavigationCallback,
-    // @Provided private val chatRepository: ChatRepository,
+    @Provided private val chatRepository: ChatRepository,
 ) : ViewModel() {
     val isSearchVisible: StateFlow<Boolean>
         field = MutableStateFlow(false)
@@ -39,42 +34,26 @@ class ChatListViewModel(
         field = MutableStateFlow("")
 
     val pagingDataFlow: Flow<PagingData<ChatPagingItem>> =
-//        Pager(config = PagingConfig(pageSize = 20)) {
-//            chatRepository.pagingSource()
-//        }.flow
-        flowOf(
-            PagingData.from(
-                data =
-                    Clock.System.now().let { now ->
-                        listOf<Chat>(
-                            // Chat(id = "1", title = "Compose design system", createdAt = now.toEpochMilliseconds()),
-                            // Chat(id = "2", title = "Kotlin coroutines", createdAt = now.minus(86400000.milliseconds).toEpochMilliseconds()),
+        Pager(config = PagingConfig(pageSize = 20)) {
+            chatRepository.pagingSource()
+        }.flow
+            .map { pagingData ->
+                pagingData
+                    .map { chat ->
+                        ChatPagingItem.Entry(
+                            chat = chat.toChatListEntry(),
+                            createdAt = Instant.fromEpochMilliseconds(chat.createdAt),
                         )
-                    },
-                sourceLoadStates =
-                    LoadStates(
-                        refresh = LoadState.NotLoading(endOfPaginationReached = false),
-                        prepend = LoadState.NotLoading(endOfPaginationReached = false),
-                        append = LoadState.NotLoading(endOfPaginationReached = false),
-                    ),
-            ),
-        ).map { pagingData ->
-            pagingData
-                .map { chat ->
-                    ChatPagingItem.Entry(
-                        chat = chat.toChatListEntry(),
-                        createdAt = Instant.fromEpochMilliseconds(chat.createdAt),
-                    )
-                }.insertSeparators { before, after ->
-                    if (after == null) return@insertSeparators null
-                    val afterLabel = dateGroupLabel(after.createdAt)
-                    if (before == null || dateGroupLabel(before.createdAt) != afterLabel) {
-                        ChatPagingItem.Header(afterLabel)
-                    } else {
-                        null
+                    }.insertSeparators { before, after ->
+                        if (after == null) return@insertSeparators null
+                        val afterLabel = dateGroupLabel(after.createdAt)
+                        if (before == null || dateGroupLabel(before.createdAt) != afterLabel) {
+                            ChatPagingItem.Header(afterLabel)
+                        } else {
+                            null
+                        }
                     }
-                }
-        }.cachedIn(viewModelScope)
+            }.cachedIn(viewModelScope)
 
     fun onEvent(event: ChatListViewEvent) {
         viewModelScope.launch {
