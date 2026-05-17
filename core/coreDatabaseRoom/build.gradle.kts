@@ -1,12 +1,11 @@
 plugins {
     id("composeMultiplatformConvention")
-    alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room3)
+    alias(libs.plugins.ksp)
 }
 
-kotlin.android.namespace = "koog.chat.core.database.room"
-
 kotlin {
+    android.namespace = "koog.chat.core.database.room"
     sourceSets {
         commonMain.dependencies {
             implementation(libs.androidx.room3.migration)

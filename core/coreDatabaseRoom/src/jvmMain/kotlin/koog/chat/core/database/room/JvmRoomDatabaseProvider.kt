@@ -10,10 +10,17 @@ import java.io.File
 internal class JvmRoomDatabaseProvider : RoomDatabaseProvider {
     override val database: AppDatabase by lazy {
         val dbFile =
-            File(System.getProperty("user.home"), ".koog_chat/koog_chat.db")
-                .also { it.parentFile?.mkdirs() }
+            File(
+                listOf(
+                    System.getProperty("user.home"),
+                    ".koog-chat",
+                    "room",
+                    "koog_chat.db",
+                ).joinToString(separator = File.separator),
+            ).also { it.parentFile?.mkdirs() }
         Room
             .databaseBuilder<AppDatabase>(name = dbFile.absolutePath)
+            // .databaseBuilder<AppDatabase>(name = File.createTempFile("temp_", "koog_chat.db").absolutePath)
             .setDriver(driver = BundledSQLiteDriver())
             .setQueryCoroutineContext(context = Dispatchers.IO)
             .build()

@@ -1,5 +1,8 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     id("composeMultiplatformConvention")
+    alias(libs.plugins.buildConfig)
     alias(libs.plugins.roborazzi)
 }
 
@@ -8,6 +11,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.androidx.datastore.core.okio)
+            implementation(libs.androidx.room3.runtime)
             implementation(projects.core.coreCommon)
             implementation(projects.core.coreDatabaseApi)
             implementation(projects.core.coreDatabaseRoom)
@@ -37,3 +41,13 @@ kotlin {
 
 // Directory for reference images
 roborazzi.outputDir.set(file("src/screenshots"))
+
+buildConfig {
+    packageName(kotlin.android.namespace.orEmpty())
+    useKotlinOutput {
+        topLevelConstants = true
+        internalVisibility = true
+    }
+    val isDataStubEnabled = isDataStubEnabled { gradleLocalProperties(rootDir, providers) }
+    buildConfigField("Boolean", "IS_DATA_STUB_ENABLED", "$isDataStubEnabled")
+}

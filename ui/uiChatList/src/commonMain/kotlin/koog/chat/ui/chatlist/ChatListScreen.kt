@@ -278,18 +278,6 @@ private fun ChatListEmpty(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = onNewChat,
-                shape = CircleShape,
-            ) {
-                Icon(
-                    imageVector = vectorResource(Res.drawable.ic_add),
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp),
-                )
-                Text(stringResource(Res.string.new_chat))
-            }
         }
     }
 }

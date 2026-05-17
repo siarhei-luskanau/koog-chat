@@ -21,6 +21,8 @@ import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Provided
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @KoinViewModel
 class ChatListViewModel(
@@ -55,13 +57,33 @@ class ChatListViewModel(
                     }
             }.cachedIn(viewModelScope)
 
+    @OptIn(ExperimentalUuidApi::class)
     fun onEvent(event: ChatListViewEvent) {
         viewModelScope.launch {
             when (event) {
-                is ChatListViewEvent.OpenChat -> navigationCallback.openChat(event.chatId)
-                ChatListViewEvent.NewChat -> navigationCallback.openNewChat()
-                ChatListViewEvent.ToggleSearch -> isSearchVisible.value = !isSearchVisible.value
-                is ChatListViewEvent.SearchQueryChanged -> searchQuery.value = event.query
+                is ChatListViewEvent.OpenChat -> {
+                    navigationCallback.openChat(event.chatId)
+                }
+
+                ChatListViewEvent.NewChat -> {
+                    val newId = Uuid.random().toString()
+                    chatRepository.save(
+                        Chat(
+                            id = newId,
+                            title = "Chat with a user",
+                            createdAt = Clock.System.now().toEpochMilliseconds(),
+                        ),
+                    )
+                    navigationCallback.openChat(newId)
+                }
+
+                ChatListViewEvent.ToggleSearch -> {
+                    isSearchVisible.value = !isSearchVisible.value
+                }
+
+                is ChatListViewEvent.SearchQueryChanged -> {
+                    searchQuery.value = event.query
+                }
             }
         }
     }
