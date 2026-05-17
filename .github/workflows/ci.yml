@@ -87,7 +87,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
 
-      - run: ./gradlew clean ${{ matrix.gradle-tasks }} --stacktrace
+      - run: ./gradlew clean ${{ matrix.gradle-tasks }} -DIS_DATA_STUB_ENABLED=true --stacktrace
 
       - name: Get task name
         id: get_task
