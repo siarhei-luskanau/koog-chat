@@ -1,6 +1,7 @@
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 val libs = the<LibrariesForLibs>()
 
@@ -128,6 +129,10 @@ koinCompiler {
 
 tasks.withType<Test>().matching { it.name.contains("AndroidHostTest") }.configureEach {
     exclude("**/*CommonTest*")
+}
+
+tasks.withType<KotlinJsTest>().matching { it.name == "jsBrowserTest" }.configureEach {
+    filter.excludeTestsMatching("*CommonTest*")
 }
 
 tasks.withType<AbstractTestTask>().configureEach {
