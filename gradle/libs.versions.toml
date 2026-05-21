@@ -33,7 +33,7 @@ leakcanary = "2.14"
 markdown-renderer = "0.41.0"
 mokksy = "0.8.1"
 robolectric = "4.16.1"
-roborazzi = "1.61.0"
+roborazzi = "1.63.0"
 
 [libraries]
 android-tools-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
