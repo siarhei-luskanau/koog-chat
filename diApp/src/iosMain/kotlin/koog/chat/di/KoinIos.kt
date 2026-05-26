@@ -8,17 +8,17 @@ import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.Qualifier
 
 @OptIn(BetaInteropApi::class)
-internal fun Koin.get(objCClass: ObjCClass): Any {
+internal fun <T> Koin.get(objCClass: ObjCClass): T {
     val kClazz = getOriginalKotlinClass(objCClass)!!
     return get(kClazz)
 }
 
 @OptIn(BetaInteropApi::class)
-internal fun Koin.get(
+internal fun <T> Koin.get(
     objCClass: ObjCClass,
     qualifier: Qualifier?,
     parameter: Any,
-): Any {
+): T {
     val kClazz = getOriginalKotlinClass(objCClass)!!
     return get(kClazz, qualifier) { parametersOf(parameter) }
 }

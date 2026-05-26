@@ -10,7 +10,6 @@ kotlin {
     android.namespace = "koog.chat.di.app"
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.androidx.datastore.core.okio)
             implementation(libs.androidx.room3.runtime)
             implementation(projects.core.coreCommon)
             implementation(projects.core.coreDatabaseApi)

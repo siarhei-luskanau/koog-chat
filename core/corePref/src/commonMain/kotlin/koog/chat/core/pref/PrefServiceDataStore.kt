@@ -24,6 +24,10 @@ internal class PrefServiceDataStore(
         )
     }
 
+    override suspend fun cleanStorage() {
+        dataStore.updateData { PrefData(appMode = null, selectedLlmConfigId = null) }
+    }
+
     override fun getAppMode(): Flow<AppMode> =
         dataStore.data.map {
             it.appMode?.let { appModeString -> AppMode.valueOf(appModeString) } ?: AppMode.Simple
