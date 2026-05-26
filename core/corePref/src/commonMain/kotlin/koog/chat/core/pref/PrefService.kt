@@ -3,6 +3,8 @@ package koog.chat.core.pref
 import kotlinx.coroutines.flow.Flow
 
 interface PrefService {
+    suspend fun cleanStorage()
+
     fun getUserPreferenceContent(): Flow<String?>
 
     fun getAppMode(): Flow<AppMode>
