@@ -8,6 +8,7 @@ include(
     ":core:coreCommon",
     ":core:coreDatabaseApi",
     ":core:coreDatabaseRoom",
+    ":core:coreLlm",
     ":core:corePref",
     ":diApp",
     ":navigation",

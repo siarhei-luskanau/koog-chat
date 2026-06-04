@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import koog.chat.core.database.api.entity.ChatEntry
+import koog.chat.core.database.api.entity.ChatEntryType
 import koog.chat.ui.common.components.AssistantBubble
 import koog.chat.ui.common.components.ErrorBubble
 import koog.chat.ui.common.components.InputBar
@@ -35,8 +39,10 @@ import koog.chat.ui.common.resources.Res
 import koog.chat.ui.common.resources.back_button
 import koog.chat.ui.common.resources.ic_arrow_back
 import koog.chat.ui.common.theme.AppTheme
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
@@ -44,6 +50,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun ChatScreen(viewModel: ChatViewModel) {
     ChatContent(
         viewStateFlow = viewModel.viewState,
+        messagesFlow = viewModel.messagesFlow,
         onEvent = viewModel::onEvent,
     )
 }
@@ -51,6 +58,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
 @Composable
 internal fun ChatContent(
     viewStateFlow: StateFlow<ChatViewState>,
+    messagesFlow: Flow<PagingData<ChatEntry>>,
     onEvent: (ChatViewEvent) -> Unit,
 ) {
     val viewState = viewStateFlow.collectAsState()
@@ -94,6 +102,7 @@ internal fun ChatContent(
             is ChatViewState.Success -> {
                 ChatSuccessContent(
                     state = state,
+                    messagesFlow = messagesFlow,
                     onEvent = onEvent,
                     modifier = Modifier.padding(contentPadding),
                 )
@@ -117,14 +126,16 @@ internal fun ChatContent(
 @Composable
 private fun ChatSuccessContent(
     state: ChatViewState.Success,
+    messagesFlow: Flow<PagingData<ChatEntry>>,
     onEvent: (ChatViewEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+    val lazyMessages = messagesFlow.collectAsLazyPagingItems()
 
-    LaunchedEffect(state.messages.size) {
-        if (state.messages.isNotEmpty()) {
-            listState.animateScrollToItem(state.messages.size - 1)
+    LaunchedEffect(lazyMessages.itemCount) {
+        if (lazyMessages.itemCount > 0) {
+            listState.animateScrollToItem(lazyMessages.itemCount - 1)
         }
     }
 
@@ -139,32 +150,12 @@ private fun ChatSuccessContent(
                 ),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacing.bubbleGap),
         ) {
-            items(state.messages, key = { it.id }) { message ->
-                when (message.type) {
-                    ChatMessageType.USER -> {
-                        UserBubble(text = message.content)
-                    }
-
-                    ChatMessageType.THINKING -> {
-                        ThinkingBlock(
-                            content = message.content,
-                            isStreaming = message.isStreaming,
-                            isAdvancedMode = state.isAdvancedMode,
-                        )
-                    }
-
-                    ChatMessageType.ASSISTANT -> {
-                        AssistantBubble(
-                            text = message.content,
-                            metrics = message.metrics,
-                            isAdvancedMode = state.isAdvancedMode,
-                        )
-                    }
-
-                    ChatMessageType.ERROR -> {
-                        ErrorBubble(message = message.content)
-                    }
-                }
+            items(
+                count = lazyMessages.itemCount,
+                key = lazyMessages.itemKey { it.id },
+            ) { index ->
+                val entry = lazyMessages[index] ?: return@items
+                ChatEntryItem(entry = entry, isAdvancedMode = state.isAdvancedMode, isGenerating = state.isGenerating)
             }
         }
         InputBar(
@@ -182,42 +173,136 @@ private fun ChatSuccessContent(
     }
 }
 
-private val previewMessages =
+@Composable
+private fun ChatEntryItem(
+    entry: ChatEntry,
+    isAdvancedMode: Boolean,
+    isGenerating: Boolean,
+) {
+    when (entry.type) {
+        ChatEntryType.USER_PROMPT -> {
+            UserBubble(text = entry.content)
+        }
+
+        ChatEntryType.THINKING -> {
+            ThinkingBlock(
+                content = entry.thinkingContent.orEmpty(),
+                isStreaming = isGenerating,
+                isAdvancedMode = isAdvancedMode,
+            )
+        }
+
+        ChatEntryType.SUCCESS_RESPONSE -> {
+            AssistantBubble(
+                text = entry.content,
+                metrics = entry.toMetricsOrNull(),
+                isAdvancedMode = isAdvancedMode,
+            )
+        }
+
+        ChatEntryType.ERROR_RESPONSE -> {
+            ErrorBubble(message = entry.content)
+        }
+    }
+}
+
+private fun ChatEntry.toMetricsOrNull(): Metrics? {
+    val tokens = tokensUsed
+    val tps = tokensPerSecond
+    val time = responseTimeMs
+    if (tokens == null || tps == null || time == null) return null
+    return Metrics(
+        responseTimeMs = time,
+        tokensPerSecond = tps.toFloat(),
+        tokensUsed = tokens.toInt(),
+    )
+}
+
+private const val PREVIEW_CHAT_ID = "preview"
+private const val PREVIEW_PROVIDER = "Ollama"
+private const val PREVIEW_MODEL_ID = "qwen3.5:0.8b"
+
+private val previewEntries =
     listOf(
-        ChatMessage(
+        ChatEntry(
             id = "1",
-            type = ChatMessageType.USER,
+            chatId = PREVIEW_CHAT_ID,
+            type = ChatEntryType.USER_PROMPT,
             content = "How does Compose Multiplatform work?",
+            thinkingContent = null,
+            llmConfigId = null,
+            llmProvider = PREVIEW_PROVIDER,
+            llmModelId = PREVIEW_MODEL_ID,
+            tokensUsed = null,
+            tokensPerSecond = null,
+            responseTimeMs = null,
+            timestamp = 1L,
         ),
-        ChatMessage(
+        ChatEntry(
             id = "2",
-            type = ChatMessageType.THINKING,
-            content = "The user is asking about Compose Multiplatform architecture.\nI'll explain the shared UI approach.",
-            isStreaming = false,
+            chatId = PREVIEW_CHAT_ID,
+            type = ChatEntryType.THINKING,
+            content = "",
+            thinkingContent = "The user is asking about Compose Multiplatform architecture.\nI'll explain the shared UI approach.",
+            llmConfigId = null,
+            llmProvider = PREVIEW_PROVIDER,
+            llmModelId = PREVIEW_MODEL_ID,
+            tokensUsed = null,
+            tokensPerSecond = null,
+            responseTimeMs = null,
+            timestamp = 2L,
         ),
-        ChatMessage(
+        ChatEntry(
             id = "3",
-            type = ChatMessageType.ASSISTANT,
+            chatId = PREVIEW_CHAT_ID,
+            type = ChatEntryType.SUCCESS_RESPONSE,
             content = "Compose Multiplatform lets you share UI code across Android, iOS, desktop, and web using Kotlin.",
-            metrics = Metrics(responseTimeMs = 1420, tokensPerSecond = 38f, tokensUsed = 512),
+            thinkingContent = null,
+            llmConfigId = null,
+            llmProvider = PREVIEW_PROVIDER,
+            llmModelId = PREVIEW_MODEL_ID,
+            tokensUsed = 512L,
+            tokensPerSecond = 38.0,
+            responseTimeMs = 1420L,
+            timestamp = 3L,
         ),
-        ChatMessage(
+        ChatEntry(
             id = "4",
-            type = ChatMessageType.USER,
+            chatId = PREVIEW_CHAT_ID,
+            type = ChatEntryType.USER_PROMPT,
             content = "How do I handle theme colours?",
+            thinkingContent = null,
+            llmConfigId = null,
+            llmProvider = PREVIEW_PROVIDER,
+            llmModelId = PREVIEW_MODEL_ID,
+            tokensUsed = null,
+            tokensPerSecond = null,
+            responseTimeMs = null,
+            timestamp = 4L,
         ),
-        ChatMessage(
+        ChatEntry(
             id = "5",
-            type = ChatMessageType.ERROR,
+            chatId = PREVIEW_CHAT_ID,
+            type = ChatEntryType.ERROR_RESPONSE,
             content = "Connection to Ollama timed out. Retrying…",
+            thinkingContent = null,
+            llmConfigId = null,
+            llmProvider = PREVIEW_PROVIDER,
+            llmModelId = PREVIEW_MODEL_ID,
+            tokensUsed = null,
+            tokensPerSecond = null,
+            responseTimeMs = null,
+            timestamp = 5L,
         ),
     )
+
+private val previewMessagesFlow: Flow<PagingData<ChatEntry>> = flowOf(PagingData.from(previewEntries))
 
 private fun successState(isAdvancedMode: Boolean) =
     ChatViewState.Success(
         chatTitle = "Compose Multiplatform",
-        messages = previewMessages,
-        selectedModel = "qwen3.5:0.8b",
+        selectedModel = PREVIEW_MODEL_ID,
+        selectedConfigId = null,
         isAdvancedMode = isAdvancedMode,
         totalTokens = 1284,
     )
@@ -226,28 +311,44 @@ private fun successState(isAdvancedMode: Boolean) =
 @Composable
 internal fun ChatScreenSimplePreviewLight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = false)), onEvent = {})
+        ChatContent(
+            viewStateFlow = MutableStateFlow(successState(isAdvancedMode = false)),
+            messagesFlow = previewMessagesFlow,
+            onEvent = {},
+        )
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
 internal fun ChatScreenSimplePreviewNight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = false)), onEvent = {})
+        ChatContent(
+            viewStateFlow = MutableStateFlow(successState(isAdvancedMode = false)),
+            messagesFlow = previewMessagesFlow,
+            onEvent = {},
+        )
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
 @Composable
 internal fun ChatScreenAdvancedPreviewLight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = true)), onEvent = {})
+        ChatContent(
+            viewStateFlow = MutableStateFlow(successState(isAdvancedMode = true)),
+            messagesFlow = previewMessagesFlow,
+            onEvent = {},
+        )
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
 @Composable
 internal fun ChatScreenAdvancedPreviewNight() =
     AppTheme {
-        ChatContent(viewStateFlow = MutableStateFlow(successState(isAdvancedMode = true)), onEvent = {})
+        ChatContent(
+            viewStateFlow = MutableStateFlow(successState(isAdvancedMode = true)),
+            messagesFlow = previewMessagesFlow,
+            onEvent = {},
+        )
     }
 
 @Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
@@ -256,6 +357,7 @@ internal fun ChatScreenLoadingPreviewLight() =
     AppTheme {
         ChatContent(
             viewStateFlow = MutableStateFlow(ChatViewState.Loading),
+            messagesFlow = previewMessagesFlow,
             onEvent = {},
         )
     }
@@ -266,6 +368,7 @@ internal fun ChatScreenLoadingPreviewNight() =
     AppTheme {
         ChatContent(
             viewStateFlow = MutableStateFlow(ChatViewState.Loading),
+            messagesFlow = previewMessagesFlow,
             onEvent = {},
         )
     }
