@@ -19,6 +19,12 @@ internal class ChatEntryRepositoryRoom(
             .pagingSource(chatId)
             .map { it.toDomain() }
 
+    override suspend fun getAll(chatId: String): List<ChatEntry> =
+        provider.database
+            .chatEntryDao()
+            .getAll(chatId)
+            .map { it.toDomain() }
+
     override suspend fun save(entry: ChatEntry) = provider.database.chatEntryDao().upsert(entry.toEntity())
 
     override suspend fun update(entry: ChatEntry) = provider.database.chatEntryDao().upsert(entry.toEntity())

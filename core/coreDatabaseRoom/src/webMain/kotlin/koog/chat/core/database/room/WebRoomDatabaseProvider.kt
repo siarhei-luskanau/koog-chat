@@ -7,13 +7,15 @@ import org.w3c.dom.Worker
 import kotlin.js.ExperimentalWasmJsInterop
 
 @Single
+@OptIn(ExperimentalWasmJsInterop::class)
 internal class WebRoomDatabaseProvider : RoomDatabaseProvider {
-    @OptIn(ExperimentalWasmJsInterop::class)
     override val database: AppDatabase by lazy {
-        val worker = Worker(scriptURL = "")
         Room
             .databaseBuilder<AppDatabase>(name = "koog_chat.db")
-            .setDriver(driver = WebWorkerSQLiteDriver(worker = worker))
+            .setDriver(driver = WebWorkerSQLiteDriver(worker = createWorker()))
             .build()
     }
 }
+
+@OptIn(ExperimentalWasmJsInterop::class)
+private fun createWorker(): Worker = js("""new Worker(new URL("sql-js-worker/worker.js", import.meta.url))""")

@@ -11,6 +11,9 @@ interface ChatEntryDao {
     @Query("SELECT * FROM chat_entries WHERE chatId = :chatId ORDER BY timestamp ASC")
     fun pagingSource(chatId: String): PagingSource<Int, ChatEntryEntity>
 
+    @Query("SELECT * FROM chat_entries WHERE chatId = :chatId ORDER BY timestamp ASC")
+    suspend fun getAll(chatId: String): List<ChatEntryEntity>
+
     @Upsert
     suspend fun upsert(entity: ChatEntryEntity)
 }
