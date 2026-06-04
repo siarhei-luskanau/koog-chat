@@ -4,7 +4,7 @@ import koog.chat.core.database.api.entity.LlmConfig
 import kotlinx.coroutines.flow.Flow
 
 interface LlmConfigRepository {
-    fun getAll(): Flow<List<LlmConfig>>
+    fun getAllFlow(): Flow<List<LlmConfig>>
 
     suspend fun save(config: LlmConfig)
 

@@ -26,6 +26,10 @@ kotlin {
         }
         webMain.dependencies {
             implementation(libs.androidx.sqlite.web)
+            implementation(npm("sql-js-worker", layout.projectDirectory.dir("worker").asFile))
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
