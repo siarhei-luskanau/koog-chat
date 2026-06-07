@@ -6,7 +6,6 @@ import koog.chat.core.database.api.repository.LlmConfigRepository
 import koog.chat.core.database.room.RoomDatabaseProvider
 import koog.chat.core.database.room.entity.LlmConfigEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import org.koin.core.annotation.Single
@@ -25,7 +24,7 @@ internal class LlmConfigRepositoryRoom(
                         LlmConfig(
                             id = "default-ollama-qwen",
                             provider = LlmProvider.Ollama,
-                            modelId = "qwen3.5:0.8b",
+                            modelId = "gpt-oss:20b",
                             apiKey = null,
                             providerUrl = null,
                             isDefault = true,

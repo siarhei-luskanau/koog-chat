@@ -11,11 +11,21 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class ChatScreenCommonTest {
     @Test
-    fun simpleCheck() =
+    fun simpleMode() =
         runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
             awaitIdle()
             onRoot().printToLog("StartTag")
             onNodeWithText("Compose Multiplatform").assertIsDisplayed()
+        }
+
+    @Test
+    fun advancedMode() =
+        runComposeUiTest {
+            setContent { ChatScreenAdvancedPreviewLight() }
+            awaitIdle()
+            onRoot().printToLog("StartTag")
+            onNodeWithText("Compose Multiplatform").assertIsDisplayed()
+            onNodeWithText("Σ 1.2k tokens").assertIsDisplayed()
         }
 }

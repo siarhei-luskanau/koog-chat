@@ -9,11 +9,18 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 internal class ChatListScreenCommonTest {
     @Test
-    fun simpleCheck() =
+    fun success() =
         runComposeUiTest {
             setContent { ChatListScreenSuccessPreviewLight() }
             awaitIdle()
             onRoot().printToLog("StartTag")
-            // onAllNodes(hasClickAction()).assertCountEquals(3)
+        }
+
+    @Test
+    fun empty() =
+        runComposeUiTest {
+            setContent { ChatListScreenEmptyPreviewLight() }
+            awaitIdle()
+            onRoot().printToLog("StartTag")
         }
 }
