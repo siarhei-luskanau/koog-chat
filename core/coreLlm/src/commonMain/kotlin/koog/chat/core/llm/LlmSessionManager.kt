@@ -7,7 +7,6 @@ import koog.chat.core.database.api.entity.LlmConfig
 import koog.chat.core.database.api.repository.ChatEntryRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

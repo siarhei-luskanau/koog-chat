@@ -25,6 +25,6 @@ val navigationModule =
             ChatListScreen(viewModel = koinViewModel())
         }
         navigation<AppRoutes.Chat> { route ->
-            ChatScreen(viewModel = koinViewModel { parametersOf(route.chatId) })
+            ChatScreen(viewModel = koinViewModel(key = route.chatId) { parametersOf(route.chatId) })
         }
     }

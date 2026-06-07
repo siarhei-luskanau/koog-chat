@@ -10,10 +10,14 @@ import androidx.paging.insertSeparators
 import androidx.paging.map
 import koog.chat.core.database.api.entity.Chat
 import koog.chat.core.database.api.repository.ChatRepository
+import koog.chat.core.pref.AppMode
+import koog.chat.core.pref.PrefService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -28,12 +32,21 @@ import kotlin.uuid.Uuid
 class ChatListViewModel(
     @Provided private val navigationCallback: ChatListNavigationCallback,
     @Provided private val chatRepository: ChatRepository,
+    @Provided private val prefService: PrefService,
 ) : ViewModel() {
     val isSearchVisible: StateFlow<Boolean>
         field = MutableStateFlow(false)
 
     val searchQuery: StateFlow<String>
         field = MutableStateFlow("")
+
+    val isSettingsVisible: StateFlow<Boolean>
+        field = MutableStateFlow(false)
+
+    val currentAppMode: StateFlow<AppMode> =
+        prefService
+            .getAppMode()
+            .stateIn(viewModelScope, SharingStarted.Eagerly, AppMode.Simple)
 
     val pagingDataFlow: Flow<PagingData<ChatPagingItem>> =
         Pager(config = PagingConfig(pageSize = 20)) {
@@ -83,6 +96,14 @@ class ChatListViewModel(
 
                 is ChatListViewEvent.SearchQueryChanged -> {
                     searchQuery.value = event.query
+                }
+
+                ChatListViewEvent.ToggleSettings -> {
+                    isSettingsVisible.value = !isSettingsVisible.value
+                }
+
+                is ChatListViewEvent.SetAppMode -> {
+                    prefService.setAppMode(event.mode)
                 }
             }
         }

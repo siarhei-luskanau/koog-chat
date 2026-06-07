@@ -1,9 +1,11 @@
 package koog.chat.ui.chatlist
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,18 +13,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,11 +41,15 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
+import koog.chat.core.pref.AppMode
 import koog.chat.ui.common.components.ChatListItem
 import koog.chat.ui.common.resources.Res
+import koog.chat.ui.common.resources.app_mode
 import koog.chat.ui.common.resources.ic_add
 import koog.chat.ui.common.resources.ic_chat
 import koog.chat.ui.common.resources.ic_search
+import koog.chat.ui.common.resources.mode_advanced
+import koog.chat.ui.common.resources.mode_simple
 import koog.chat.ui.common.resources.new_chat
 import koog.chat.ui.common.resources.no_chats_yet
 import koog.chat.ui.common.resources.search_chats
@@ -64,6 +72,8 @@ fun ChatListScreen(viewModel: ChatListViewModel) {
         pagingDataFlow = viewModel.pagingDataFlow,
         isSearchVisible = viewModel.isSearchVisible,
         searchQuery = viewModel.searchQuery,
+        isSettingsVisible = viewModel.isSettingsVisible,
+        currentAppMode = viewModel.currentAppMode,
         onEvent = viewModel::onEvent,
     )
 }
@@ -73,17 +83,21 @@ internal fun ChatListContent(
     pagingDataFlow: Flow<PagingData<ChatPagingItem>>,
     isSearchVisible: StateFlow<Boolean>,
     searchQuery: StateFlow<String>,
+    isSettingsVisible: StateFlow<Boolean>,
+    currentAppMode: StateFlow<AppMode>,
     onEvent: (ChatListViewEvent) -> Unit,
 ) {
     val lazyPagingItems = pagingDataFlow.collectAsLazyPagingItems()
     val isSearchShown by isSearchVisible.collectAsState()
     val query by searchQuery.collectAsState()
+    val isSettingsShown by isSettingsVisible.collectAsState()
+    val appMode by currentAppMode.collectAsState()
 
     Scaffold(
         topBar = {
             ChatListTopBar(
                 onSearchClick = { onEvent(ChatListViewEvent.ToggleSearch) },
-                onSettingsClick = {},
+                onSettingsClick = { onEvent(ChatListViewEvent.ToggleSettings) },
             )
         },
         floatingActionButton = {
@@ -187,6 +201,67 @@ internal fun ChatListContent(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+    if (isSettingsShown) {
+        SettingsBottomSheet(
+            currentMode = appMode,
+            onModeSelected = { onEvent(ChatListViewEvent.SetAppMode(it)) },
+            onDismiss = { onEvent(ChatListViewEvent.ToggleSettings) },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsBottomSheet(
+    currentMode: AppMode,
+    onModeSelected: (AppMode) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 32.dp),
+        ) {
+            Text(
+                text = stringResource(Res.string.app_mode),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 12.dp),
+            )
+            AppMode.entries.forEach { mode ->
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onModeSelected(mode) }
+                            .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = mode == currentMode,
+                        onClick = { onModeSelected(mode) },
+                    )
+                    Text(
+                        text =
+                            stringResource(
+                                when (mode) {
+                                    AppMode.Simple -> Res.string.mode_simple
+                                    AppMode.Advanced -> Res.string.mode_advanced
+                                },
+                            ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
                 }
             }
         }
@@ -337,6 +412,8 @@ internal fun ChatListScreenSuccessPreviewLight() =
             pagingDataFlow = flowOf(PagingData.from(previewSuccessItems)),
             isSearchVisible = MutableStateFlow(false),
             searchQuery = MutableStateFlow(""),
+            isSettingsVisible = MutableStateFlow(false),
+            currentAppMode = MutableStateFlow(AppMode.Simple),
             onEvent = {},
         )
     }
@@ -349,6 +426,8 @@ internal fun ChatListScreenSuccessPreviewNight() =
             pagingDataFlow = flowOf(PagingData.from(previewSuccessItems)),
             isSearchVisible = MutableStateFlow(false),
             searchQuery = MutableStateFlow(""),
+            isSettingsVisible = MutableStateFlow(false),
+            currentAppMode = MutableStateFlow(AppMode.Simple),
             onEvent = {},
         )
     }
@@ -372,6 +451,8 @@ internal fun ChatListScreenEmptyPreviewLight() =
                 ),
             isSearchVisible = MutableStateFlow(false),
             searchQuery = MutableStateFlow(""),
+            isSettingsVisible = MutableStateFlow(false),
+            currentAppMode = MutableStateFlow(AppMode.Simple),
             onEvent = {},
         )
     }
@@ -395,6 +476,8 @@ internal fun ChatListScreenEmptyPreviewNight() =
                 ),
             isSearchVisible = MutableStateFlow(false),
             searchQuery = MutableStateFlow(""),
+            isSettingsVisible = MutableStateFlow(false),
+            currentAppMode = MutableStateFlow(AppMode.Simple),
             onEvent = {},
         )
     }
@@ -407,6 +490,8 @@ internal fun ChatListScreenLoadingPreviewLight() =
             pagingDataFlow = flow { },
             isSearchVisible = MutableStateFlow(false),
             searchQuery = MutableStateFlow(""),
+            isSettingsVisible = MutableStateFlow(false),
+            currentAppMode = MutableStateFlow(AppMode.Simple),
             onEvent = {},
         )
     }
@@ -419,6 +504,8 @@ internal fun ChatListScreenLoadingPreviewNight() =
             pagingDataFlow = flow { },
             isSearchVisible = MutableStateFlow(false),
             searchQuery = MutableStateFlow(""),
+            isSettingsVisible = MutableStateFlow(false),
+            currentAppMode = MutableStateFlow(AppMode.Simple),
             onEvent = {},
         )
     }
