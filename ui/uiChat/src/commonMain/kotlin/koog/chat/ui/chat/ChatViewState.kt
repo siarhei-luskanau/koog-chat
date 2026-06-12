@@ -1,5 +1,7 @@
 package koog.chat.ui.chat
 
+import koog.chat.core.database.api.entity.LlmConfig
+
 sealed interface ChatViewState {
     data object Loading : ChatViewState
 
@@ -11,6 +13,8 @@ sealed interface ChatViewState {
         val selectedConfigId: String?,
         val isAdvancedMode: Boolean,
         val totalTokens: Int?,
+        val availableConfigs: List<LlmConfig> = emptyList(),
+        val isModelPickerVisible: Boolean = false,
     ) : ChatViewState
 
     data class Error(

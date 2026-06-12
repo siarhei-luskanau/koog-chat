@@ -1,9 +1,11 @@
 package koog.chat.ui.chat
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,9 +15,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,11 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import koog.chat.core.database.api.entity.ChatEntry
 import koog.chat.core.database.api.entity.ChatEntryType
+import koog.chat.core.database.api.entity.LlmConfig
+import koog.chat.core.database.api.entity.LlmProvider
 import koog.chat.ui.common.components.AssistantBubble
 import koog.chat.ui.common.components.ErrorBubble
 import koog.chat.ui.common.components.InputBar
@@ -38,6 +47,7 @@ import koog.chat.ui.common.components.UserBubble
 import koog.chat.ui.common.resources.Res
 import koog.chat.ui.common.resources.back_button
 import koog.chat.ui.common.resources.ic_arrow_back
+import koog.chat.ui.common.resources.select_model
 import koog.chat.ui.common.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -119,6 +129,14 @@ internal fun ChatContent(
                     )
                 }
             }
+        }
+        if (state is ChatViewState.Success && state.isModelPickerVisible) {
+            ModelPickerBottomSheet(
+                configs = state.availableConfigs,
+                selectedConfigId = state.selectedConfigId,
+                onSelect = { onEvent(ChatViewEvent.SelectModel(it)) },
+                onDismiss = { onEvent(ChatViewEvent.PickModel) },
+            )
         }
     }
 }
@@ -202,6 +220,61 @@ private fun ChatEntryItem(
 
         ChatEntryType.ERROR_RESPONSE -> {
             ErrorBubble(message = entry.content)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModelPickerBottomSheet(
+    configs: List<LlmConfig>,
+    selectedConfigId: String?,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 32.dp),
+        ) {
+            Text(
+                text = stringResource(Res.string.select_model),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 12.dp),
+            )
+            configs.forEach { config ->
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(config.id) }
+                            .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = config.id == selectedConfigId,
+                        onClick = { onSelect(config.id) },
+                    )
+                    Column(modifier = Modifier.padding(start = 8.dp)) {
+                        Text(
+                            text = config.modelId,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            text = config.provider.name,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -368,6 +441,48 @@ internal fun ChatScreenLoadingPreviewNight() =
     AppTheme {
         ChatContent(
             viewStateFlow = MutableStateFlow(ChatViewState.Loading),
+            messagesFlow = previewMessagesFlow,
+            onEvent = {},
+        )
+    }
+
+private val previewConfigs =
+    listOf(
+        LlmConfig(id = "1", provider = LlmProvider.Ollama, modelId = "qwen3.5:0.8b", apiKey = null, providerUrl = null, isDefault = true),
+        LlmConfig(id = "2", provider = LlmProvider.Ollama, modelId = "gpt-oss:20b", apiKey = null, providerUrl = null, isDefault = false),
+    )
+
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_NO)
+@Composable
+internal fun ChatScreenModelPickerPreviewLight() =
+    AppTheme {
+        ChatContent(
+            viewStateFlow =
+                MutableStateFlow(
+                    successState(isAdvancedMode = false).copy(
+                        isModelPickerVisible = true,
+                        availableConfigs = previewConfigs,
+                        selectedConfigId = "1",
+                    ),
+                ),
+            messagesFlow = previewMessagesFlow,
+            onEvent = {},
+        )
+    }
+
+@Preview(uiMode = AndroidUiModes.UI_MODE_NIGHT_YES)
+@Composable
+internal fun ChatScreenModelPickerPreviewNight() =
+    AppTheme {
+        ChatContent(
+            viewStateFlow =
+                MutableStateFlow(
+                    successState(isAdvancedMode = false).copy(
+                        isModelPickerVisible = true,
+                        availableConfigs = previewConfigs,
+                        selectedConfigId = "1",
+                    ),
+                ),
             messagesFlow = previewMessagesFlow,
             onEvent = {},
         )

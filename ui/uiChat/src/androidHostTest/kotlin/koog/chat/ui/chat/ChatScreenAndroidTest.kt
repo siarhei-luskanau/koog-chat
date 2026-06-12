@@ -65,4 +65,21 @@ internal class ChatScreenAndroidTest {
             awaitIdle()
             onRoot().captureRoboImage()
         }
+
+    @Test
+    fun previewModelPickerLight() =
+        runComposeUiTest {
+            setContent { ChatScreenModelPickerPreviewLight() }
+            awaitIdle()
+            onRoot().captureRoboImage()
+        }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun previewModelPickerNight() =
+        runComposeUiTest {
+            setContent { ChatScreenModelPickerPreviewNight() }
+            awaitIdle()
+            onRoot().captureRoboImage()
+        }
 }
