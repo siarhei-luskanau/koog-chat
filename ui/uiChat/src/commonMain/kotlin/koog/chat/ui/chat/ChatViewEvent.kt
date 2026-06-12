@@ -10,4 +10,8 @@ sealed interface ChatViewEvent {
     data object SendMessage : ChatViewEvent
 
     data object PickModel : ChatViewEvent
+
+    data class SelectModel(
+        val configId: String,
+    ) : ChatViewEvent
 }

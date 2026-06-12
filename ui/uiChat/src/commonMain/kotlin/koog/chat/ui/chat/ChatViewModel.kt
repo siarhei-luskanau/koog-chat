@@ -80,6 +80,8 @@ class ChatViewModel(
             selectedConfigId = selectedConfigId,
             isAdvancedMode = appMode == AppMode.Advanced,
             totalTokens = null,
+            availableConfigs = configs,
+            isModelPickerVisible = current?.isModelPickerVisible ?: false,
         )
     }
 
@@ -94,12 +96,39 @@ class ChatViewModel(
     fun onEvent(event: ChatViewEvent) {
         viewModelScope.launch {
             when (event) {
-                ChatViewEvent.NavigateBack -> navigationCallback.goBack()
-                is ChatViewEvent.InputChanged -> handleInputChanged(event.text)
-                ChatViewEvent.SendMessage -> handleSendMessage()
-                ChatViewEvent.PickModel -> Unit
+                ChatViewEvent.NavigateBack -> {
+                    navigationCallback.goBack()
+                }
+
+                is ChatViewEvent.InputChanged -> {
+                    handleInputChanged(event.text)
+                }
+
+                ChatViewEvent.SendMessage -> {
+                    handleSendMessage()
+                }
+
+                ChatViewEvent.PickModel -> {
+                    val current = viewState.value as? ChatViewState.Success ?: return@launch
+                    viewState.value = current.copy(isModelPickerVisible = !current.isModelPickerVisible)
+                }
+
+                is ChatViewEvent.SelectModel -> {
+                    handleSelectModel(event.configId)
+                }
             }
         }
+    }
+
+    private fun handleSelectModel(configId: String) {
+        val current = viewState.value as? ChatViewState.Success ?: return
+        val config = current.availableConfigs.firstOrNull { it.id == configId }
+        viewState.value =
+            current.copy(
+                selectedConfigId = configId,
+                selectedModel = config?.modelId ?: current.selectedModel,
+                isModelPickerVisible = false,
+            )
     }
 
     private fun handleInputChanged(text: String) {
