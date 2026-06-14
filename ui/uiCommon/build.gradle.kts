@@ -1,26 +1,11 @@
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
+
 plugins {
     id("composeMultiplatformConvention")
-    alias(libs.plugins.roborazzi)
+    id("roborazziConvention")
 }
 
-kotlin {
-    android.namespace = "koog.chat.ui.common"
-    sourceSets {
-        androidHostTest.dependencies {
-            implementation(libs.robolectric)
-            implementation(libs.roborazzi)
-            implementation(libs.roborazzi.compose)
-        }
-
-        jvmTest.dependencies {
-            implementation(libs.roborazzi.compose.desktop)
-        }
-
-        iosTest.dependencies {
-            implementation(libs.roborazzi.compose.ios)
-        }
-    }
-}
+kotlin.android.namespace = "koog.chat.ui.common"
 
 compose.resources {
     publicResClass = true
@@ -28,5 +13,5 @@ compose.resources {
     generateResClass = always
 }
 
-// Directory for reference images
-roborazzi.outputDir.set(file("src/screenshots"))
+@OptIn(ExperimentalRoborazziApi::class)
+roborazzi.generateComposePreviewRobolectricTests.packages = listOfNotNull(kotlin.android.namespace)

@@ -9,7 +9,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import koog.chat.core.database.room.RoomDatabaseProvider
-import koog.chat.di.app.IS_DATA_STUB_ENABLED
 import koog.chat.navigation.NavApp
 import koog.chat.navigation.navigationModule
 import koog.chat.ui.common.theme.AppTheme
