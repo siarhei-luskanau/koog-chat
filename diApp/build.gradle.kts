@@ -1,13 +1,14 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 
 plugins {
     id("composeMultiplatformConvention")
+    id("roborazziConvention")
     alias(libs.plugins.buildConfig)
-    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
-    android.namespace = "koog.chat.di.app"
+    android.namespace = "koog.chat.di"
     sourceSets {
         commonMain.dependencies {
             implementation(libs.androidx.room3.runtime)
@@ -22,25 +23,8 @@ kotlin {
             implementation(projects.ui.uiCommon)
             implementation(projects.ui.uiSplash)
         }
-
-        jvmTest.dependencies {
-            implementation(libs.roborazzi.compose.desktop)
-        }
-
-        androidHostTest.dependencies {
-            implementation(libs.robolectric)
-            implementation(libs.roborazzi)
-            implementation(libs.roborazzi.compose)
-        }
-
-        iosTest.dependencies {
-            implementation(libs.roborazzi.compose.ios)
-        }
     }
 }
-
-// Directory for reference images
-roborazzi.outputDir.set(file("src/screenshots"))
 
 buildConfig {
     packageName(kotlin.android.namespace.orEmpty())
@@ -51,3 +35,6 @@ buildConfig {
     val isDataStubEnabled = isDataStubEnabled { gradleLocalProperties(rootDir, providers) }
     buildConfigField("Boolean", "IS_DATA_STUB_ENABLED", "$isDataStubEnabled")
 }
+
+@OptIn(ExperimentalRoborazziApi::class)
+roborazzi.generateComposePreviewRobolectricTests.packages = listOf("koog.chat.di")

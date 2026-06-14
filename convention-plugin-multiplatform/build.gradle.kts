@@ -8,6 +8,7 @@ dependencies {
     implementation(libs.jetbrains.compose.plugin)
     implementation(libs.koin.plugin)
     implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.roborazzi.gradle.plugin)
 
     // Somewhat hacky way to access libs.version.toml in convention plugins.
     // IntelliJ can mark this code red, but it actually compiles.

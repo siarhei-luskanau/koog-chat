@@ -121,6 +121,7 @@ kotlin {
 
 tasks.withType<Test>().matching { it.name.contains("AndroidHostTest") }.configureEach {
     exclude("**/*CommonTest*")
+    systemProperties["robolectric.pixelCopyRenderMode"] = "hardware"
 }
 
 tasks.withType<KotlinJsTest>().matching { it.name == "jsBrowserTest" }.configureEach {

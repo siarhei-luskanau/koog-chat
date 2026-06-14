@@ -39,3 +39,4 @@ Deploy a dir `app/webApp/build/dist/wasmJs/productionExecutable` to a web server
 
 ### Screenshot Testing
 Record a screenshot: `./gradlew recordRoborazzi -DIS_DATA_STUB_ENABLED=true`
+Verify a screenshot: `./gradlew verifyRoborazzi -DIS_DATA_STUB_ENABLED=true`
