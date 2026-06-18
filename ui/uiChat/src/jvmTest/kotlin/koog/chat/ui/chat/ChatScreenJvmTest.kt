@@ -15,6 +15,7 @@ internal class ChatScreenJvmTest {
     fun previewSimpleLight() =
         runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -23,6 +24,7 @@ internal class ChatScreenJvmTest {
     fun previewAdvancedLight() =
         runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -31,6 +33,7 @@ internal class ChatScreenJvmTest {
     fun previewLoadingLight() =
         runComposeUiTest {
             setContent { ChatScreenLoadingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -39,6 +42,7 @@ internal class ChatScreenJvmTest {
     fun previewModelPickerLight() =
         runComposeUiTest {
             setContent { ChatScreenModelPickerPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).captureRoboImage()
         }
@@ -47,6 +51,7 @@ internal class ChatScreenJvmTest {
     fun previewModelPickerNight() =
         runComposeUiTest {
             setContent { ChatScreenModelPickerPreviewNight() }
+            waitForIdle()
             awaitIdle()
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).captureRoboImage()
         }

@@ -13,6 +13,7 @@ internal class KoinAppIosTest {
     fun previewLight() =
         runComposeUiTest {
             setContent { KoinAppPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.di.KoinAppIosTest.previewLight.png")
         }

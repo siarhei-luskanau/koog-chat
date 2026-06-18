@@ -12,6 +12,7 @@ internal class InputBarJvmTest {
     fun inputBarEmptyLight() =
         runComposeUiTest {
             setContent { InputBarEmptyPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -20,6 +21,7 @@ internal class InputBarJvmTest {
     fun inputBarFilledLight() =
         runComposeUiTest {
             setContent { InputBarFilledPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

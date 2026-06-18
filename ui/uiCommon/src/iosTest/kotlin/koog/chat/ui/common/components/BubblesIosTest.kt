@@ -13,6 +13,7 @@ internal class BubblesIosTest {
     fun userBubbleLight() =
         runComposeUiTest {
             setContent { UserBubblePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.BubblesIosTest.userBubbleLight.png")
         }
@@ -21,6 +22,7 @@ internal class BubblesIosTest {
     fun assistantBubbleSimpleLight() =
         runComposeUiTest {
             setContent { AssistantBubbleSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.BubblesIosTest.assistantBubbleSimpleLight.png")
         }
@@ -29,6 +31,7 @@ internal class BubblesIosTest {
     fun assistantBubbleAdvancedLight() =
         runComposeUiTest {
             setContent { AssistantBubbleAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.BubblesIosTest.assistantBubbleAdvancedLight.png")
         }
@@ -37,6 +40,7 @@ internal class BubblesIosTest {
     fun thinkingBlockStreamingLight() =
         runComposeUiTest {
             setContent { ThinkingBlockStreamingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.BubblesIosTest.thinkingBlockStreamingLight.png")
         }
@@ -45,6 +49,7 @@ internal class BubblesIosTest {
     fun thinkingBlockAdvancedLight() =
         runComposeUiTest {
             setContent { ThinkingBlockAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.BubblesIosTest.thinkingBlockAdvancedLight.png")
         }
@@ -53,6 +58,7 @@ internal class BubblesIosTest {
     fun errorBubbleLight() =
         runComposeUiTest {
             setContent { ErrorBubblePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.BubblesIosTest.errorBubbleLight.png")
         }

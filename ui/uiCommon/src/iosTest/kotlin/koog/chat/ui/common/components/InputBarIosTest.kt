@@ -13,6 +13,7 @@ internal class InputBarIosTest {
     fun inputBarEmptyLight() =
         runComposeUiTest {
             setContent { InputBarEmptyPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.InputBarIosTest.inputBarEmptyLight.png")
         }
@@ -21,6 +22,7 @@ internal class InputBarIosTest {
     fun inputBarFilledLight() =
         runComposeUiTest {
             setContent { InputBarFilledPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.InputBarIosTest.inputBarFilledLight.png")
         }

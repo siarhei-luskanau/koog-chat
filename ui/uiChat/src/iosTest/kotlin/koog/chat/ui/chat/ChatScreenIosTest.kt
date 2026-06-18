@@ -16,6 +16,7 @@ internal class ChatScreenIosTest {
     fun previewSimpleLight() =
         runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewSimpleLight.png")
         }
@@ -24,6 +25,7 @@ internal class ChatScreenIosTest {
     fun previewAdvancedLight() =
         runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewAdvancedLight.png")
         }
@@ -32,6 +34,7 @@ internal class ChatScreenIosTest {
     fun previewLoadingLight() =
         runComposeUiTest {
             setContent { ChatScreenLoadingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewLoadingLight.png")
         }
@@ -40,6 +43,7 @@ internal class ChatScreenIosTest {
     fun previewModelPickerLight() =
         runComposeUiTest {
             setContent { ChatScreenModelPickerPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onNode(isRoot() and hasAnyDescendant(hasText("Select model")))
                 .captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewModelPickerLight.png")
@@ -49,6 +53,7 @@ internal class ChatScreenIosTest {
     fun previewModelPickerNight() =
         runComposeUiTest {
             setContent { ChatScreenModelPickerPreviewNight() }
+            waitForIdle()
             awaitIdle()
             onNode(isRoot() and hasAnyDescendant(hasText("Select model")))
                 .captureRoboImage(this, filePath = "koog.chat.ui.chat.ChatScreenIosTest.previewModelPickerNight.png")

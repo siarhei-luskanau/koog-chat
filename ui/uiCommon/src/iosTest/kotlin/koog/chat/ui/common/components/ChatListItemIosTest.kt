@@ -13,6 +13,7 @@ internal class ChatListItemIosTest {
     fun chatListItemLight() =
         runComposeUiTest {
             setContent { ChatListItemPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.ChatListItemIosTest.chatListItemLight.png")
         }

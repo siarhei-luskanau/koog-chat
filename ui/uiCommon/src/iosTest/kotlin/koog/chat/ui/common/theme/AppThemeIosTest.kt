@@ -13,6 +13,7 @@ internal class AppThemeIosTest {
     fun colors() =
         runComposeUiTest {
             setContent { AppThemeColorsPreview() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.theme.AppThemeIosTest.colors.png")
         }

@@ -12,6 +12,7 @@ internal class BubblesJvmTest {
     fun userBubbleLight() =
         runComposeUiTest {
             setContent { UserBubblePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -20,6 +21,7 @@ internal class BubblesJvmTest {
     fun assistantBubbleSimpleLight() =
         runComposeUiTest {
             setContent { AssistantBubbleSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -28,6 +30,7 @@ internal class BubblesJvmTest {
     fun assistantBubbleAdvancedLight() =
         runComposeUiTest {
             setContent { AssistantBubbleAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -36,6 +39,7 @@ internal class BubblesJvmTest {
     fun thinkingBlockStreamingLight() =
         runComposeUiTest {
             setContent { ThinkingBlockStreamingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -44,6 +48,7 @@ internal class BubblesJvmTest {
     fun thinkingBlockAdvancedLight() =
         runComposeUiTest {
             setContent { ThinkingBlockAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -52,6 +57,7 @@ internal class BubblesJvmTest {
     fun errorBubbleLight() =
         runComposeUiTest {
             setContent { ErrorBubblePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

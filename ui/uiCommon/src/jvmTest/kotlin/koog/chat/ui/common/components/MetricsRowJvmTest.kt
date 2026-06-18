@@ -12,6 +12,7 @@ internal class MetricsRowJvmTest {
     fun metricsRowLight() =
         runComposeUiTest {
             setContent { MetricsRowPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

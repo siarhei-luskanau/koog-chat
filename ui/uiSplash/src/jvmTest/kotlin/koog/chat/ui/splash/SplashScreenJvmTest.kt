@@ -12,6 +12,7 @@ internal class SplashScreenJvmTest {
     fun loadingLight() =
         runComposeUiTest {
             setContent { SplashScreenLoadingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -20,6 +21,7 @@ internal class SplashScreenJvmTest {
     fun successLight() =
         runComposeUiTest {
             setContent { SplashScreenSuccessPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -28,6 +30,7 @@ internal class SplashScreenJvmTest {
     fun errorLight() =
         runComposeUiTest {
             setContent { SplashScreenErrorPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

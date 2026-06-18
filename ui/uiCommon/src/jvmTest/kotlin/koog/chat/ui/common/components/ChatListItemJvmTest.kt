@@ -12,6 +12,7 @@ internal class ChatListItemJvmTest {
     fun chatListItemLight() =
         runComposeUiTest {
             setContent { ChatListItemPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

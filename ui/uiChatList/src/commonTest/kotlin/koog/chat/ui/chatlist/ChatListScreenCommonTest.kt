@@ -12,6 +12,7 @@ internal class ChatListScreenCommonTest {
     fun success() =
         runComposeUiTest {
             setContent { ChatListScreenSuccessPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().printToLog("StartTag")
         }
@@ -20,6 +21,7 @@ internal class ChatListScreenCommonTest {
     fun empty() =
         runComposeUiTest {
             setContent { ChatListScreenEmptyPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().printToLog("StartTag")
         }

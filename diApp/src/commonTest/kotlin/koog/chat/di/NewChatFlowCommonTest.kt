@@ -19,6 +19,7 @@ internal class NewChatFlowCommonTest {
     fun test() =
         runComposeUiTest {
             setContent { KoinApp() }
+            waitForIdle()
             awaitIdle()
             try {
                 waitUntilAtLeastOneExists(hasText("No chats yet"), timeoutMillis = 5_000L)
@@ -27,9 +28,11 @@ internal class NewChatFlowCommonTest {
             }
             onNodeWithText("No chats yet").assertIsDisplayed()
             onNodeWithText("New chat", useUnmergedTree = true).performClick()
+            waitForIdle()
             awaitIdle()
             waitUntilAtLeastOneExists(hasContentDescription("Back"), timeoutMillis = 5_000L)
             onNodeWithContentDescription("Back").performClick()
+            waitForIdle()
             awaitIdle()
             waitUntilDoesNotExist(hasText("No chats yet"), timeoutMillis = 5_000L)
             waitUntilAtLeastOneExists(hasText("Chat with a user"), timeoutMillis = 5_000L)

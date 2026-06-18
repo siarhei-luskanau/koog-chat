@@ -12,6 +12,7 @@ internal class ChatListScreenJvmTest {
     fun successPreviewLight() =
         runComposeUiTest {
             setContent { ChatListScreenSuccessPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -20,6 +21,7 @@ internal class ChatListScreenJvmTest {
     fun emptyPreviewLight() =
         runComposeUiTest {
             setContent { ChatListScreenEmptyPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -28,6 +30,7 @@ internal class ChatListScreenJvmTest {
     fun loadingPreviewLight() =
         runComposeUiTest {
             setContent { ChatListScreenLoadingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

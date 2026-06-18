@@ -13,6 +13,7 @@ internal class ChatHeaderIosTest {
     fun chatHeaderSimpleLight() =
         runComposeUiTest {
             setContent { ChatHeaderSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.ChatHeaderIosTest.chatHeaderSimpleLight.png")
         }
@@ -21,6 +22,7 @@ internal class ChatHeaderIosTest {
     fun chatHeaderAdvancedLight() =
         runComposeUiTest {
             setContent { ChatHeaderAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.ChatHeaderIosTest.chatHeaderAdvancedLight.png")
         }

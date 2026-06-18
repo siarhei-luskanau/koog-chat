@@ -13,6 +13,7 @@ internal class SplashScreenIosTest {
     fun loadingLight() =
         runComposeUiTest {
             setContent { SplashScreenLoadingPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.loadingLight.png")
         }
@@ -21,6 +22,7 @@ internal class SplashScreenIosTest {
     fun successLight() =
         runComposeUiTest {
             setContent { SplashScreenSuccessPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.successLight.png")
         }
@@ -29,6 +31,7 @@ internal class SplashScreenIosTest {
     fun errorLight() =
         runComposeUiTest {
             setContent { SplashScreenErrorPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.splash.SplashScreenIosTest.errorLight.png")
         }

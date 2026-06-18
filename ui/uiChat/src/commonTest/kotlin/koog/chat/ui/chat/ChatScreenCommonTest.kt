@@ -17,6 +17,7 @@ internal class ChatScreenCommonTest {
     fun simpleMode() =
         runComposeUiTest {
             setContent { ChatScreenSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().printToLog("StartTag")
             onNodeWithText("Compose Multiplatform").assertIsDisplayed()
@@ -26,6 +27,7 @@ internal class ChatScreenCommonTest {
     fun advancedMode() =
         runComposeUiTest {
             setContent { ChatScreenAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().printToLog("StartTag")
             onNodeWithText("Compose Multiplatform").assertIsDisplayed()
@@ -36,6 +38,7 @@ internal class ChatScreenCommonTest {
     fun modelPickerLight() =
         runComposeUiTest {
             setContent { ChatScreenModelPickerPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).printToLog("StartTag")
             onNodeWithText("Select model").assertIsDisplayed()
@@ -45,6 +48,7 @@ internal class ChatScreenCommonTest {
     fun modelPickerNight() =
         runComposeUiTest {
             setContent { ChatScreenModelPickerPreviewNight() }
+            waitForIdle()
             awaitIdle()
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).printToLog("StartTag")
             onNodeWithText("Select model").assertIsDisplayed()

@@ -13,6 +13,7 @@ internal class MetricsRowIosTest {
     fun metricsRowLight() =
         runComposeUiTest {
             setContent { MetricsRowPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage(this, filePath = "koog.chat.ui.common.components.MetricsRowIosTest.metricsRowLight.png")
         }

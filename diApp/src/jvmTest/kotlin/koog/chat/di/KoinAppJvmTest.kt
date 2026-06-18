@@ -12,6 +12,7 @@ internal class KoinAppJvmTest {
     fun previewLight() =
         runComposeUiTest {
             setContent { KoinAppPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }

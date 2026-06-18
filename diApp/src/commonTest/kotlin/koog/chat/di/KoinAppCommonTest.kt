@@ -14,6 +14,7 @@ internal class KoinAppCommonTest {
     fun simpleCheck() =
         runComposeUiTest {
             setContent { KoinApp() }
+            waitForIdle()
             awaitIdle()
             onRoot().printToLog("StartTag")
             onNodeWithContentDescription("KoinApp").assertIsDisplayed()

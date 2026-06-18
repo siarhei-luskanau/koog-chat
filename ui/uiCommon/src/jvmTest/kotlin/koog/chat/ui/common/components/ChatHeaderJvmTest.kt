@@ -12,6 +12,7 @@ internal class ChatHeaderJvmTest {
     fun chatHeaderSimpleLight() =
         runComposeUiTest {
             setContent { ChatHeaderSimplePreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
@@ -20,6 +21,7 @@ internal class ChatHeaderJvmTest {
     fun chatHeaderAdvancedLight() =
         runComposeUiTest {
             setContent { ChatHeaderAdvancedPreviewLight() }
+            waitForIdle()
             awaitIdle()
             onRoot().captureRoboImage()
         }
