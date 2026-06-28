@@ -6,6 +6,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.test.waitUntilAtLeastOneExists
 import io.github.takahirom.roborazzi.captureRoboImage
 import kotlin.test.Test
 
@@ -44,6 +45,7 @@ internal class ChatScreenJvmTest {
             setContent { ChatScreenModelPickerPreviewLight() }
             waitForIdle()
             awaitIdle()
+            waitUntilAtLeastOneExists(hasText("Select model"), timeoutMillis = 5_000L)
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).captureRoboImage()
         }
 
@@ -53,6 +55,7 @@ internal class ChatScreenJvmTest {
             setContent { ChatScreenModelPickerPreviewNight() }
             waitForIdle()
             awaitIdle()
+            waitUntilAtLeastOneExists(hasText("Select model"), timeoutMillis = 5_000L)
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).captureRoboImage()
         }
 }

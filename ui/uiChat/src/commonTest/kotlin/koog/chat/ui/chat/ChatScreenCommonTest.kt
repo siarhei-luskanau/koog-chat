@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToLog
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.test.waitUntilAtLeastOneExists
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -40,6 +41,7 @@ internal class ChatScreenCommonTest {
             setContent { ChatScreenModelPickerPreviewLight() }
             waitForIdle()
             awaitIdle()
+            waitUntilAtLeastOneExists(hasText("Select model"), timeoutMillis = 5_000L)
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).printToLog("StartTag")
             onNodeWithText("Select model").assertIsDisplayed()
         }
@@ -50,6 +52,7 @@ internal class ChatScreenCommonTest {
             setContent { ChatScreenModelPickerPreviewNight() }
             waitForIdle()
             awaitIdle()
+            waitUntilAtLeastOneExists(hasText("Select model"), timeoutMillis = 5_000L)
             onNode(isRoot() and hasAnyDescendant(hasText("Select model"))).printToLog("StartTag")
             onNodeWithText("Select model").assertIsDisplayed()
         }
