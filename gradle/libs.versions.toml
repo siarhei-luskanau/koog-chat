@@ -24,6 +24,7 @@ junit = "4.13.2"
 koin-bom = "4.2.2"
 koin-plugin = "1.0.1"
 koog = "1.0.0"
+koog-additions = "1.0.0-beta"
 kotlin = "2.4.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
@@ -80,6 +81,7 @@ koin-compose-navigation3 = { module = "io.insert-koin:koin-compose-navigation3" 
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
 koin-plugin = { module = "io.insert-koin.compiler.plugin:io.insert-koin.compiler.plugin.gradle.plugin", version.ref = "koin-plugin" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+koog-agents-additions = { module = "ai.koog:koog-agents-additions", version.ref = "koog-additions" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
