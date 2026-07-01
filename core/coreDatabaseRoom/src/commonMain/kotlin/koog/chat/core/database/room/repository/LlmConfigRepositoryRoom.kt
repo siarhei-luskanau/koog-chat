@@ -33,9 +33,17 @@ internal class LlmConfigRepositoryRoom(
                 }
             }.map { list -> list.map { it.toDomain() } }
 
+    override suspend fun getById(id: String): LlmConfig? =
+        provider.database
+            .llmConfigDao()
+            .getById(id)
+            ?.toDomain()
+
     override suspend fun save(config: LlmConfig) = provider.database.llmConfigDao().upsert(config.toEntity())
 
     override suspend fun delete(id: String) = provider.database.llmConfigDao().deleteById(id)
+
+    override suspend fun setDefault(id: String) = provider.database.llmConfigDao().setDefault(id)
 
     private fun LlmConfigEntity.toDomain() =
         LlmConfig(
