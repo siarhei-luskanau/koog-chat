@@ -16,6 +16,9 @@ updates:
         patterns:
           - "org.jetbrains.compose*"
           - "org.jetbrains.androidx*"
+      koog:
+        patterns:
+          - "ai.koog*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
