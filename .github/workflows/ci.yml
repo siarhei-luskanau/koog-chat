@@ -42,6 +42,7 @@ jobs:
 
 
   Tests:
+    needs: [ Android, Desktop, WebJs, WebWasmJs, iOS ]
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
@@ -104,6 +105,7 @@ jobs:
 
 
   VerifyScreenshotMatrixSetup:
+    needs: [ Android, Desktop, WebJs, WebWasmJs, iOS ]
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -150,6 +152,7 @@ jobs:
 
 
   Android:
+    needs: Lint
     runs-on: ubuntu-latest
     steps:
 
@@ -167,6 +170,7 @@ jobs:
 
 
   Desktop:
+    needs: Lint
     runs-on: ubuntu-latest
     steps:
 
@@ -184,6 +188,7 @@ jobs:
 
 
   WebJs:
+    needs: Lint
     runs-on: ubuntu-latest
     steps:
 
@@ -202,6 +207,7 @@ jobs:
 
 
   WebWasmJs:
+    needs: Lint
     runs-on: ubuntu-latest
     steps:
 
@@ -220,6 +226,7 @@ jobs:
 
 
   iOS:
+    needs: Lint
     runs-on: macOS-26
     steps:
 
