@@ -1,0 +1,3 @@
+[*.{kt,kts}]
+max-line-length = 120
+ktlint_function_naming_ignore_when_annotated_with = Composable
