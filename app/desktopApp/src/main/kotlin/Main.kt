@@ -8,7 +8,7 @@ import java.awt.Dimension
 internal fun main() =
     application {
         Window(
-            title = "compose-multiplatform-template",
+            title = "koog-chat",
             state = rememberWindowState(width = 800.dp, height = 600.dp),
             onCloseRequest = ::exitApplication,
         ) {

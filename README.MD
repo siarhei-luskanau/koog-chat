@@ -1,4 +1,4 @@
-# compose-multiplatform-template
+# koog-chat
 
 ### Android
 To run the application on android device/emulator:
