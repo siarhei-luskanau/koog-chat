@@ -1,4 +1,4 @@
-rootProject.name = "compose-multiplatform-template"
+rootProject.name = "koog-chat"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
