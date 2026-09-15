@@ -1,0 +1,97 @@
+{
+  "description": "Machine-checkable, user-facing Definition of Done for Koog Chat. Each entry's state moves to 'passing' only after its verificationCommand has actually been carried out and succeeded — never self-declared by the agent that implemented it (see AGENTS.md hard constraint #13). Convention (this IS the schema, enforced informally until docs/TASKS.md row 13 wires a real check): verificationCommand is a string starting with either './gradlew ' (an automated command) or 'manual: ' (a human/agent-observable procedure); it may combine both, separated by '; '. relatedTasks are row numbers in docs/TASKS.md's table.",
+  "states": ["not_started", "active", "blocked", "passing"],
+  "features": [
+    {
+      "id": "F01",
+      "behavior": "User can chat with a local Ollama model with no sign-in and no network beyond localhost.",
+      "verificationCommand": "manual: fresh install, no Firebase config, no sign-in, send a message, get a response from a local Ollama server",
+      "state": "not_started",
+      "relatedTasks": [1, 2, 4]
+    },
+    {
+      "id": "F02",
+      "behavior": "User can add an LlmConfig for OpenAI, Anthropic, or Google and switch between providers/models per chat via the model picker.",
+      "verificationCommand": "manual: add one LlmConfig per non-Ollama provider, send a message with each via the chat screen's model picker, verify a real response",
+      "state": "not_started",
+      "relatedTasks": [4, 9, 11]
+    },
+    {
+      "id": "F03",
+      "behavior": "User can sign in with Google from any platform (Android/iOS/Desktop/JS/WasmJs).",
+      "verificationCommand": "manual: sign-in flow completes and coreAuthApi.currentUser reflects it, on each of the 5 targets, against the docs/TASKS.md row 5 test Firebase project",
+      "state": "not_started",
+      "relatedTasks": [5, 6]
+    },
+    {
+      "id": "F04",
+      "behavior": "After signing in on two devices, chats created on one device appear on the other.",
+      "verificationCommand": "manual: two-device sync round-trip test against the row 5 test Firebase project",
+      "state": "not_started",
+      "relatedTasks": [5, 7, 9]
+    },
+    {
+      "id": "F05",
+      "behavior": "The app is fully functional (create/view/delete chats, chat with a configured provider) when signed out or when Firebase is entirely unconfigured — no sync, no crash, no degraded chat experience.",
+      "verificationCommand": "manual: build with no Firebase config present, exercise full chat flow",
+      "state": "not_started",
+      "relatedTasks": [6, 7, 9]
+    },
+    {
+      "id": "F06",
+      "behavior": "API keys entered into LlmConfig never appear in Firestore, under any sync state.",
+      "verificationCommand": "manual: inspect Firestore documents after sync with an LlmConfig that has an apiKey set — field must be absent",
+      "state": "not_started",
+      "relatedTasks": [7]
+    },
+    {
+      "id": "F07",
+      "behavior": "On a wide window (desktop/tablet-landscape/large web viewport), the conversation list and the open chat render as two side-by-side panes; on a narrow window, only one shows at a time.",
+      "verificationCommand": "manual: resize the desktop or web window across the adaptive breakpoint",
+      "state": "not_started",
+      "relatedTasks": [10, 11]
+    },
+    {
+      "id": "F08",
+      "behavior": "Assistant responses stream token-by-token with visible progress, and the finished message shows token count / tokens-per-second / response time (ChatEntry.tokensUsed/tokensPerSecond/responseTimeMs).",
+      "verificationCommand": "manual: send a message, observe incremental text and final stats",
+      "state": "not_started",
+      "relatedTasks": [4, 10]
+    },
+    {
+      "id": "F09",
+      "behavior": "User can add, edit, and delete LlmConfig entries, and mark one as default per provider.",
+      "verificationCommand": "manual: CRUD an LlmConfig through ui/uiLlmConfig; verify setting a new default for a provider clears the previous default for that same provider",
+      "state": "not_started",
+      "relatedTasks": [2, 12]
+    },
+    {
+      "id": "F10",
+      "behavior": "Signing out stops sync immediately but does not delete or corrupt any local chat data.",
+      "verificationCommand": "manual: sign out, verify all local chats still present and editable",
+      "state": "not_started",
+      "relatedTasks": [6, 7, 9]
+    },
+    {
+      "id": "F11",
+      "behavior": "Editing/appending to the same chat from two signed-in devices converges to the most recent write, without duplicating or losing entries.",
+      "verificationCommand": "commonTest covering every LWW ordering case; manual: two-device conflict test against the row 5 test Firebase project",
+      "state": "not_started",
+      "relatedTasks": [5, 7]
+    },
+    {
+      "id": "F12",
+      "behavior": "The app builds and launches on all five targets: Android, iOS, Desktop, JS, WasmJs.",
+      "verificationCommand": "./gradlew :app:desktopApp:run; manual: launch on Android/iOS/JS/WasmJs",
+      "state": "not_started",
+      "relatedTasks": [1, 3, 8]
+    },
+    {
+      "id": "F13",
+      "behavior": "CI fails the build if this file is malformed, or if any entry claims 'passing' without a real verification procedure.",
+      "verificationCommand": "./gradlew checkFeatureList",
+      "state": "not_started",
+      "relatedTasks": [13]
+    }
+  ]
+}

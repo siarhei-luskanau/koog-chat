@@ -25,7 +25,9 @@ misconfiguration that isolated screen tests (`SplashScreenCommonTest`,
 ## `jvmTest` — Roborazzi screenshot capture
 
 JVM-only tests. Every module with `id("roborazziConvention")` applied
-(`uiCommon`, `uiMain`, `uiSplash`, `diApp`) gets a screenshot test auto-generated for
+(`uiCommon`, `uiSplash`, `diApp`, and — per `docs/TASKS.md` rows 9/11 — `uiChatList`,
+`uiChat`, `uiLlmConfig`, `uiAuth`, `uiSettings` once they exist; `uiMain` is removed) gets
+a screenshot test auto-generated for
 every `@Preview` composable (via `roborazzi.generateComposePreviewRobolectricTests`), run
 under `jvmTest` using the desktop Compose renderer. You don't write these by hand — add a
 `@Preview`, then:
@@ -89,3 +91,22 @@ as `androidHostTest` applies here (see above).
 | Browser-only behavior | `jsBrowserTest` / `wasmJsBrowserTest` |
 | iOS-only behavior | `iosSimulatorArm64Test` (`iosTest` source set) |
 | A real user flow across screens (splash → main) | `diApp`'s `KoinAppCommonTest` (`commonTest`) |
+
+## Auth/sync — always test against `*Fake`, never real Firebase
+
+No automated test anywhere in this repo talks to real Firebase/KMPAuth. `coreAuthFake`
+and `coreSyncFake` (see `docs/architecture.md`) are what `commonTest` binds for anything
+exercising sign-in state or sync — the same way `coreNetworkKtor`'s
+`TestCoreNetworkKtorModule` + `ktor-client-mock` keep network tests off the real network.
+Three things specifically need `commonTest` coverage once `coreAuthApi`/`coreSyncApi`
+exist:
+
+- **LWW merge logic** — pure function over `(local updatedAt, remote updatedAt, isDeleted)`
+  triples; deterministic, no coroutines/IO needed, easy to hit every ordering case.
+- **Auth-state → sync-activation wiring** — a fake `AuthApi` flipping from signed-out to
+  signed-in should be observed to start `coreSyncFake`'s (or a test double's) `start()`,
+  and signing out should stop it without touching already-written Room rows.
+- **Streaming/session-manager throttle logic** — a fake `LlmService` emitting a canned
+  `StreamFrame` sequence (`TextDelta`×N, `End`) drives `LlmSessionManager`; assert the
+  ~150ms persistence throttle doesn't drop the final chunk and that `ChatEntryType`
+  finalizes to `SUCCESS_RESPONSE`/`ERROR_RESPONSE` correctly.

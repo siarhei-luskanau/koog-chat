@@ -6,42 +6,29 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Current state
 
-- Phase 1 (Instructions layer) done: `AGENTS.md`, `docs/architecture.md`,
-  `docs/testing.md`, `docs/quality-gates.md` exist and are current.
-- Phase 2 (Continuity across sessions) done: `docs/PROGRESS.md`, `docs/DECISIONS.md`,
-  and `AGENTS.md` Session Exit Checklist all in place.
-- Phase 3 (WIP + termination criteria) done: WIP=1 rule and the "feature complete means
-  Layer 3, not just compiles" rule were already in `AGENTS.md` constraints #10–11 and
-  `docs/quality-gates.md`'s Layer 1/2/2b/3 structure; added `docs/TASKS.md` (the
-  remaining piece) and linked it from `AGENTS.md`.
-- Phase 4 (E2E test + architectural constraint) done: `diApp`'s `KoinAppCommonTest`
-  (`commonTest`) now pauses `mainClock` to observe `Splash:` before resuming and
-  asserting `Main:`, exercising the real Koin + navigation graph end-to-end — verified
-  via `./gradlew :diApp:jvmTest --tests "template.di.KoinAppCommonTest"`. Root
-  `build.gradle.kts` gained a `checkModuleBoundaries` task enforcing the `*Impl` half of
-  the architecture rule (only `diApp` may depend on `coreDatabaseRoom`/`coreNetworkKtor`/
-  `corePrefDatastore`), wired into the CI `Lint` job and `docs/quality-gates.md`. See
-  `docs/DECISIONS.md` for why the check doesn't also restrict `ui/*` dependents, and why
-  it's implemented via `gradle.projectsEvaluated` instead of a plain `doLast`.
-
-- Phase 5 (Observability) done: `.github/pull_request_template.md` mirrors the Layer
-  1/2/2b/3 termination criteria and points to CI artifact names for evidence.
-  `docs/quality-gates.md`'s Roborazzi row claimed diffs were "uploaded on CI" but the
-  `VerifyScreenshot` job had no upload step — added one (`roborazzi-diff-<module>-<os>`,
-  failure-only) to `ci.yml` so the doc claim is actually true, matching the pattern
-  already used by the `Tests`/`Coverage` jobs.
-
-- Phase 6 (Loop engineering) done: added
-  `.claude/skills/scaffold-core-module-pair/SKILL.md` — scaffolds a new `core/*Api` +
-  `core/*Impl` pair (module creation, `settings.gradle.kts`, `diApp` wiring, `kover`
-  aggregation, `checkModuleBoundaries` allowlist) — and validated it by scaffolding a
-  throwaway `coreThrowawayApi`/`coreThrowawayFake` pair through all four steps
-  (`ktlintCheck`/`detekt`, module `assemble`, `checkModuleBoundaries`,
-  `KoinAppCommonTest`) before reverting it. Also added a "Parallel agent work (git
-  worktrees)" section to `AGENTS.md` documenting `.claude/worktrees/` (locally excluded
-  via `.git/info/exclude`) as the mechanism for running independent agents without file
-  collisions. Graph engineering stays explicitly deferred per the plan — no
-  competing autonomous loops exist on this repo yet.
+- The repo is at the `koog-chat` baseline: package root
+  `template.*`, 15 Gradle modules (3 `app/*` + 7 `core/*` + `diApp` + `navigation` + 3
+  `ui/*`; `app/iosApp` is a separate Xcode project, not a Gradle module) plus the harness
+  docs that came with the template.
+- **Documentation/design phase for the "Koog Chat" rewrite is complete**: `AGENTS.md`,
+  `docs/architecture.md`, `docs/testing.md`, `docs/quality-gates.md`,
+  `docs/DECISIONS.md`, and `docs/TASKS.md` now describe the target architecture (Koog
+  1.2.0 multi-provider LLM chat, KMPAuth+GitLive Google sign-in, Firestore LWW sync,
+  Nav3 adaptive list-detail). New harness artifacts `docs/features.json`,
+  `docs/setup-firebase.md`, and `docs/agent-workflow.md` were added alongside them, and
+  a validation pass caught and fixed several ordering/consistency issues in that first
+  draft (undefined porting source, a Firebase-setup task ordered after the auth/sync
+  tasks that need it, a constraint that contradicted the sync-gating design it was meant
+  to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
+  **No Koog Chat code has been written yet** — every module in the target map beyond the
+  15 that already exist is still `not_started` in `docs/TASKS.md`.
+- Two open risks are flagged rather than resolved, because they need an actual build to
+  answer, not more research: (1) whether Koog's non-JVM executor construction
+  (`KtorKoogHttpClient.Factory()`) works as documented on iOS/JS/WasmJs — `docs/TASKS.md`
+  row 3; (2) whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
+  `firebase-kotlin-sdk 3.0.0-alpha02`'s own `1.10.2` pin — `docs/TASKS.md` row 8,
+  resolved right after the dependency lands (rows 5-7) and before any UI work is built
+  on top of a possibly-broken `wasmJs` target.
 
 ## In progress
 
@@ -53,5 +40,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Next steps
 
-- (none) — all planned phases complete. Revisit graph engineering only if multiple
-  long-running autonomous loops start operating on this repo concurrently.
+- Start `docs/TASKS.md` row 1 (rename `template.*` → `koog.chat.*`, rootProject →
+  `koog-chat`, app id `koog.chat.app`, and update the scaffold skill in the same pass) —
+  the only row that touches every existing module, so it goes first to avoid every later
+  row needing a rebase on top of it.

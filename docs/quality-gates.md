@@ -4,6 +4,20 @@ The exact commands CI runs, restated so you don't have to parse `.github/workflo
 to find your own Definition of Done. See `docs/testing.md` for what each test target
 covers.
 
+## Layer 0 — feature list integrity (planned, not yet wired)
+
+`docs/features.json` is the machine-checkable Definition of Done for user-facing
+features (see `docs/agent-workflow.md`). A `checkFeatureList` Gradle task is planned
+(`docs/TASKS.md` row 13) to fail the build if: the file isn't valid JSON, any entry is
+missing one of the fields documented in `features.json`'s own header (`id`, `behavior`,
+`verificationCommand`, `state`, `relatedTasks`), any entry is `passing` with an empty
+`verificationCommand`, or — only for entries whose `verificationCommand` begins with
+`./gradlew` — the referenced task doesn't exist. Entries whose `verificationCommand`
+begins with `manual:` are exempt from that last check by design; there is no
+"schema" file beyond this convention. Until the task exists, treat pass-state gating as
+a manual discipline: never flip a `docs/features.json` or `docs/TASKS.md` row to
+`passing` without having actually carried out its verification procedure.
+
 ## Layer 1 — static analysis (`Lint` job)
 
 ```
@@ -16,11 +30,14 @@ CI runs `ktlintFormat` and auto-commits the result on the PR branch, then fails 
 these locally before pushing so CI doesn't do the formatting for you.
 
 `checkModuleBoundaries` (root `build.gradle.kts`) is the executable form of the
-`*Api`/`*Impl` rule in `docs/architecture.md`: it inspects every subproject's declared
-dependencies and fails with a listed violation (`<module> -> <core/*Impl module>`) if
-anything other than `:diApp` depends on `coreDatabaseRoom`, `coreNetworkKtor`, or
-`corePrefDatastore`. Adding a new `core/*Impl` module? Add its path to
-`coreImplModulePaths` in `build.gradle.kts` too.
+`*Api`/`*Impl`/`*Fake` rule in `docs/architecture.md`: it inspects every subproject's
+declared dependencies and fails with a listed violation (`<module> -> <core/*Impl
+module>`) if anything other than `:diApp` depends on `coreDatabaseRoom`,
+`coreNetworkKtor`, or `corePrefDatastore`. As `coreLlmKoog`, `coreAuthFirebase`,
+`coreAuthFake`, `coreSyncFirestore`, and `coreSyncFake` are built out (see
+`docs/TASKS.md`), each one's path goes into `coreImplModulePaths` too — that list has no
+special case for `*Fake` vs `*Impl`, both are backend modules `diApp` alone may depend
+on.
 
 ## Layer 2 — tests (`Tests` job, matrix)
 

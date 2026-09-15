@@ -98,3 +98,139 @@ shows `Main` by the time any assertion runs; there'd be no way to prove `Splash`
 rendered by the real graph rather than skipped straight to `Main`. `mainClock.autoAdvance`
 only gates frame-based work (recomposition triggered by the test's synchronization loop),
 which is enough to hold the first frame steady for the assertion.
+
+## `*Fake` as a third module kind alongside `*Api`/`*Impl`, for auth and sync only
+
+**Decision:** `coreAuthApi` and `coreSyncApi` each get two backend modules —
+`coreAuthFirebase`/`coreSyncFirestore` (real) and `coreAuthFake`/`coreSyncFake` (no-op) —
+and `diApp` picks which pair to depend on based on whether a Firebase config is present
+at build time, not at runtime.
+
+**Rejected alternative:** a single `coreAuthFirebase`/`coreSyncFirestore` implementation
+with an internal `if (Firebase.isConfigured) ... else noop()` branch. Rejected for two
+reasons: it would force the Firebase/KMPAuth/Koog-client dependencies into every build
+regardless of whether the developer ever configures Firebase, and it would make "app
+works fully offline and unauthenticated" untestable in `commonTest` without either
+mocking Firebase internals or accepting that this critical path is only exercised
+manually. A compile-time module swap keeps the offline path real in tests (`coreAuthFake`
+*is* what `commonTest` runs against, not a stand-in for something else) and keeps
+Firebase entirely absent from a build that never configures it.
+
+**Non-obvious cost:** two backend modules to keep behaviorally consistent per capability
+instead of one — e.g. `coreSyncFake.syncState` must still emit the same `SyncState` shape
+`coreSyncFirestore` would, just permanently `Idle`/`Disabled`, or `ui/uiSettings` would
+need to special-case which implementation is bound.
+
+## KMPAuth (Google-only) + GitLive `signInWithCredential`, not `kmpauth-firebase`
+
+**Decision:** use `kmpauth-google` purely to obtain a Google ID token, then hand it to
+GitLive's `firebase-kotlin-sdk` (`Firebase.auth.signInWithCredential`) for the actual
+session. Firestore access relies on that same GitLive session.
+
+**Rejected alternative:** KMPAuth's own `kmpauth-firebase` artifact, which ships an
+independent Firebase Auth client (its own REST engine on JVM/WasmJs) rather than
+integrating with GitLive's. Using it alongside GitLive's `Firebase.firestore` would leave
+Firestore unauthenticated, since the two clients don't share session state at all.
+
+**Non-obvious cost / open risk:** GitLive's own JVM (desktop) `Firebase.auth` is backed by
+`firebase-java-sdk`, described by third parties as a minimal Auth implementation that may
+need manual session-token persistence via `FirebasePlatform` internals to survive past a
+single call. This needs explicit verification on the desktop target early — tracked in
+`docs/TASKS.md` — before relying on it for anything beyond a proof of concept.
+
+## `firebase-kotlin-sdk` pinned to `3.0.0-alpha02`, not the stable `2.7.0`
+
+**Decision:** pin GitLive's `firebase-kotlin-sdk` to `3.0.0-alpha02`.
+
+**Rejected alternative:** the latest stable `2.7.0`. Rejected because `2.7.0` has no
+`wasmJs` target at all — `3.0.0-alpha02` is the release that adds `wasmJs` with (per its
+release notes) full parity to the `js` target, which this app's target module list
+requires (see `docs/architecture.md`).
+
+**Non-obvious cost / open risk:** this repo's `libs.versions.toml` currently pins
+`kotlinx-coroutines = "1.11.0"`; GitLive's own `libs.versions.toml` pins `1.10.2` around
+the same alpha. Whether this is a real conflict (resolution failure, ABI mismatch on
+wasm) or a non-issue (transitive resolution just picks one) is unverified — resolve it by
+actually building the `wasmJs` target once `coreSyncFirestore`/`coreAuthFirebase` are
+added, before assuming either version number is final. Track as an early item in
+`docs/TASKS.md`, not something to guess at now.
+
+## No `SyncLevel` setting — API keys never sync, everything else always does
+
+**Decision:** there is exactly one sync scope. When signed in with Firebase configured,
+chats, chat entries, and `LlmConfig` rows (minus `apiKey`) sync automatically; there is no
+user-facing toggle for narrower or wider sync.
+
+**Rejected alternative:** a tiered `SyncLevel` preference (e.g. chats-only vs.
+chats-and-configs vs. also-API-keys) giving the user opt-in control over what syncs.
+Rejected as unnecessary product surface for a single, clear security line: API keys are
+secrets and should never leave the device, full stop, while everything else is
+low-sensitivity chat content the user already expects to follow them across devices once
+they've signed in. One scope means one code path to test instead of three, and removes an
+easy way to accidentally opt into syncing a secret.
+
+**Non-obvious cost:** if a future requirement genuinely needs finer-grained sync control,
+introducing it later is itself a decision that belongs in a new entry here, not a silent
+relaxation of hard constraint #12 in `AGENTS.md`.
+
+## Adaptive list-detail navigation via Nav3 `ListDetailSceneStrategy`
+
+**Decision:** the conversation list and chat detail screens are wired as the list/detail
+panes of Navigation3's `ListDetailSceneStrategy`
+(`androidx.compose.material3.adaptive.navigation3`), following the pattern already
+proven in [pixabayeye's `NavApp.kt`](https://github.com/siarhei-luskanau/pixabayeye).
+
+**Rejected alternative:** manually branching on `WindowSizeClass`/
+`currentWindowAdaptiveInfo()` inside a single composable to decide one-pane vs. two-pane
+layout. Rejected because `ListDetailSceneStrategy` already encapsulates that decision as
+part of Navigation3's scene-strategy mechanism — reimplementing it manually would
+duplicate logic Navigation3 already owns and this template already depends on
+(`jetbrains-compose-material3-adaptive-navigation3` is already a dependency for the
+existing `adaptive-navigation-suite` usage).
+
+**Non-obvious cost:** this is a *different* adaptive mechanism from
+`NavigationSuiteScaffold` (used elsewhere for bar/rail/drawer top-level switching, as seen
+in pixabayeye's separate `AppNavigationSuiteScaffold.kt`) — Koog Chat doesn't currently
+need a top-level tab switcher, so only the list-detail strategy is in scope. Don't conflate
+the two if a future feature needs one.
+
+## Koog (JetBrains) for the LLM layer, not direct per-provider SDKs or raw Ktor calls
+
+**Decision:** `coreLlmKoog` is built on `ai.koog:koog-agents:1.2.0` rather than calling
+OpenAI/Anthropic/Google/Ollama's HTTP APIs directly with `coreNetworkKtor`.
+
+**Rejected alternative:** hand-rolled Ktor clients per provider (what koog-chat-1 would
+have needed if it grew beyond Ollama on its own). Rejected because Koog already gives a
+single streaming/tool-calling/history abstraction across all four providers this app
+needs, and koog-chat-1's existing `LlmServiceKoog` already used Koog for its one provider
+— extending an existing dependency to more providers it already supports is strictly
+less work than replacing it with four bespoke clients.
+
+**Non-obvious cost:** Koog has no HTTP auto-discovery on non-JVM KMP targets (iOS/JS/
+WasmJs) — every non-JVM executor construction needs an explicit
+`KtorKoogHttpClient.Factory()`, and no verified code sample for this was found during
+research (see `docs/TASKS.md` row 3, the resulting spike). The Google/DeepSeek/Mistral
+clients are also beta — pin `ai.koog` versions deliberately, don't float them.
+
+## Last-write-wins on `updatedAt`, not a CRDT or server-authoritative merge
+
+**Decision:** conflicting edits to the same row from two devices resolve by comparing
+`updatedAt` timestamps — whichever write is newer wins outright, including a delete
+(`isDeleted = true`) beating an older concurrent edit.
+
+**Rejected alternative:** a CRDT-based merge (e.g. per-field merge, operational
+transform) that could, in principle, preserve both concurrent edits to different fields
+of the same row. Rejected as disproportionate for chat data: a `ChatEntry` is
+effectively append-only in normal use (users don't collaboratively edit the same message
+from two devices at once), so the only conflicts LWW handles worse than a CRDT would are
+edge cases (near-simultaneous edits to the *same* row's metadata, e.g. renaming a `Chat`
+on two devices within the same sync interval) that are rare, low-stakes, and easy for a
+user to notice and redo — not worth the implementation and testing cost of a merge
+algorithm.
+
+**Non-obvious cost:** clock skew between devices could make LWW pick the "wrong" (older
+wall-clock, later intent) write in the near-simultaneous case above. `updatedAt` is set
+locally by the writing device, not by a Firestore server timestamp — if this proves to be
+a real problem in practice (not just a theoretical one), switching to
+`FieldValue.serverTimestamp()` semantics is the fix, and would need its own
+`docs/DECISIONS.md` entry since it changes the merge rule's authority model.
