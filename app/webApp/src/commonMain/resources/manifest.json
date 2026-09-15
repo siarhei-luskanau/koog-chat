@@ -1,6 +1,6 @@
 {
-  "name": "compose-multiplatform-template",
-  "short_name": "compose-multiplatform-template",
+  "name": "koog-chat",
+  "short_name": "koog-chat",
   "icons": [
     {
       "src": "./android-chrome-192x192.png",
