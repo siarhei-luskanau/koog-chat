@@ -1,14 +1,22 @@
 # Tasks
 
 Ordered build-out plan for the Koog Chat rewrite (see `docs/PROGRESS.md`,
-`docs/architecture.md`). Each row is `description | verification command | state`.
-A verification command is either an actual shell command, or a `manual:` procedure a
-person or agent can literally carry out and observe the result of — never just "it
-compiles" or "the code looks right." States: `not_started`, `active`, `blocked`,
-`passing`. WIP=1: at most one row should be `active` at a time (see `AGENTS.md`). Rows
-are ordered — don't start row *N* while an earlier row it depends on isn't `passing`.
-Prune a row once it's merged to `main` and reflected in `docs/PROGRESS.md` — this list
-is working memory, not a changelog.
+`docs/architecture.md`) — this repo's **scope surface**: the table below is a linear
+dependency chain (a degenerate DAG, not a free-standing backlog), so "ordered" and
+"depends on the previous row" mean the same thing here unless a row says otherwise. Each
+row is `description | verification command | state`. A verification command is either an
+actual shell command, or a `manual:` procedure a person or agent can literally carry out
+and observe the result of — never just "it compiles" or "the code looks right." States:
+`not_started`, `active`, `blocked`, `passing`. WIP=1: at most one row should be `active`
+at a time (see `AGENTS.md`). Rows are ordered — don't start row *N* while an earlier row
+it depends on isn't `passing`. Prune a row once it's merged to `main` and reflected in
+`docs/PROGRESS.md` — this list is working memory, not a changelog.
+
+**Row 1 is the initialization phase**, not a feature row: it must leave the repo with a
+verified Startup Readiness Checklist — `ktlintCheck detekt` clean, the named
+`KoinAppCommonTest` passing, and the scaffold skill re-verified — *before* row 2 starts
+doing feature work on top of it. Don't blend the two; row 1 existing first in this table
+is deliberate, not incidental ordering.
 
 **Porting source:** [github.com/siarhei-luskanau/koog-chat-1](https://github.com/siarhei-luskanau/koog-chat-1)
 — an existing Ollama-only KMP chat app. Rows 2, 4, and 10 port specific pieces of it;

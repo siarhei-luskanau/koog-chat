@@ -4,6 +4,11 @@ The exact commands CI runs, restated so you don't have to parse `.github/workflo
 to find your own Definition of Done. See `docs/testing.md` for what each test target
 covers.
 
+These layers are a deliberate three-layer termination validation (static analysis →
+tests/integration → the app actually running end-to-end) — don't treat Layer 3 as
+optional polish once Layers 1-2 are green: a change isn't done until all three have
+actually been run, not just "the code looks right."
+
 ## Layer 0 — feature list integrity (planned, not yet wired)
 
 `docs/features.json` is the machine-checkable Definition of Done for user-facing

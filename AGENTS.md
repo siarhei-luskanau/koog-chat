@@ -132,7 +132,12 @@ Before making any change:
 4. If the row you're picking up depends on an earlier row that isn't `passing` yet, stop
    and say so — don't work out of order.
 
-## Session exit checklist
+This is this repo's Fresh Session Test: steps 1-3 alone must be enough to answer "what is
+this app, what's built vs. not, what's the one active task, and what command proves the
+baseline still works" from repo content alone — no replayed conversation required. If they
+aren't, `docs/PROGRESS.md` is stale; fix it before starting the row.
+
+## Session exit checklist (clock-out)
 
 Before ending a session with non-trivial changes:
 

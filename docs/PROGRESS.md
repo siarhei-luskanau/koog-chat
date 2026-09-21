@@ -38,6 +38,18 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 - (none)
 
+## Recently done
+
+- Cross-checked `AGENTS.md`/`docs/*` . Alignment was
+  already strong; added: clock-in/clock-out framing + a Fresh Session Test note to the
+  session checklists (`AGENTS.md`), a `docs/TASKS.md` row-1-is-the-initialization-phase
+  framing and "scope surface" terminology, a three-layer-termination-validation framing
+  in `docs/quality-gates.md`, and checkpoint/review-feedback-promotion/periodic-review
+  notes in `docs/agent-workflow.md`. Two deliberate divergences from the literal
+  file layout (one `docs/architecture.md` instead of per-module `ARCHITECTURE.md` files;
+  constraints inline in `AGENTS.md` instead of a separate `CONSTRAINTS.md`) are now
+  recorded in `docs/DECISIONS.md` instead of being silent gaps.
+
 ## Next steps
 
 - Start `docs/TASKS.md` row 1 (rename `template.*` → `koog.chat.*`, rootProject →

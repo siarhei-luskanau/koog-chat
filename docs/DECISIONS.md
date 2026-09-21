@@ -234,3 +234,37 @@ locally by the writing device, not by a Firestore server timestamp — if this p
 a real problem in practice (not just a theoretical one), switching to
 `FieldValue.serverTimestamp()` semantics is the fix, and would need its own
 `docs/DECISIONS.md` entry since it changes the merge rule's authority model.
+
+## One centralized `docs/architecture.md`, not a per-module `ARCHITECTURE.md` alongside each module
+
+**Decision:** module architecture lives in a single `docs/architecture.md` describing the
+whole target module map, rather than a separate `ARCHITECTURE.md` file next to each
+module's `build.gradle.kts`.
+
+**Rejected alternative:** a per-module doc placed adjacent to the code it describes (the
+harness-engineering literature's usual recommendation, on the theory that knowledge
+adjacent to code is cheaper to find and keep current than a centralized doc). Rejected
+*for now* because this repo is still pre-code — every module in the target map beyond the
+existing 15 baseline modules doesn't exist yet, so a per-module doc would sit next to
+nothing. Revisit this once `docs/TASKS.md` rows start landing real modules: a reasonable
+rule at that point is a short per-module `ARCHITECTURE.md` stub for any module whose
+constraints aren't obvious from its own code, while `docs/architecture.md` keeps the
+cross-module picture (dependency graph, the `*Api`/`*Impl`/`*Fake` rule) no single
+module's doc could own anyway.
+
+**Non-obvious cost:** until that revisit happens, a session working on one module has to
+read the whole architecture doc, not just its section — acceptable while the module count
+is small, worth re-checking once most of the target map exists.
+
+## Hard constraints stay inline in `AGENTS.md`, not a separate `CONSTRAINTS.md`
+
+**Decision:** the numbered "Hard constraints" section lives directly in `AGENTS.md`
+(13 items) rather than in its own `docs/CONSTRAINTS.md` file.
+
+**Rejected alternative:** splitting constraints into a dedicated file, on the theory that
+it keeps the entry file shorter. Rejected because the entry-file budget this repo targets
+(roughly 50-200 lines, with room for up to about 15 global hard constraints inline) is
+exactly what `AGENTS.md` is sized to — at 13 constraints and under 200 lines, moving them
+out would trade a one-file read for a two-file read without buying back any of the budget
+that actually matters. If the constraint count grows past ~15 or the file starts pushing
+past 200 lines, that's the trigger to split, not a fixed preference for one file over two.

@@ -72,7 +72,19 @@ Orchestrator → Validator agent    [same row, independent of the build agent]
                       "close enough."
 ```
 
-## Design questions (answered, per Lecture 14)
+**Checkpoints and resume state:** the graph's "checkpoint after every step, run with
+thread IDs for replay" primitive maps here to a git commit per `passing` row
+plus `docs/PROGRESS.md`'s current-state summary — there's no separate thread-id
+mechanism; resuming a session *is* reading the last commit + `docs/PROGRESS.md`.
+
+**Review feedback promotion:** if a validator raises the same kind of finding on two
+separate rows (not the same bug twice — the same *category*, e.g. "a ui/* module reached
+into a core/*Impl"), that's a signal the rule belongs in an executable check, not repeated
+prose review — `checkModuleBoundaries` exists precisely because this happened once
+already. The orchestrator, not the validator, decides whether to promote a recurring
+finding into a new Gradle-enforced check.
+
+## Design questions
 
 - **Which loops feed which?** Research → Build → Validate → Orchestrator's state update,
   strictly in that order for a given `docs/TASKS.md` row. Research can run ahead of the
@@ -91,3 +103,11 @@ Orchestrator → Validator agent    [same row, independent of the build agent]
   either requires a `docs/DECISIONS.md` entry, not a one-off exception. The 70% coverage
   floor (`docs/quality-gates.md`) and which `docs/features.json` entries exist are allowed
   to move as the app's scope evolves.
+
+## Periodic maintenance
+
+Once feature rows are actively landing (not during this pre-code documentation phase),
+revisit this file and `AGENTS.md` roughly monthly: for each harness artifact
+(`docs/TASKS.md`, `docs/features.json`, the checklists above), ask whether it's still
+earning its keep or has become ceremony nobody reads. Record the outcome (kept as-is / trimmed / dropped) as a `docs/DECISIONS.md` entry
+if anything changes, not silently.
