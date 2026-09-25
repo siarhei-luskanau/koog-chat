@@ -14,6 +14,12 @@ kotlin {
             implementation(projects.core.corePrefApi)
             implementation(projects.ui.uiCommon)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(projects.core.coreCommon)
+            implementation(projects.core.coreDatabaseApi)
+            implementation(projects.core.corePrefApi)
+        }
     }
 }
 

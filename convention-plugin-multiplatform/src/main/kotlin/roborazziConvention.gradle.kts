@@ -74,23 +74,6 @@ tasks.withType<Test>().configureEach {
         )
         systemProperty("androidx.sqlite.driver.bundled.name", sqliteNativesLibName)
     }
-
-    if (name.contains(other = "AndroidHostTest", ignoreCase = true)) {
-        // Robolectric reflectively pokes JDK internals (e.g. jdk.internal.access.SharedSecrets
-        // for ApplicationSharedMemory on SDK 37+); modern JDKs (17+) hide those by default.
-        jvmArgs(
-            "--add-opens=java.base/java.lang=ALL-UNNAMED",
-            "--add-opens=java.base/java.util=ALL-UNNAMED",
-            "--add-opens=java.base/java.io=ALL-UNNAMED",
-            "--add-opens=java.base/java.net=ALL-UNNAMED",
-            "--add-opens=java.base/java.security=ALL-UNNAMED",
-            "--add-opens=java.base/java.text=ALL-UNNAMED",
-            "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
-            "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
-            "--add-opens=java.base/jdk.internal.util.random=ALL-UNNAMED",
-            "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
-        )
-    }
 }
 
 roborazzi {
