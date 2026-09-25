@@ -80,6 +80,18 @@ statically.
 Runs `commonTest` + `iosTest` on a macOS CI runner. Same sqlite-bundled native workaround
 as `androidHostTest` applies here (see above).
 
+Gotcha: Compose Multiplatform's `ui-uikit` cinterop klib hardcodes
+`-L/Applications/Xcode_26.4.app/.../usr/lib/swift/iphonesimulator` in its `linkerOpts`,
+so linking fails with `library 'swiftCompatibility51' not found` wherever Xcode lives
+elsewhere. `composeMultiplatformConvention` adds the local toolchain's Swift lib dir
+(from `xcode-select -p`) to every Apple binary's linker opts. Keep it until a CMP release
+drops the hardcoded path.
+
+Gotcha: test binaries run via `simctl spawn` without an app sandbox, so
+`NSDocumentDirectory` is the simulator-wide `data/Documents`, shared with every other
+project's iOS tests. Storage file names must stay unique to this app
+(`koog_chat_app.*`); see `docs/DECISIONS.md`.
+
 ## Choosing a test type — quick reference
 
 | You need to test... | Use |

@@ -16,7 +16,7 @@ internal class AppStorageProviderJvm : StorageProvider {
                     System.getProperty("user.home"),
                     ".koog-chat-app",
                     "datastore",
-                    "app.pref.json",
+                    "koog_chat_app.pref.json",
                 ).joinToString(separator = File.separator),
             ).also { it.parentFile?.mkdirs() }
         return OkioStorage(

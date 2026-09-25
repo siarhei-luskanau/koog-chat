@@ -11,7 +11,7 @@ internal class AndroidRoomDatabaseProvider(
 ) : RoomDatabaseProvider {
     override val database: AppDatabase by lazy {
         val appContext = context.applicationContext
-        val dbFile = appContext.getDatabasePath("koog_chat.db").also { it.parentFile?.mkdirs() }
+        val dbFile = appContext.getDatabasePath("koog_chat_app.db").also { it.parentFile?.mkdirs() }
         Room
             .databaseBuilder<AppDatabase>(context = appContext, name = dbFile.absolutePath)
             .setDriver(driver = BundledSQLiteDriver())

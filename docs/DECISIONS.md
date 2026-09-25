@@ -269,18 +269,23 @@ out would trade a one-file read for a two-file read without buying back any of t
 that actually matters. If the constraint count grows past ~15 or the file starts pushing
 past 200 lines, that's the trigger to split, not a fixed preference for one file over two.
 
-## JVM desktop data lives under `~/.koog-chat-app`, not `~/.koog-chat`
+## Local storage is named `koog-chat-app`/`koog_chat_app`, not `koog-chat`/`koog_chat`
 
 **Decision:** the JVM `RoomDatabaseProvider` and DataStore `AppStorageProvider` store data
-under `~/.koog-chat-app/{room,datastore}`, named after the app id `koog.chat.app`.
+under `~/.koog-chat-app/{room,datastore}`, and on every platform the files are named
+`koog_chat_app.db` and `koog_chat_app.pref.json`, after the app id `koog.chat.app`.
 
 **Rejected alternative:** `~/.koog-chat`, the obvious name after the row-1 rename.
 Rejected because the porting source koog-chat-1 already uses exactly
 `~/.koog-chat/room/koog_chat.db` and `~/.koog-chat/datastore/app.pref.json` with a
 different Room schema. Sharing the path made Room fail its identity-hash check at runtime
 ("Room cannot verify the data integrity"), and a DataStore write from this app would
-overwrite koog-chat-1's preferences. Other platforms are sandboxed per app id or per
-origin, so only JVM needed a distinct directory.
+overwrite koog-chat-1's preferences. The iOS simulator has the same problem for tests:
+Kotlin/Native test binaries run via `simctl spawn` with no app sandbox, so
+`NSDocumentDirectory` is the simulator-wide `data/Documents` shared by every project's
+iOS tests, where koog-chat-1's `koog_chat.db` and `app.pref.json` already sit. The real
+apps are sandboxed per bundle id/origin; the distinct file names are what keep tests
+from colliding.
 
 **Non-obvious cost:** the JVM `commonTest`/`jvmTest` suites for `coreDatabaseRoom` and
 `corePrefDatastore` write to this real home directory, not a temp dir. That's inherited

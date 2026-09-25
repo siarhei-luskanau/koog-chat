@@ -11,7 +11,7 @@ internal class JvmRoomDatabaseProvider : RoomDatabaseProvider {
     override val database: AppDatabase by lazy {
         val dbFile =
             File(
-                listOf(System.getProperty("user.home"), ".koog-chat-app", "room", "koog_chat.db")
+                listOf(System.getProperty("user.home"), ".koog-chat-app", "room", "koog_chat_app.db")
                     .joinToString(separator = File.separator),
             ).also { it.parentFile?.mkdirs() }
         Room

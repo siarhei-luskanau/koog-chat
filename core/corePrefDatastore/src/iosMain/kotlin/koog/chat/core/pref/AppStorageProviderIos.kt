@@ -29,7 +29,7 @@ internal class AppStorageProviderIos : StorageProvider {
                             error = null,
                         )?.path +
                         Path.DIRECTORY_SEPARATOR +
-                        "app.pref.json"
+                        "koog_chat_app.pref.json"
                 ).toPath()
             },
         )
