@@ -11,7 +11,7 @@ koinCompiler {
 }
 
 kotlin {
-    android.namespace = "template.core.database.room"
+    android.namespace = "koog.chat.core.database.room"
     sourceSets {
         commonMain.dependencies {
             implementation(libs.androidx.room3.runtime)

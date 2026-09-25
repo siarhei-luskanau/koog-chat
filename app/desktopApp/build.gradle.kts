@@ -41,7 +41,7 @@ compose.desktop {
             }
             macOS {
                 iconFile.set(project.file("appIcons/MacosIcon.icns"))
-                bundleID = "org.company.app.desktopApp"
+                bundleID = "koog.chat.app"
             }
         }
     }

@@ -4,7 +4,7 @@ plugins {
 }
 
 kotlin {
-    android.namespace = "template.navigation"
+    android.namespace = "koog.chat.navigation"
     sourceSets {
         commonMain.dependencies {
             implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)

@@ -6,7 +6,7 @@ plugins {
 }
 
 kotlin {
-    android.namespace = "template.ui.splash"
+    android.namespace = "koog.chat.ui.splash"
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.coreCommon)

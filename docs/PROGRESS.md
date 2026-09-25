@@ -7,7 +7,8 @@ to `main`, don't let this turn into a changelog (git history already is one).
 ## Current state
 
 - The repo is at the `koog-chat` baseline: package root
-  `template.*`, 15 Gradle modules (3 `app/*` + 7 `core/*` + `diApp` + `navigation` + 3
+  `koog.chat.*` (app id `koog.chat.app` on Android/iOS/desktop; `docs/TASKS.md` row 1
+  done, see below), 15 Gradle modules (3 `app/*` + 7 `core/*` + `diApp` + `navigation` + 3
   `ui/*`; `app/iosApp` is a separate Xcode project, not a Gradle module) plus the harness
   docs that came with the template.
 - **Documentation/design phase for the "Koog Chat" rewrite is complete**: `AGENTS.md`,
@@ -20,8 +21,9 @@ to `main`, don't let this turn into a changelog (git history already is one).
   draft (undefined porting source, a Firebase-setup task ordered after the auth/sync
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
-  **No Koog Chat code has been written yet** — every module in the target map beyond the
-  15 that already exist is still `not_started` in `docs/TASKS.md`.
+  **No Koog Chat feature code has been written yet** — row 1 (the rename/initialization
+  row) is `passing`; every module in the target map beyond the 15 that already exist is
+  still `not_started` in `docs/TASKS.md`.
 - Two open risks are flagged rather than resolved, because they need an actual build to
   answer, not more research: (1) whether Koog's non-JVM executor construction
   (`KtorKoogHttpClient.Factory()`) works as documented on iOS/JS/WasmJs — `docs/TASKS.md`
@@ -40,6 +42,20 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Recently done
 
+- `docs/TASKS.md` row 1: `template.*` → `koog.chat.*` across all 15 Gradle modules
+  (source dirs, packages, namespaces, `@ComponentScan`, Roborazzi screenshot filenames,
+  Room schema dir), app id `koog.chat.app` (Android, iOS `project.pbxproj`, desktop
+  macOS `bundleID`), display name "Koog Chat", DB `koog_chat.db`, and the scaffold skill.
+  JVM desktop data moved to `~/.koog-chat-app`, not `~/.koog-chat`, because koog-chat-1
+  already owns that path (see `docs/DECISIONS.md`). Verified: ktlintCheck/detekt/
+  checkModuleBoundaries, `KoinAppCommonTest`, full `jvmTest testAndroidHostTest`,
+  Android `assembleDebug`, web js+wasmJs compile, desktop run, a throwaway skill scaffold
+  (reverted), and an independent validator PASS. iOS was not built this session.
+  Known gaps, not fixed: (a) the scaffold skill doesn't add a `@Module @ComponentScan`
+  class to the Impl module or register it in `DiKoinApplication`, so a scaffolded
+  `@Single` isn't actually in the Koin graph (fold into row 14); (b) under a full
+  parallel `jvmTest`, `KoinAppCommonTest.splashNavigatesToMainThroughRealNavigationGraph`
+  flaked once ("Splash:" node not found), then passed on 4 reruns.
 - Cross-checked `AGENTS.md`/`docs/*` . Alignment was
   already strong; added: clock-in/clock-out framing + a Fresh Session Test note to the
   session checklists (`AGENTS.md`), a `docs/TASKS.md` row-1-is-the-initialization-phase
@@ -52,7 +68,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Next steps
 
-- Start `docs/TASKS.md` row 1 (rename `template.*` → `koog.chat.*`, rootProject →
-  `koog-chat`, app id `koog.chat.app`, and update the scaffold skill in the same pass) —
-  the only row that touches every existing module, so it goes first to avoid every later
-  row needing a rebase on top of it.
+- Start `docs/TASKS.md` row 2 (port `Chat`/`ChatEntry`/`LlmConfig` models, Room
+  entities/DAOs, and Paging3 from koog-chat-1 into `coreDatabaseApi`/`coreDatabaseRoom`,
+  with `updatedAt`/`isDirty`/`isDeleted` sync columns). Room will need a schema version
+  bump or a fresh v1 schema, since it replaces `ExampleEntity`.

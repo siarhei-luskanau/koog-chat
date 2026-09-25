@@ -2,7 +2,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import template.di.KoinApp
+import koog.chat.di.KoinApp
 import java.awt.Dimension
 
 internal fun main() =

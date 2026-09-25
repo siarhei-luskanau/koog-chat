@@ -4,7 +4,7 @@ plugins {
 }
 
 kotlin {
-    android.namespace = "template.core.network.ktor"
+    android.namespace = "koog.chat.core.network.ktor"
     sourceSets {
         commonMain.dependencies {
             implementation(libs.ktor.client.content.negotiation)

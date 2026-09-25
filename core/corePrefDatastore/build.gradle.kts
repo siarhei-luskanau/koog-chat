@@ -10,7 +10,7 @@ koinCompiler {
 }
 
 kotlin {
-    android.namespace = "template.core.pref.datastore"
+    android.namespace = "koog.chat.core.pref.datastore"
     sourceSets {
         commonMain.dependencies {
             implementation(libs.androidx.datastore.core.okio)
