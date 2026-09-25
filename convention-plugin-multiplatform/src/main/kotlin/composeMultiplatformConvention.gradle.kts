@@ -4,6 +4,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 val libs = the<LibrariesForLibs>()
 
+val xcodeDeveloperDir: Provider<String> =
+    providers
+        .exec { commandLine("xcode-select", "-p") }
+        .standardOutput.asText
+        .map { it.trim() }
+
 plugins {
     id("com.android.kotlin.multiplatform.library")
     id("io.insert-koin.compiler.plugin")
@@ -133,6 +139,13 @@ kotlin {
         .matching { it.konanTarget.family.isAppleFamily }
         .configureEach {
             binaries { framework { baseName = "ComposeApp" } }
+            // compose ui-uikit's cinterop klib hardcodes -L/Applications/Xcode_26.4.app/... for its Swift libs
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                val platform = if (konanTarget.name.contains("simulator")) "iphonesimulator" else "iphoneos"
+                val swiftLibDir =
+                    xcodeDeveloperDir.map { "$it/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$platform" }
+                binaries.configureEach { linkerOpts("-L${swiftLibDir.get()}") }
+            }
         }
 }
 

@@ -52,9 +52,12 @@ to `main`, don't let this turn into a changelog (git history already is one).
   (default 0) are on all three entities, not domain models; schema v1 regenerated.
   18 `commonTest` tests pass on jvm, js, wasmJs; desktop app launches. **Open for row
   7:** repository saves reset the sync columns (noted on the row in `docs/TASKS.md`).
-  **Env:** local `iosSimulatorArm64Test` linking fails on every module (ld looks for
-  `/Applications/Xcode_26.4.app`, `swiftCompatibility51` not found), unrelated to
-  rows 1-2; iOS wasn't verified locally.
+- Fixed local iOS test linking (CMP `ui-uikit` klib hardcodes an `Xcode_26.4.app` Swift
+  lib path; the convention plugin now adds the local toolchain's path) and renamed
+  storage files to `koog_chat_app.db`/`koog_chat_app.pref.json` on all platforms, since
+  the unsandboxed simulator test `Documents` dir already held koog-chat-1's
+  `koog_chat.db`. `iosSimulatorArm64Test` is now green on every module (row 2's 18 DB
+  tests included) and the `iosArm64` framework links. See `docs/testing.md`.
 - `docs/TASKS.md` row 1: `template.*` → `koog.chat.*` across all 15 Gradle modules
   (source dirs, packages, namespaces, `@ComponentScan`, Roborazzi screenshot filenames,
   Room schema dir), app id `koog.chat.app` (Android, iOS `project.pbxproj`, desktop
@@ -83,4 +86,4 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 - Start `docs/TASKS.md` row 3: the Koog 1.2.0 non-JVM executor spike
   (`KtorKoogHttpClient.Factory()` on iOS/JS/WasmJs). It's a manual verification needing
-  a reachable LLM endpoint, and iOS needs the local Xcode linker issue fixed first.
+  a reachable LLM endpoint.

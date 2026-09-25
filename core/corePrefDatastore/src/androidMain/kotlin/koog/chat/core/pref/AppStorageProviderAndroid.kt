@@ -52,7 +52,7 @@ internal class AppStorageProviderAndroid(
             producePath = {
                 runBlocking(dispatcherSet.ioDispatcher()) {
                     context.filesDir
-                        .resolve("app.pref.json")
+                        .resolve("koog_chat_app.pref.json")
                         .absolutePath
                         .toPath()
                 }

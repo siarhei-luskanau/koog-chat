@@ -9,6 +9,6 @@ internal class AppStorageProviderWeb : StorageProvider {
     override fun getStorage(): Storage<PrefData> =
         WebLocalStorage(
             serializer = PrefSerializer(),
-            name = "app.pref.json",
+            name = "koog_chat_app.pref.json",
         )
 }

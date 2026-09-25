@@ -11,7 +11,7 @@ import kotlin.js.ExperimentalWasmJsInterop
 internal class WebRoomDatabaseProvider : RoomDatabaseProvider {
     override val database: AppDatabase by lazy {
         Room
-            .databaseBuilder<AppDatabase>(name = "koog_chat.db")
+            .databaseBuilder<AppDatabase>(name = "koog_chat_app.db")
             .setDriver(driver = WebWorkerSQLiteDriver(worker = createWorker()))
             .build()
     }

@@ -20,8 +20,8 @@ internal class IosRoomDatabaseProvider : RoomDatabaseProvider {
                     appropriateForURL = null,
                     create = true,
                     error = null,
-                )?.URLByAppendingPathComponent("koog_chat.db")
-                ?.path ?: "koog_chat.db"
+                )?.URLByAppendingPathComponent("koog_chat_app.db")
+                ?.path ?: "koog_chat_app.db"
         Room
             .databaseBuilder<AppDatabase>(name = dbPath)
             .setDriver(driver = BundledSQLiteDriver())

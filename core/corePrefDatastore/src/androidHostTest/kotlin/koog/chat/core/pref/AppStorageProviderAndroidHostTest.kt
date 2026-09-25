@@ -35,7 +35,7 @@ internal class AppStorageProviderAndroidHostTest {
 
             assertEquals("top-secret-value", service.getKey().first())
 
-            val prefFile = context.filesDir.resolve("app.pref.json")
+            val prefFile = context.filesDir.resolve("koog_chat_app.pref.json")
             assertTrue(prefFile.exists())
             val rawContent = prefFile.readText()
             assertFalse(rawContent.contains("top-secret-value"))
