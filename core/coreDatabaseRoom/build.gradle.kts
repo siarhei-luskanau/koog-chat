@@ -14,6 +14,7 @@ kotlin {
     android.namespace = "koog.chat.core.database.room"
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.androidx.room3.paging)
             implementation(libs.androidx.room3.runtime)
             implementation(libs.androidx.sqlite)
             implementation(libs.androidx.sqlite.async)

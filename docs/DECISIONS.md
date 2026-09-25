@@ -286,3 +286,15 @@ origin, so only JVM needed a distinct directory.
 `corePrefDatastore` write to this real home directory, not a temp dir. That's inherited
 from the template, not introduced here, but it is why the collision surfaced as a test
 failure.
+
+## `LlmConfigRepository.getAllFlow()` does not seed a default config
+
+**Decision:** the ported `LlmConfigRepositoryRoom.getAllFlow()` only maps rows. A fresh
+install starts with zero `LlmConfig`s until the user adds one (`ui/uiLlmConfig`, row 12).
+
+**Rejected alternative:** koog-chat-1's behavior of inserting a hardcoded Ollama config
+(a personal ngrok URL) from an `onEach` inside the flow whenever the table is empty.
+Rejected because a read path with a write side effect is surprising: it re-seeds after
+the user deletes every config, and with sync (row 7) it would push that row to every
+signed-in device. It also bakes a private endpoint into the app. If a first-run default
+is wanted, it belongs in an explicit onboarding step, not in the repository's read flow.
