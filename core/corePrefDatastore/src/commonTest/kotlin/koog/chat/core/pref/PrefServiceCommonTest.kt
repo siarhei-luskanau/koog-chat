@@ -8,6 +8,7 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class PrefServiceCommonTest {
     @Test
@@ -19,6 +20,10 @@ internal class PrefServiceCommonTest {
             assertNull(service.getKey().first())
             service.setKey("test-value")
             assertEquals("test-value", service.getKey().first())
+
+            val content = service.getUserPreferenceContent().first()
+            assertTrue(content?.contains("test-value") == true)
+
             koinApplication.close()
         }
 

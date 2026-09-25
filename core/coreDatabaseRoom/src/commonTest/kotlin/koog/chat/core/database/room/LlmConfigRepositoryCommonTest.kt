@@ -124,6 +124,22 @@ internal class LlmConfigRepositoryCommonTest {
         }
 
     @Test
+    fun setDefault_shouldLeaveConfigsUnchanged_whenIdDoesNotExist() =
+        runTest {
+            val koinApplication = koinApplication<TestKoinApplication>()
+            val repo = koinApplication.koin.get<LlmConfigRepository>()
+            val config = testConfig(isDefault = true)
+            repo.save(config)
+
+            repo.setDefault(uniqueId("missing"))
+
+            assertEquals(true, repo.getById(config.id)?.isDefault)
+
+            repo.delete(config.id)
+            koinApplication.close()
+        }
+
+    @Test
     fun getAllFlow_shouldRoundTripEveryProvider() =
         runTest {
             val koinApplication = koinApplication<TestKoinApplication>()

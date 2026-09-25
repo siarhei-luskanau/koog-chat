@@ -111,6 +111,8 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.androidx.uitest.junit4)
                 implementation(libs.androidx.uitest.testManifest)
+                implementation(libs.junit)
+                implementation(libs.robolectric)
             }
         }
 
@@ -137,6 +139,20 @@ kotlin {
 tasks.withType<Test>().matching { it.name.contains("AndroidHostTest") }.configureEach {
     exclude("**/*CommonTest*")
     systemProperties["robolectric.pixelCopyRenderMode"] = "hardware"
+    // Robolectric reflectively pokes JDK internals (e.g. jdk.internal.access.SharedSecrets
+    // for ApplicationSharedMemory on SDK 37+); modern JDKs (17+) hide those by default.
+    jvmArgs(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.security=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.util.random=ALL-UNNAMED",
+        "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+    )
 }
 
 tasks.withType<AbstractTestTask>().configureEach {

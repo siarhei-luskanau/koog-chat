@@ -30,7 +30,7 @@ kover {
         variant("coverage") {
             verify {
                 rule {
-                    minBound(70)
+                    minBound(88)
                 }
             }
         }
