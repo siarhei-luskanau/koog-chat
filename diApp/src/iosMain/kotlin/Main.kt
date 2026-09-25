@@ -1,6 +1,6 @@
 import androidx.compose.ui.window.ComposeUIViewController
+import koog.chat.di.KoinApp
 import platform.UIKit.UIViewController
-import template.di.KoinApp
 
 fun mainViewController(): UIViewController =
     ComposeUIViewController {

@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "template.compose.multiplatform"
+    namespace = "koog.chat.app"
     compileSdk =
         libs.versions.build.android.compileSdk
             .get()
@@ -25,7 +25,7 @@ android {
             libs.versions.build.android.targetSdk
                 .get()
                 .toInt()
-        applicationId = "template.compose.multiplatform"
+        applicationId = "koog.chat.app"
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

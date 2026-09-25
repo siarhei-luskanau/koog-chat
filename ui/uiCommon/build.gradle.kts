@@ -5,7 +5,7 @@ plugins {
     id("roborazziConvention")
 }
 
-kotlin.android.namespace = "template.ui.common"
+kotlin.android.namespace = "koog.chat.ui.common"
 
 compose.resources {
     publicResClass = true

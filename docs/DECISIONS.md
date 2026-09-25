@@ -268,3 +268,21 @@ exactly what `AGENTS.md` is sized to — at 13 constraints and under 200 lines, 
 out would trade a one-file read for a two-file read without buying back any of the budget
 that actually matters. If the constraint count grows past ~15 or the file starts pushing
 past 200 lines, that's the trigger to split, not a fixed preference for one file over two.
+
+## JVM desktop data lives under `~/.koog-chat-app`, not `~/.koog-chat`
+
+**Decision:** the JVM `RoomDatabaseProvider` and DataStore `AppStorageProvider` store data
+under `~/.koog-chat-app/{room,datastore}`, named after the app id `koog.chat.app`.
+
+**Rejected alternative:** `~/.koog-chat`, the obvious name after the row-1 rename.
+Rejected because the porting source koog-chat-1 already uses exactly
+`~/.koog-chat/room/koog_chat.db` and `~/.koog-chat/datastore/app.pref.json` with a
+different Room schema. Sharing the path made Room fail its identity-hash check at runtime
+("Room cannot verify the data integrity"), and a DataStore write from this app would
+overwrite koog-chat-1's preferences. Other platforms are sandboxed per app id or per
+origin, so only JVM needed a distinct directory.
+
+**Non-obvious cost:** the JVM `commonTest`/`jvmTest` suites for `coreDatabaseRoom` and
+`corePrefDatastore` write to this real home directory, not a temp dir. That's inherited
+from the template, not introduced here, but it is why the collision surfaced as a test
+failure.

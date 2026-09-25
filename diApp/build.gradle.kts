@@ -6,7 +6,7 @@ plugins {
 }
 
 kotlin {
-    android.namespace = "template.di"
+    android.namespace = "koog.chat.di"
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.coreCommon)

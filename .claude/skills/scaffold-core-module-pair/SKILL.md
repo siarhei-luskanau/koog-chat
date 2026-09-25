@@ -29,14 +29,14 @@ technology or invent a capability the user didn't ask for.
    }
 
    kotlin {
-       android.namespace = "template.core.<capability-lowercase>.api"
+       android.namespace = "koog.chat.core.<capability-lowercase>.api"
    }
    ```
 
-   and `core/core<Capability>Api/src/commonMain/kotlin/template/core/<capability-lowercase>/<Capability>Service.kt`
+   and `core/core<Capability>Api/src/commonMain/kotlin/koog/chat/core/<capability-lowercase>/<Capability>Service.kt`
    containing an interface (plus any plain data models it needs) — zero implementation
    dependencies (no Room, Ktor, DataStore, or any other backend library). Model it on
-   `core/corePrefApi/src/commonMain/kotlin/template/core/pref/PrefService.kt`.
+   `core/corePrefApi/src/commonMain/kotlin/koog/chat/core/pref/PrefService.kt`.
 
 2. **Impl module** — create `core/core<Capability><Tech>/build.gradle.kts`:
 
@@ -46,7 +46,7 @@ technology or invent a capability the user didn't ask for.
    }
 
    kotlin {
-       android.namespace = "template.core.<capability-lowercase>.<tech-lowercase>"
+       android.namespace = "koog.chat.core.<capability-lowercase>.<tech-lowercase>"
        sourceSets {
            commonMain.dependencies {
                implementation(projects.core.core<Capability>Api)
@@ -86,7 +86,7 @@ Run, in order, and require all four green before calling the pair "scaffolded":
 ./gradlew ktlintFormat ktlintCheck detekt
 ./gradlew :core:core<Capability>Api:build :core:core<Capability><Tech>:build
 ./gradlew checkModuleBoundaries
-./gradlew :diApp:jvmTest --tests "template.di.KoinAppCommonTest"
+./gradlew :diApp:jvmTest --tests "koog.chat.di.KoinAppCommonTest"
 ```
 
 This mirrors the Layer 1/Layer 2 termination criteria in `docs/quality-gates.md` —

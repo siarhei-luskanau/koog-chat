@@ -2,4 +2,4 @@ plugins {
     id("composeMultiplatformConvention")
 }
 
-kotlin.android.namespace = "template.core.common"
+kotlin.android.namespace = "koog.chat.core.common"

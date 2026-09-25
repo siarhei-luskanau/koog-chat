@@ -5,10 +5,10 @@
 
     <application
         android:icon="@android:drawable/ic_menu_compass"
-        android:label="CMP template"
+        android:label="Koog Chat"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
-            android:name="template.compose.multiplatform.AppActivity"
+            android:name="koog.chat.app.AppActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustPan"

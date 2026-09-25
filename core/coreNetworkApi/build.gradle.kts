@@ -3,5 +3,5 @@ plugins {
 }
 
 kotlin {
-    android.namespace = "template.core.network.api"
+    android.namespace = "koog.chat.core.network.api"
 }
