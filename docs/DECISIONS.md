@@ -303,3 +303,32 @@ Rejected because a read path with a write side effect is surprising: it re-seeds
 the user deletes every config, and with sync (row 7) it would push that row to every
 signed-in device. It also bakes a private endpoint into the app. If a first-run default
 is wanted, it belongs in an explicit onboarding step, not in the repository's read flow.
+
+## Koog streaming on non-JVM targets needs a per-platform `flowOn` (row 3 spike)
+
+**Finding (2026-09-24, Koog 1.2.0, Ollama 0.34.4 `qwen3.5:0.8b` on localhost):** building
+`OllamaClient(httpClientFactory = KtorKoogHttpClient.Factory(HttpClient()), baseUrl)` from
+`commonMain` works on iOS simulator, JS browser and WasmJs browser. Non-streaming
+`execute()` returned a real response on all three. `executeStreaming()` fails on all three
+with `KoogHttpClientException: ... Flow invariant is violated`. Koog emits frames from a
+different dispatcher than the collector's: `Dispatchers.IO` on iOS, the browser's
+`WindowDispatcher` (`Dispatchers.Default`) on JS/WasmJs. JVM streaming works unchanged.
+This isn't a test artifact: any collector not already on that dispatcher (e.g. a
+`viewModelScope` on Main) hits the same invariant.
+
+**Decision:** `coreLlmKoog` (row 4) applies `.flowOn(streamingDispatcher)` to
+`executeStreaming()`, using an `expect val` that is `Dispatchers.IO` on iOS and
+`Dispatchers.Default` on web (`Dispatchers.IO` isn't available there). JVM/Android can use
+`Dispatchers.IO`. Verified by the spike: with that `flowOn`, streaming returned a real
+response on iOS, JS and WasmJs.
+
+**Rejected alternative:** avoiding streaming on non-JVM targets and falling back to
+`execute()`. Rejected because streamed tokens are core chat UX, and the `flowOn` fix is
+a one-line, platform-scoped workaround. Revisit when a Koog release fixes the emission
+context; the row-4 streaming test on each target will show when it's no longer needed.
+
+**Test-harness note:** browser tests that make real network calls need Mocha's 2 s
+default timeout raised via `<module>/karma.config.d/*.js`
+(`config.set({ client: { mocha: { timeout: 180000 } } })`), otherwise they time out
+before the model answers. OpenAI/Anthropic/Google executors weren't exercised (no keys);
+they share the same `KtorKoogHttpClient` path, but only Ollama is proven.

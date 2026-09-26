@@ -21,12 +21,11 @@ to `main`, don't let this turn into a changelog (git history already is one).
   draft (undefined porting source, a Firebase-setup task ordered after the auth/sync
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
-  Rows 1 (rename/initialization) and 2 (database layer) are `passing`; every module in the target map beyond the 15 that already exist is
+  Rows 1 (rename/initialization), 2 (database layer) and 3 (Koog non-JVM spike) are
+  `passing`; every module in the target map beyond the 15 that already exist is
   still `not_started` in `docs/TASKS.md`.
-- Two open risks are flagged rather than resolved, because they need an actual build to
-  answer, not more research: (1) whether Koog's non-JVM executor construction
-  (`KtorKoogHttpClient.Factory()`) works as documented on iOS/JS/WasmJs — `docs/TASKS.md`
-  row 3; (2) whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
+- One open risk is flagged rather than resolved, because it needs an actual build to
+  answer, not more research: whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
   `firebase-kotlin-sdk 3.0.0-alpha02`'s own `1.10.2` pin — `docs/TASKS.md` row 8,
   resolved right after the dependency lands (rows 5-7) and before any UI work is built
   on top of a possibly-broken `wasmJs` target.
@@ -41,6 +40,12 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Recently done
 
+- `docs/TASKS.md` row 3 spike (against local Ollama `qwen3.5:0.8b`): Koog 1.2.0's
+  `KtorKoogHttpClient.Factory()` works from `commonMain` on iOS simulator, JS and WasmJs,
+  and `execute()` returned real responses on all three. `executeStreaming()` breaks the
+  flow invariant on all three non-JVM targets. `.flowOn(Dispatchers.IO)` (iOS) /
+  `.flowOn(Dispatchers.Default)` (web) fixes it, verified per target; row 4 must build
+  that in. Spike module removed; details in `docs/DECISIONS.md`.
 - `docs/TASKS.md` row 2: `coreDatabaseApi` now has `Chat`/`ChatEntry`/`ChatEntryType`/
   `LlmConfig`/`LlmProvider` (Ollama/OpenAI/Anthropic/Google) + `ChatRepository`/
   `ChatEntryRepository`/`LlmConfigRepository` (Paging3 `PagingSource` via `api`
@@ -84,6 +89,6 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Next steps
 
-- Start `docs/TASKS.md` row 3: the Koog 1.2.0 non-JVM executor spike
-  (`KtorKoogHttpClient.Factory()` on iOS/JS/WasmJs). It's a manual verification needing
-  a reachable LLM endpoint.
+- Start `docs/TASKS.md` row 4: `coreLlmApi` + `coreLlmKoog`, including the row-3
+  streaming `flowOn` workaround and a per-target streaming test. Real-network tests can
+  use local Ollama at `http://localhost:11434` (`qwen3.5:0.8b`).
