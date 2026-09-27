@@ -68,7 +68,7 @@ jobs:
             experimental: false
             emulator: true
           - gradle-tasks: "iosSimulatorArm64Test"
-            os: macOS-26
+            os: macOS-latest
             experimental: false
             emulator: false
     steps:
@@ -267,7 +267,7 @@ jobs:
 
   iOS:
     needs: Lint
-    runs-on: macOS-26
+    runs-on: macOS-latest
     steps:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

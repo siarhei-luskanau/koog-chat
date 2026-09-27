@@ -20,7 +20,7 @@ fun getScreenshotMatrixJson(
                     add(
                         mapOf(
                             "gradle_tasks" to "${subproject.path}:${roborazziTask}IosSimulatorArm64",
-                            "runner" to "macOS-26",
+                            "runner" to "macOS-latest",
                             "module_path" to subproject.path,
                         ),
                     )
