@@ -8,6 +8,8 @@ include(
     ":core:coreCommon",
     ":core:coreDatabaseApi",
     ":core:coreDatabaseRoom",
+    ":core:coreLlmApi",
+    ":core:coreLlmKoog",
     ":core:coreNetworkApi",
     ":core:coreNetworkKtor",
     ":core:corePrefApi",

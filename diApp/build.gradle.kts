@@ -11,6 +11,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.coreCommon)
             implementation(projects.core.coreDatabaseRoom)
+            implementation(projects.core.coreLlmKoog)
             implementation(projects.core.coreNetworkKtor)
             implementation(projects.core.corePrefDatastore)
             implementation(projects.navigation)

@@ -84,7 +84,7 @@ Not currently CI-enforced as a gate beyond building the artifact, but this is wh
 one affected target, not just "it compiles."
 
 ```
-./gradlew :app:desktopApp:run              # cheapest — no emulator/simulator needed
+./gradlew :app:desktopApp:jar              # cheapest — no emulator/simulator needed
 ./gradlew verifyRoborazzi                  # if you touched any @Preview composable
 ```
 

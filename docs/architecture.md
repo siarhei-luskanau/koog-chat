@@ -32,7 +32,7 @@ core/coreNetworkKtor    Ktor implementation of coreNetworkApi
 core/corePrefApi        Preferences/storage interface only
 core/corePrefDatastore  AndroidX DataStore implementation of corePrefApi
 core/coreLlmApi         Provider-agnostic chat/streaming interface
-core/coreLlmKoog        Koog 1.2.0 implementation (Ollama/OpenAI/Anthropic/Google)
+core/coreLlmKoog        Koog implementation (Ollama/OpenAI/Anthropic/Google)
 core/coreAuthApi        Auth session interface: current user, sign-in, sign-out
 core/coreAuthFirebase   KMPAuth (kmpauth-google) + GitLive Firebase Auth implementation
 core/coreAuthFake       Always-signed-out no-op, bound when Firebase is unconfigured
@@ -113,10 +113,13 @@ letting `@ComponentScan` pick up whichever one happens to exist:
   stops sync and leaves all local data in Room untouched — no data loss, just no further
   remote writes/reads.
 
-## LLM provider abstraction (Koog 1.2.0)
+## LLM provider abstraction (Koog)
 
-`coreLlmApi` defines a provider-agnostic `LlmService` (chat/streaming) plus
-`LlmProvider` (`Ollama`, `OpenAI`, `Anthropic`, `Google`) and `LlmConfig` — ported from
+`coreLlmApi` defines a provider-agnostic `LlmService` (one streamed chat turn, with
+thinking/text chunk callbacks, returning a `ChatResult`) and `LlmSessionManager` (runs a
+turn in the background, persists it, exposes which chats are generating). It re-exports
+`coreDatabaseApi` (`api(...)`), which owns `LlmProvider` (`Ollama`, `OpenAI`, `Anthropic`,
+`Google`) and `LlmConfig` since row 2 — ported from
 [koog-chat-1](https://github.com/siarhei-luskanau/koog-chat-1)'s schema, which already
 carries these fields even though it only used `Ollama`:
 
@@ -135,22 +138,32 @@ setting a new default), not a UI-only convention.
 `End` frame arrives — this is what backs the token/response-time stats `ui/uiChat`
 displays on a finished message.
 
-`coreLlmKoog` implements it via `ai.koog:koog-agents:1.2.0`, dispatching per
-`LlmConfig.provider` to `simpleOllamaAIExecutor`/`simpleOpenAIExecutor`/
-`simpleAnthropicExecutor`/`simpleGoogleAIExecutor`. Two things every implementer of this
-module must account for:
+`coreLlmKoog` implements both. It depends on the individual Koog client artifacts
+(`prompt-executor-{ollama,openai,anthropic}-client`,
+`prompt-executor-google-client`, `http-client-ktor`), not the
+`koog-agents` umbrella, because it only needs raw `LLMClient` streaming. `LlmClientFactory`
+maps `LlmConfig` to an `LLModel` plus an `OllamaClient`/`OpenAILLMClient`/
+`AnthropicLLMClient`/`GoogleLLMClient`, all built on one shared
+`KtorKoogHttpClient.Factory(HttpClient())` singleton. `providerUrl` overrides the base
+URL, and `apiKey` is required for every provider except Ollama. Things every implementer
+of this module must account for:
 
 - **Non-JVM targets (iOS, JS, WasmJs) have no HTTP auto-discovery.** Koog's convenience
-  `simple*Executor` one-liners rely on `ServiceLoader`, which only works on JVM/Android.
-  From `commonMain`, the executor must be constructed with an explicit
-  `KtorKoogHttpClient.Factory()` passed in. This is flagged as the highest-risk item in
-  `docs/TASKS.md` — no verified non-JVM code sample was found during research; spike this
-  before building the rest of `coreLlmKoog` on top of it.
+  `simple*Executor` one-liners rely on `ServiceLoader`, which only works on JVM/Android,
+  so clients are always constructed with the explicit `KtorKoogHttpClient.Factory`
+  (verified on every target by the row-3 spike).
+- **Streaming needs `.flowOn(dispatcherSet.ioDispatcher())`**: Koog emits frames off the
+  collector's context on iOS/JS/WasmJs (`docs/DECISIONS.md`). `OllamaStreamingCommonTest`
+  streams from a real local Ollama on every target when one is running, and skips
+  otherwise.
+- **Anthropic resolves model ids through `AnthropicClientSettings.modelVersionsMap`** and
+  rejects unknown models, so the factory passes `mapOf(model to modelId)`. OpenAI models
+  carry `LLMCapability.OpenAIEndpoint.Completions` (Chat Completions, not Responses).
 - **Google's client is beta** (as are DeepSeek/Mistral/Alibaba, not used here); pin its
   version carefully and don't assume API stability across Koog patch releases.
 
 Streaming reuses koog-chat-1's proven shape: `executeStreaming(prompt, model)` returns a
-`Flow` of `StreamFrame` (`TextDelta`, `ReasoningDelta`, `End`); `LlmSessionManager`
+`Flow` of `StreamFrame` (`TextDelta`, `ReasoningDelta`, `End`); `LlmSessionManagerImpl`
 persists the growing response to Room every ~150ms rather than on every delta, and
 finalizes the `ChatEntry` to `SUCCESS_RESPONSE`/`ERROR_RESPONSE` on `End`/failure.
 

@@ -38,7 +38,7 @@ core/coreNetworkKtor    Ktor implementation of coreNetworkApi
 core/corePrefApi        Preferences interface only
 core/corePrefDatastore  AndroidX DataStore implementation of corePrefApi
 core/coreLlmApi         Provider-agnostic LLM chat interface (streaming, tool-calling)
-core/coreLlmKoog        Koog 1.2.0-backed implementation (Ollama/OpenAI/Anthropic/Google)
+core/coreLlmKoog        Koog - backed implementation (Ollama/OpenAI/Anthropic/Google)
 core/coreAuthApi        Auth state/session interface (signed-in user or none)
 core/coreAuthFirebase   KMPAuth (Google) + GitLive Firebase Auth implementation
 core/coreAuthFake       No-op implementation: always signed-out, used when Firebase unconfigured
@@ -86,7 +86,7 @@ Full command list per gate/target: `docs/quality-gates.md`.
    `jsBrowserTest`/`wasmJsBrowserTest`, `iosSimulatorArm64Test`) actually fits — most new
    tests belong in `commonTest`.
 9. "Feature complete" means the app actually launched on an affected target
-   (`./gradlew :app:desktopApp:run` is the cheapest check), not just "it compiles" —
+   (`./gradlew :app:desktopApp:jar` is the cheapest check), not just "it compiles" —
    see Layer 3 in `docs/quality-gates.md`.
 10. One module/feature actively worked at a time (WIP=1). A large ask ("add a new
     platform target", "add offline sync") gets broken into an ordered list in
@@ -127,7 +127,7 @@ Before making any change:
 1. Read `docs/PROGRESS.md` — what's actually implemented, in progress, or blocked.
 2. Read `docs/TASKS.md` — pick up the single `active` row, or the next `not_started` row
    if none is active (WIP=1 — don't start a second row).
-3. Confirm the baseline still builds: `./gradlew :app:desktopApp:run` (or `jvmTest` if
+3. Confirm the baseline still builds: `./gradlew :app:desktopApp:jar` (or `jvmTest` if
    desktop isn't the target you're touching).
 4. If the row you're picking up depends on an earlier row that isn't `passing` yet, stop
    and say so — don't work out of order.

@@ -196,7 +196,7 @@ the two if a future feature needs one.
 
 ## Koog (JetBrains) for the LLM layer, not direct per-provider SDKs or raw Ktor calls
 
-**Decision:** `coreLlmKoog` is built on `ai.koog:koog-agents:1.2.0` rather than calling
+**Decision:** `coreLlmKoog` is built on `ai.koog:koog-agents` rather than calling
 OpenAI/Anthropic/Google/Ollama's HTTP APIs directly with `coreNetworkKtor`.
 
 **Rejected alternative:** hand-rolled Ktor clients per provider (what koog-chat-1 would
@@ -306,7 +306,7 @@ is wanted, it belongs in an explicit onboarding step, not in the repository's re
 
 ## Koog streaming on non-JVM targets needs a per-platform `flowOn` (row 3 spike)
 
-**Finding (2026-09-24, Koog 1.2.0, Ollama 0.34.4 `qwen3.5:0.8b` on localhost):** building
+**Finding (2026-09-24, Koog 1.3.0, Ollama 0.34.4 `qwen3.5:0.8b` on localhost):** building
 `OllamaClient(httpClientFactory = KtorKoogHttpClient.Factory(HttpClient()), baseUrl)` from
 `commonMain` works on iOS simulator, JS browser and WasmJs browser. Non-streaming
 `execute()` returned a real response on all three. `executeStreaming()` fails on all three
@@ -332,3 +332,30 @@ default timeout raised via `<module>/karma.config.d/*.js`
 (`config.set({ client: { mocha: { timeout: 180000 } } })`), otherwise they time out
 before the model answers. OpenAI/Anthropic/Google executors weren't exercised (no keys);
 they share the same `KtorKoogHttpClient` path, but only Ollama is proven.
+
+## `coreLlmKoog` shape: DispatcherSet for `flowOn`, session manager behind an interface (row 4)
+
+**Decision:** the row-3 `flowOn` uses the injected `DispatcherSet.ioDispatcher()` from
+`coreCommon`, not a new `expect val`. `coreCommon` already maps it to `Dispatchers.IO` on
+JVM/Android/iOS and `Dispatchers.Default` on web, which is exactly the row-3 mapping. It's
+also injectable, so tests use the same mapping (`platformIoDispatcherSet()`). A MockEngine
+test on iOS with `Default` hit the flow invariant, and removing `flowOn` broke JS, so both
+the fix and the tests guard it. `LlmSessionManager` is an interface in `coreLlmApi` with
+`LlmSessionManagerImpl` in `coreLlmKoog`, so `ui/uiChat` (row 10) can depend on the Api
+module alone.
+
+**Rejected alternatives:** (a) an `expect val streamingDispatcher` in `coreLlmKoog`, which
+duplicates `DispatcherSet` and can't be swapped in tests; (b) putting the concrete session
+manager in `coreLlmApi`, which breaks constraint #1 (Api modules hold interfaces/models
+only); (c) depending on `koog-agents`/`koog-agents-additions` as koog-chat-1 did, which
+pulls in agents, MCP, memory and OpenTelemetry for what is only `LLMClient` streaming.
+
+**Non-obvious cost:** the Koin wiring test (`CoreLlmKoogModuleJvmTest`) is JVM-only. Koin
+compile safety reports a false KOIN-D002 for `commonMain` `@ComponentScan` bindings in the
+js/wasm/native test klibs (the same issue `coreDatabaseRoom` works around by disabling
+`compileSafety` for the whole module). Keeping compile safety on for main code was judged
+worth more than running that single test on every target. Ktor's `MockEngine` doesn't
+support SSE, so the provider stream tests wrap it (`SseMockEngine` in `TestFixtures.kt`)
+to declare `SSECapability` and return a `DefaultClientSSESession`. That relies on Ktor
+`@InternalAPI` and may need adjusting on a Ktor upgrade.
+
