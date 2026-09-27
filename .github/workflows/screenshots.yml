@@ -75,7 +75,7 @@ jobs:
 
       - name: Install pngcheck
         run: |
-          if [[ "${{ matrix.variants.runner }}" == "macOS-26" ]]; then
+          if [[ "${{ matrix.variants.runner }}" == "macOS-latest" ]]; then
             brew install pngcheck
           else
             sudo apt-get install -y pngcheck
