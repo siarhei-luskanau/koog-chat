@@ -30,7 +30,7 @@ kover {
         variant("coverage") {
             verify {
                 rule {
-                    minBound(88)
+                    minBound(93)
                 }
             }
         }
@@ -41,6 +41,8 @@ dependencies {
     kover(projects.core.coreCommon)
     kover(projects.core.coreDatabaseApi)
     kover(projects.core.coreDatabaseRoom)
+    kover(projects.core.coreLlmApi)
+    kover(projects.core.coreLlmKoog)
     kover(projects.core.coreNetworkApi)
     kover(projects.core.coreNetworkKtor)
     kover(projects.core.corePrefApi)
@@ -76,6 +78,7 @@ gradle.projectsEvaluated {
     val coreImplModulePaths =
         setOf(
             ":core:coreDatabaseRoom",
+            ":core:coreLlmKoog",
             ":core:coreNetworkKtor",
             ":core:corePrefDatastore",
         )

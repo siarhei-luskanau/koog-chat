@@ -122,3 +122,16 @@ exist:
   `StreamFrame` sequence (`TextDelta`×N, `End`) drives `LlmSessionManager`; assert the
   ~150ms persistence throttle doesn't drop the final chunk and that `ChatEntryType`
   finalizes to `SUCCESS_RESPONSE`/`ERROR_RESPONSE` correctly.
+
+## LLM providers — MockEngine per provider, plus one opt-in real Ollama stream
+
+`coreLlmKoog`'s `LlmServiceKoogCommonTest` feeds each provider's real wire format (Ollama
+NDJSON, OpenAI/Anthropic/Google SSE) through Koog's actual clients over `ktor-client-mock`.
+Plain `MockEngine` doesn't support SSE, so `TestFixtures.kt`'s `SseMockEngine` adds it.
+These tests use `platformIoDispatcherSet()`, which mirrors production
+`DispatcherSet.ioDispatcher()`, so the row-3 `flowOn` workaround runs on every target.
+`OllamaStreamingCommonTest` streams from a real `qwen3.5:0.8b` at `localhost:11434` on
+every target when one is running, and passes as a no-op (printing "Skipping") otherwise,
+so CI stays offline. For real coverage, run `ollama serve` before
+`:core:coreLlmKoog:allTests`. Browser runs need the raised Mocha timeout in
+`core/coreLlmKoog/karma.config.d/`.

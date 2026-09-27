@@ -14,16 +14,16 @@ to `main`, don't let this turn into a changelog (git history already is one).
 - **Documentation/design phase for the "Koog Chat" rewrite is complete**: `AGENTS.md`,
   `docs/architecture.md`, `docs/testing.md`, `docs/quality-gates.md`,
   `docs/DECISIONS.md`, and `docs/TASKS.md` now describe the target architecture (Koog
-  1.2.0 multi-provider LLM chat, KMPAuth+GitLive Google sign-in, Firestore LWW sync,
+  multi-provider LLM chat, KMPAuth+GitLive Google sign-in, Firestore LWW sync,
   Nav3 adaptive list-detail). New harness artifacts `docs/features.json`,
   `docs/setup-firebase.md`, and `docs/agent-workflow.md` were added alongside them, and
   a validation pass caught and fixed several ordering/consistency issues in that first
   draft (undefined porting source, a Firebase-setup task ordered after the auth/sync
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
-  Rows 1 (rename/initialization), 2 (database layer) and 3 (Koog non-JVM spike) are
-  `passing`; every module in the target map beyond the 15 that already exist is
-  still `not_started` in `docs/TASKS.md`.
+  Rows 1 (rename/initialization), 2 (database layer), 3 (Koog non-JVM spike) and 4
+  (`coreLlmApi`/`coreLlmKoog`) are `passing`, so there are now 17 Gradle modules; the
+  remaining target-map modules are still `not_started` in `docs/TASKS.md`.
 - One open risk is flagged rather than resolved, because it needs an actual build to
   answer, not more research: whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
   `firebase-kotlin-sdk 3.0.0-alpha02`'s own `1.10.2` pin — `docs/TASKS.md` row 8,
@@ -40,7 +40,23 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Recently done
 
-- `docs/TASKS.md` row 3 spike (against local Ollama `qwen3.5:0.8b`): Koog 1.2.0's
+- `docs/TASKS.md` row 4: `coreLlmApi` (`LlmService`, `LlmSessionManager`, `ChatResult`;
+  re-exports `coreDatabaseApi`) + `coreLlmKoog` (`LlmClientFactory` for
+  Ollama/OpenAI/Anthropic/Google via the individual Koog client artifacts,
+  Google; `LlmServiceKoog` with `.flowOn(dispatcherSet.ioDispatcher())`;
+  `LlmSessionManagerImpl` ported from koog-chat-1 with the 150 ms throttle), wired into
+  `diApp`, kover and `checkModuleBoundaries`. Error replies redact the API key /
+  `key=` URL param (validator's critical finding: Google's key rides in the URL, and
+  Ktor timeout messages include it). 18 `commonTest` tests pass on jvm/js/wasmJs/iOS
+  simulator, including per-provider wire-format streams over an SSE-capable MockEngine and
+  a real `qwen3.5:0.8b` stream on every target (skips when Ollama isn't running).
+  Removing `flowOn` fails JS and iOS, so the row-3 workaround is guarded offline.
+  Independent validator: PASS. Carry-overs recorded on rows 7 and 10 in
+  `docs/TASKS.md`. OpenAI/Anthropic/Google only tested against mocked real-format
+  responses (no keys). `:app:desktopApp:run` starts the Koin graph cleanly but exits after a
+  few seconds when launched from an agent shell. The pre-row-4 baseline does the same,
+  so a manual window check is still owed.
+- `docs/TASKS.md` row 3 spike (against local Ollama `qwen3.5:0.8b`): Koog
   `KtorKoogHttpClient.Factory()` works from `commonMain` on iOS simulator, JS and WasmJs,
   and `execute()` returned real responses on all three. `executeStreaming()` breaks the
   flow invariant on all three non-JVM targets. `.flowOn(Dispatchers.IO)` (iOS) /
@@ -89,6 +105,8 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Next steps
 
-- Start `docs/TASKS.md` row 4: `coreLlmApi` + `coreLlmKoog`, including the row-3
-  streaming `flowOn` workaround and a per-target streaming test. Real-network tests can
-  use local Ollama at `http://localhost:11434` (`qwen3.5:0.8b`).
+- Start `docs/TASKS.md` row 5: set up a real (test) Firebase project per
+  `docs/setup-firebase.md` and implement the desktop/web `local.properties` reader. This
+  needs the user: Firebase console access and Google sign-in configuration.
+- Doc drift, not yet fixed: `AGENTS.md`/`docs/quality-gates.md` say the Kover floor is
+  70%, but the root `build.gradle.kts` enforces 88%.
