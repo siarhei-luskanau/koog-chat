@@ -101,6 +101,9 @@ which is enough to hold the first frame steady for the assertion.
 
 ## `*Fake` as a third module kind alongside `*Api`/`*Impl`, for auth and sync only
 
+**Superseded** by "`*Fake` selection via `IS_FAKE_DATA_ENABLED`, not config-file
+presence" (2026-09-28).
+
 **Decision:** `coreAuthApi` and `coreSyncApi` each get two backend modules —
 `coreAuthFirebase`/`coreSyncFirestore` (real) and `coreAuthFake`/`coreSyncFake` (no-op) —
 and `diApp` picks which pair to depend on based on whether a Firebase config is present
@@ -151,7 +154,7 @@ requires (see `docs/architecture.md`).
 `kotlinx-coroutines = "1.11.0"`; GitLive's own `libs.versions.toml` pins `1.10.2` around
 the same alpha. Whether this is a real conflict (resolution failure, ABI mismatch on
 wasm) or a non-issue (transitive resolution just picks one) is unverified — resolve it by
-actually building the `wasmJs` target once `coreSyncFirestore`/`coreAuthFirebase` are
+actually building the `wasmJs` target once `coreSyncFirebase`/`coreAuthFirebase` are
 added, before assuming either version number is final. Track as an early item in
 `docs/TASKS.md`, not something to guess at now.
 
@@ -359,3 +362,34 @@ support SSE, so the provider stream tests wrap it (`SseMockEngine` in `TestFixtu
 to declare `SSECapability` and return a `DefaultClientSSESession`. That relies on Ktor
 `@InternalAPI` and may need adjusting on a Ktor upgrade.
 
+## `*Fake` selection via `IS_FAKE_DATA_ENABLED`, not config-file presence
+
+**Decision:** auth and sync each ship as an `*Api` module plus two backend modules — a
+no-op `*Fake` (`coreAuthFake`, `coreSyncFake`) and a real `*Firebase` (`coreAuthFirebase`,
+`coreSyncFirebase`). `diApp` picks one pair with a plain `if`/`else` in
+`diApp/build.gradle.kts`'s `commonMain.dependencies`, driven by a single explicit boolean
+flag, `IS_FAKE_DATA_ENABLED`, read by `isFakeDataEnabled()` in
+`buildSrc/src/main/kotlin/LocalPropertiesUtils.kt`: the `-DIS_FAKE_DATA_ENABLED=` JVM
+system property (set on every CI/screenshot build) wins over the `IS_FAKE_DATA_ENABLED=`
+key in `local.properties`. Both capabilities always switch together — never a mix of fake
+and Firebase within the same build.
+
+**Rejected alternative:** inferring "Firebase configured" from config-file presence
+(`google-services.json` on Android). It's implicit: each platform's config artifact
+differs (Android's `google-services.json`, iOS's `GoogleService-Info.plist`, desktop/web's
+own `local.properties`-style keys), so "is Firebase configured" has no single, checkable
+definition across all five targets without per-platform detection logic living inside
+the build. A silent fallback to the fake variant when a file happens to be missing (e.g.
+a `.gitignore`'d config not yet pulled locally) also hides a real misconfiguration behind
+what looks like a normal, supported offline mode. A per-capability flag (e.g. separate
+`IS_FAKE_AUTH_ENABLED`/`IS_FAKE_SYNC_ENABLED`) was also rejected: auth and sync only make
+sense as one unit here (sync depends on `coreAuthApi.currentUser` to do anything), and two
+independent flags would allow real auth with fake sync (or vice versa) — a combination
+nothing in `docs/architecture.md`'s wiring section is designed to support.
+
+**Non-obvious cost:** the flag defaults to `false` when unset, i.e. the *Firebase*
+variant is the default — a fresh clone with no `local.properties` entry and no CI system
+property builds against real Firebase and needs the setup in `docs/setup-firebase.md`
+before it links. Anyone who wants the offline-only fake build locally must explicitly
+set `IS_FAKE_DATA_ENABLED=true` in `local.properties`; it is not inferred from the
+absence of Firebase config files.

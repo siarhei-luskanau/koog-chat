@@ -110,8 +110,10 @@ No automated test anywhere in this repo talks to real Firebase/KMPAuth. `coreAut
 and `coreSyncFake` (see `docs/architecture.md`) are what `commonTest` binds for anything
 exercising sign-in state or sync — the same way `coreNetworkKtor`'s
 `TestCoreNetworkKtorModule` + `ktor-client-mock` keep network tests off the real network.
-Three things specifically need `commonTest` coverage once `coreAuthApi`/`coreSyncApi`
-exist:
+CI itself always builds/tests with `-DIS_FAKE_DATA_ENABLED=true` (`.github/workflows/
+ci.yml`, `screenshots.yml`), so every automated run — not just unit tests — binds the
+fake trio, never real Firebase. Three things specifically need `commonTest` coverage once
+`coreAuthApi`/`coreSyncApi` exist:
 
 - **LWW merge logic** — pure function over `(local updatedAt, remote updatedAt, isDeleted)`
   triples; deterministic, no coroutines/IO needed, easy to hit every ordering case.

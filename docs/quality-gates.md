@@ -39,10 +39,13 @@ these locally before pushing so CI doesn't do the formatting for you.
 declared dependencies and fails with a listed violation (`<module> -> <core/*Impl
 module>`) if anything other than `:diApp` depends on `coreDatabaseRoom`,
 `coreNetworkKtor`, or `corePrefDatastore`. As `coreLlmKoog`, `coreAuthFirebase`,
-`coreAuthFake`, `coreSyncFirestore`, and `coreSyncFake` are built out (see
+`coreAuthFake`, `coreSyncFirebase`, and `coreSyncFake` are built out (see
 `docs/TASKS.md`), each one's path goes into `coreImplModulePaths` too — that list has no
 special case for `*Fake` vs `*Impl`, both are backend modules `diApp` alone may depend
-on.
+on. `diApp`'s own selection between the Firebase and Fake trio is a single build-time
+flag, `IS_FAKE_DATA_ENABLED` (see `docs/architecture.md`) — `checkModuleBoundaries`
+doesn't care which branch is active, it just enforces that nothing but `diApp` depends on
+either.
 
 ## Layer 2 — tests (`Tests` job, matrix)
 
@@ -59,6 +62,13 @@ on.
 
 You don't need to run every target for every change — run the ones for the
 target(s)/module(s) you touched. Reports land in `**/build/reports/`.
+
+CI passes `-DIS_FAKE_DATA_ENABLED=true` to every Gradle invocation that builds `diApp`
+(see `.github/workflows/ci.yml`, `screenshots.yml`), so these targets always exercise the
+`coreAuthFake`/`coreSyncFake` binding, never real Firebase. To reproduce a CI failure
+locally, append the same flag, e.g. `./gradlew jvmTest -DIS_FAKE_DATA_ENABLED=true`; omit
+it (or set it to anything but `true`) to build the Firebase variant instead, which needs a
+configured Firebase project (`docs/setup-firebase.md`).
 
 ## Layer 2b — coverage (`Coverage` job)
 
@@ -84,8 +94,9 @@ Not currently CI-enforced as a gate beyond building the artifact, but this is wh
 one affected target, not just "it compiles."
 
 ```
-./gradlew :app:desktopApp:jar              # cheapest — no emulator/simulator needed
-./gradlew verifyRoborazzi                  # if you touched any @Preview composable
+./gradlew :app:desktopApp:jar                                   # cheapest — no emulator/simulator needed
+./gradlew :app:desktopApp:jar -DIS_FAKE_DATA_ENABLED=true        # same, but the Fake-trio variant
+./gradlew verifyRoborazzi                                        # if you touched any @Preview composable
 ```
 
 CI's `Android`, `Desktop`, `WebJs`, `WebWasmJs`, and `iOS` jobs build (not run) each
