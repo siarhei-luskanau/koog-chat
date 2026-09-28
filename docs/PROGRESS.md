@@ -110,3 +110,18 @@ to `main`, don't let this turn into a changelog (git history already is one).
   needs the user: Firebase console access and Google sign-in configuration.
 - Doc drift, not yet fixed: `AGENTS.md`/`docs/quality-gates.md` say the Kover floor is
   70%, but the root `build.gradle.kts` enforces 88%.
+
+## 2026-09-28: auth/sync selection approach changed
+
+Before any of rows 5-9 landed code, the auth/sync module-selection design changed:
+the `*Fake` modules (`coreAuthFake`, `coreSyncFake`) stay, and
+`coreSyncFirestore` is renamed `coreSyncFirebase`. Selection between the Fake trio and the
+Firebase trio (`coreAuthFirebase`+`coreSyncFirebase`) is now one explicit build-time flag,
+`IS_FAKE_DATA_ENABLED` (read by `isFakeDataEnabled()` in
+`buildSrc/src/main/kotlin/LocalPropertiesUtils.kt`: `-DIS_FAKE_DATA_ENABLED=` wins, else
+the `local.properties` key, default `false`), instead of being inferred from whether a
+`google-services.json`/Firebase config is present. `diApp/build.gradle.kts` currently has
+this as a commented-out `if/else` placeholder — none of `coreAuthFake`/`coreSyncFake`/
+`coreAuthFirebase`/`coreSyncFirebase` exist yet — pending `docs/TASKS.md` rows 6, 7, and 9.
+CI already passes `-DIS_FAKE_DATA_ENABLED=true` so automated builds/tests never touch real
+Firebase once these modules land.

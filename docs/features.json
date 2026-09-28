@@ -32,8 +32,8 @@
     },
     {
       "id": "F05",
-      "behavior": "The app is fully functional (create/view/delete chats, chat with a configured provider) when signed out or when Firebase is entirely unconfigured — no sync, no crash, no degraded chat experience.",
-      "verificationCommand": "manual: build with no Firebase config present, exercise full chat flow",
+      "behavior": "The app is fully functional (create/view/delete chats, chat with a configured provider) when signed out or when built with IS_FAKE_DATA_ENABLED=true — no sync, no crash, no degraded chat experience.",
+      "verificationCommand": "manual: build with -DIS_FAKE_DATA_ENABLED=true, exercise full chat flow",
       "state": "not_started",
       "relatedTasks": [6, 7, 9]
     },

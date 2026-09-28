@@ -58,7 +58,7 @@ jobs:
       - name: Remove screenshots
         run: find . -type d -path "*/src/screenshots" -exec rm -rf {} +
 
-      - run: ./gradlew ${{ matrix.variants.gradle_tasks }} -DIS_DATA_STUB_ENABLED=true --stacktrace
+      - run: ./gradlew ${{ matrix.variants.gradle_tasks }} -DIS_FAKE_DATA_ENABLED=true --stacktrace
 
       - name: Get task name
         if: always()

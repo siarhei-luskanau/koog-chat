@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 
 plugins {
@@ -18,6 +19,13 @@ kotlin {
             implementation(projects.ui.uiCommon)
             implementation(projects.ui.uiMain)
             implementation(projects.ui.uiSplash)
+            if (isFakeDataEnabled { gradleLocalProperties(rootDir, providers) }) {
+                // implementation(projects.core.coreAuthFake)
+                // implementation(projects.core.coreSyncFake)
+            } else {
+                // implementation(projects.core.coreAuthFirebase)
+                // implementation(projects.core.coreSyncFirebase)
+            }
         }
     }
 }

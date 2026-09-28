@@ -35,10 +35,10 @@ core/coreLlmApi         Provider-agnostic chat/streaming interface
 core/coreLlmKoog        Koog implementation (Ollama/OpenAI/Anthropic/Google)
 core/coreAuthApi        Auth session interface: current user, sign-in, sign-out
 core/coreAuthFirebase   KMPAuth (kmpauth-google) + GitLive Firebase Auth implementation
-core/coreAuthFake       Always-signed-out no-op, bound when Firebase is unconfigured
+core/coreAuthFake       Always-signed-out no-op, bound (compile-time) when IS_FAKE_DATA_ENABLED
 core/coreSyncApi        Sync interface: start/stop, sync-state observation
-core/coreSyncFirestore  Firestore LWW sync implementation; internally no-ops until signed in
-core/coreSyncFake       No-op, bound (compile-time) when Firebase is unconfigured
+core/coreSyncFirebase   Firestore LWW sync implementation; internally no-ops until signed in
+core/coreSyncFake       No-op, sync state permanently idle, bound (compile-time) when IS_FAKE_DATA_ENABLED
 ```
 
 Note: `ui/uiMain` (the template's placeholder home screen) is removed as part of
@@ -62,19 +62,19 @@ Every core capability is split into an `*Api` module plus one or more backend mo
   Ktor, DataStore, Firebase, KMPAuth, or Koog provider clients). Anything can depend on
   these.
 - `core/*Impl` (`coreDatabaseRoom`, `coreNetworkKtor`, `corePrefDatastore`,
-  `coreLlmKoog`, `coreAuthFirebase`, `coreSyncFirestore`) — a concrete, real-backend
+  `coreLlmKoog`, `coreAuthFirebase`, `coreSyncFirebase`) — a concrete, real-backend
   implementation. **Only `diApp` may depend on one.**
 - `core/*Fake` (`coreAuthFake`, `coreSyncFake`) — a concrete, no-op implementation with
   the same restriction. Introduced specifically for `coreAuthApi`/`coreSyncApi` because
   those two capabilities have a real "there is legitimately no backend right now" state
-  (Firebase not configured, or user not signed in) that isn't a bug to work around but
-  the app's normal, fully-supported offline mode. A single impl with an internal
-  `if (configured) ... else noop` branch was rejected: it would pull Firebase/KMPAuth
-  dependencies into every build regardless of whether they're configured, and it would
-  make the offline path untestable without pretending to talk to Firebase in tests. A
-  compile-time-swappable `*Fake` module keeps Firebase out of the dependency graph
-  entirely when unconfigured, and out of every automated test always (see
-  `docs/testing.md`).
+  (no Firebase project wired up, or user not signed in) that isn't a bug to work around
+  but the app's normal, fully-supported offline mode. A single impl with an internal
+  `if (enabled) ... else noop` branch was rejected: it would pull Firebase/KMPAuth
+  dependencies into every build regardless of whether a developer wants them, and it
+  would make the offline path untestable without pretending to talk to Firebase in
+  tests. A build-time-swappable `*Fake` module keeps Firebase out of the dependency
+  graph entirely when the fake variant is selected, and out of every automated test
+  always (see `docs/testing.md`).
 
 `ui/*` and `navigation` depend on `*Api` modules directly (e.g. `uiChat` depends on
 `coreLlmApi`, `coreDatabaseApi`) but never on an `*Impl`/`*Fake` module. Apps
@@ -101,14 +101,34 @@ blocks.
 `@Single`-annotated implementations of the same `*Api` at wiring time**, rather than
 letting `@ComponentScan` pick up whichever one happens to exist:
 
-- `diApp` includes `coreAuthFirebase` and `coreSyncFirestore` as dependencies only when a
-  Firebase config is present at build time — a `google-services.json`-presence check
-  gating conditional application of the `com.google.gms.google-services` Gradle plugin,
-  analogous to how Android projects commonly guard that plugin today. **This mechanism
-  does not exist in this repo yet** — it's `docs/TASKS.md` row 5, described in full in
-  `docs/setup-firebase.md`. When the config is absent, `diApp` includes `coreAuthFake`
-  and `coreSyncFake` instead — a Gradle-level module substitution, not a runtime branch.
-- Even when `coreAuthFirebase`/`coreSyncFirestore` are present, `coreSyncFirestore`'s own
+- `diApp` includes `coreAuthFirebase` and `coreSyncFirebase`, or `coreAuthFake` and
+  `coreSyncFake`, based on a single explicit build flag, `IS_FAKE_DATA_ENABLED` —
+  read by `isFakeDataEnabled()` in
+  `buildSrc/src/main/kotlin/LocalPropertiesUtils.kt`: the `-DIS_FAKE_DATA_ENABLED=` JVM
+  system property wins if set, otherwise the `IS_FAKE_DATA_ENABLED=` key in
+  `local.properties`; missing, or anything other than `true`, means `false`. `diApp`'s
+  `commonMain.dependencies` picks the pair with a plain `if`/`else`:
+
+  ```kotlin
+  if (isFakeDataEnabled { gradleLocalProperties(rootDir, providers) }) {
+      implementation(projects.core.coreAuthFake)
+      implementation(projects.core.coreSyncFake)
+  } else {
+      implementation(projects.core.coreAuthFirebase)
+      implementation(projects.core.coreSyncFirebase)
+  }
+  ```
+
+  One flag selects both trios together — never a mix of fake and Firebase. **This
+  wiring does not exist in `diApp/build.gradle.kts` yet** — the lines above are
+  commented placeholders until `docs/TASKS.md` rows 6/7 build the `*Fake`/`*Firebase`
+  modules and row 9 flips the `if`/`else` live. CI (`.github/workflows/ci.yml`,
+  `screenshots.yml`) already passes `-DIS_FAKE_DATA_ENABLED=true`, so CI and screenshot
+  builds always run against the fake modules and never touch real Firebase. A developer
+  without a Firebase project sets `IS_FAKE_DATA_ENABLED=true` in `local.properties`;
+  leaving it unset builds the Firebase variant, which needs the config described in
+  `docs/setup-firebase.md`.
+- Even when `coreAuthFirebase`/`coreSyncFirebase` are selected, `coreSyncFirebase`'s own
   `start()` no-ops until `coreAuthApi.currentUser` emits a signed-in user. Signing out
   stops sync and leaves all local data in Room untouched — no data loss, just no further
   remote writes/reads.
@@ -179,7 +199,7 @@ GitLive's `Firebase.auth`/`Firebase.firestore` unauthenticated. See `docs/DECISI
 
 **Sync model:** Room is the local source of truth. Every synced row (`ChatEntity`,
 `ChatEntryEntity`, `LlmConfigEntity` minus `apiKey`) carries `updatedAt: Long`,
-`isDirty: Boolean`, `isDeleted: Boolean` (soft delete). `coreSyncFirestore` pushes dirty
+`isDirty: Boolean`, `isDeleted: Boolean` (soft delete). `coreSyncFirebase` pushes dirty
 rows to `users/{uid}/chats/{chatId}`, `users/{uid}/chats/{chatId}/entries/{entryId}`,
 `users/{uid}/llmConfigs/{configId}`, listens for remote changes, and merges them into
 Room using last-write-wins on `updatedAt`. API keys are excluded from the Firestore
@@ -221,8 +241,9 @@ the only adaptive surface.
    `*Fake` rationale above), each applying `id("composeMultiplatformConvention")`.
 2. Register all of them in `settings.gradle.kts`.
 3. Add the backend module(s) (never the Api module directly) as a `commonMain`
-   dependency of `diApp` — conditionally, per the auth/sync pattern above, if the module
-   pair represents an optional backend.
+   dependency of `diApp` — conditionally on `IS_FAKE_DATA_ENABLED` (or an equivalent
+   build flag), per the auth/sync pattern above, if the module pair represents an
+   optional backend.
 4. Add every new module to the `kover { dependencies { kover(projects...) } }` block in
    the root `build.gradle.kts` so coverage is aggregated, and add backend modules to
    `checkModuleBoundaries`'s `coreImplModulePaths`.

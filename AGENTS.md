@@ -41,10 +41,10 @@ core/coreLlmApi         Provider-agnostic LLM chat interface (streaming, tool-ca
 core/coreLlmKoog        Koog - backed implementation (Ollama/OpenAI/Anthropic/Google)
 core/coreAuthApi        Auth state/session interface (signed-in user or none)
 core/coreAuthFirebase   KMPAuth (Google) + GitLive Firebase Auth implementation
-core/coreAuthFake       No-op implementation: always signed-out, used when Firebase unconfigured
+core/coreAuthFake       No-op implementation: always signed-out, bound when IS_FAKE_DATA_ENABLED
 core/coreSyncApi        Sync interface: start/stop, sync-state observation
-core/coreSyncFirestore  Firestore LWW sync implementation; internally no-ops until signed in
-core/coreSyncFake       No-op implementation: bound (compile-time) when Firebase is unconfigured
+core/coreSyncFirebase   Firestore LWW sync implementation; internally no-ops until signed in
+core/coreSyncFake       No-op implementation: sync state permanently idle, bound when IS_FAKE_DATA_ENABLED
 ```
 
 Full dependency graph, the `*Api`/`*Impl`/`*Fake` rule, and the auth/sync wiring: see
@@ -92,17 +92,17 @@ Full command list per gate/target: `docs/quality-gates.md`.
     platform target", "add offline sync") gets broken into an ordered list in
     `docs/TASKS.md` before any code changes start.
 11. `coreAuthApi`/`coreSyncApi` **consumers** (`ui/*`, `navigation`) never branch on "is
-    Firebase configured?" or "is the user signed in?" — they just read
-    `coreAuthApi.currentUser`/`coreSyncApi`'s state flow like any other data. Whether
-    Firebase is configured at all is decided once, at compile time, by which concrete
-    module `diApp` binds (`*Firebase`/`*Firestore` vs `*Fake`) — that's what makes "app
-    works offline until Firebase is configured" a wiring fact, not a runtime `if` some
-    screen has to remember. Whether the user is currently signed in is a legitimate
-    runtime check, but it lives **inside** `coreSyncFirestore` itself (its `start()`
-    no-ops until `coreAuthApi.currentUser` is non-null) — not in anything that merely
-    consumes `coreSyncApi`.
+    the app running in fake mode?" or "is the user signed in?" — they just read
+    `coreAuthApi.currentUser`/`coreSyncApi`'s state flow like any other data. Which
+    variant is active at all is decided once, at build time, by the `IS_FAKE_DATA_ENABLED`
+    flag selecting which concrete module `diApp` binds (`*Firebase` vs `*Fake`, always as
+    a pair) — that's what makes "app works offline without Firebase" a wiring fact, not a
+    runtime `if` some screen has to remember. Whether the user is currently signed in is a
+    legitimate runtime check, but it lives **inside** `coreSyncFirebase` itself (its
+    `start()` no-ops until `coreAuthApi.currentUser` is non-null) — not in anything that
+    merely consumes `coreSyncApi`.
 12. API keys (`LlmConfig.apiKey`) never leave the device. Every sync DTO/mapper in
-    `coreSyncFirestore` must exclude that field explicitly — this is a security
+    `coreSyncFirebase` must exclude that field explicitly — this is a security
     constraint, not a default that can be relaxed by a future `SyncLevel` setting without
     a new `docs/DECISIONS.md` entry explaining the tradeoff.
 13. Every user-facing feature has a row in `docs/features.json` with a verification
@@ -194,6 +194,8 @@ and validation agents hand off to each other across a `docs/TASKS.md` row.
   verification command, state). See `docs/agent-workflow.md` for the pass-state gating
   rule around it.
 - `docs/setup-firebase.md` — how to configure the Firebase project, per-platform config
-  files, and local.properties keys needed for auth + sync.
+  files, and local.properties keys needed for auth + sync. Only relevant when
+  `IS_FAKE_DATA_ENABLED` is unset/`false`; set it to `true` to skip Firebase setup
+  entirely and run against the fake modules.
 - `docs/agent-workflow.md` — how research/build/validator agents hand off work on this
   repo, and what state each step is allowed to change.
