@@ -22,7 +22,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
   Rows 1 (rename/initialization), 2 (database layer), 3 (Koog non-JVM spike) and 4
-  (`coreLlmApi`/`coreLlmKoog`) are `passing`, so there are now 17 Gradle modules; the
+  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), so there are now 19 Gradle modules; the
   remaining target-map modules are still `not_started` in `docs/TASKS.md`.
 - One open risk is flagged rather than resolved, because it needs an actual build to
   answer, not more research: whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
@@ -39,6 +39,20 @@ to `main`, don't let this turn into a changelog (git history already is one).
 - (none)
 
 ## Recently done
+
+- `docs/TASKS.md` row 6, **fake half only**, done at the user's request. Row 5
+  (real Firebase project) needs console access, so it was skipped. New
+  `core/coreAuthApi` (`AuthService`, `AuthUser`) and `core/coreAuthFake`
+  (`AuthServiceFake`: starts signed out; `signInWithGoogleIdToken` creates an in-memory
+  `AuthUser`, `signOut` clears it). Both are registered in settings,
+  kover, and `coreImplModulePaths`. `diApp` depends on `coreAuthFake` in the
+  `IS_FAKE_DATA_ENABLED=true` branch. `CoreAuthFakeModule` is `@Configuration`, so
+  `DiKoinApplication` auto-loads it (see `docs/DECISIONS.md`). `coreAuthFake` has no
+  tests of its own. `diApp`'s `AuthServiceCommonTest` (6 tests in `src/commonTestFake`,
+  compiled only when the flag is true) resolves `AuthService` from the real app graph and
+  checks every `currentUser` emission. It passes on jvm/js/wasmJs/iOS sim.
+  `KoinAppCommonTest` and `:app:desktopApp:jar` pass under both flag values. `diApp` now has Koin `compileSafety = false` because of a KOIN-D002 false positive (see `docs/DECISIONS.md`). Nothing consumes `AuthService` yet. Row 6 is `blocked` on row 5 for
+  `coreAuthFirebase`.
 
 - `docs/TASKS.md` row 4: `coreLlmApi` (`LlmService`, `LlmSessionManager`, `ChatResult`;
   re-exports `coreDatabaseApi`) + `coreLlmKoog` (`LlmClientFactory` for
@@ -105,6 +119,8 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Next steps
 
+- Without Firebase access, the next fake-only step is row 7's fake half:
+  `coreSyncApi` + `coreSyncFake`, mirroring `coreAuthFake` including `@Configuration`.
 - Start `docs/TASKS.md` row 5: set up a real (test) Firebase project per
   `docs/setup-firebase.md` and implement the desktop/web `local.properties` reader. This
   needs the user: Firebase console access and Google sign-in configuration.

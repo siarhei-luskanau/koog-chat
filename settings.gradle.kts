@@ -5,6 +5,8 @@ include(
     ":app:androidApp",
     ":app:desktopApp",
     ":app:webApp",
+    ":core:coreAuthApi",
+    ":core:coreAuthFake",
     ":core:coreCommon",
     ":core:coreDatabaseApi",
     ":core:coreDatabaseRoom",

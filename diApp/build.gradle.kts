@@ -6,6 +6,12 @@ plugins {
     id("roborazziConvention")
 }
 
+koinCompiler {
+    // KOIN-D002 false positive on JS/WasmJs: the compile-safety checker can't see @Configuration
+    // modules pulled in from dependency klibs, though they resolve at runtime (AuthServiceCommonTest).
+    compileSafety = false
+}
+
 kotlin {
     android.namespace = "koog.chat.di"
     sourceSets {
@@ -20,12 +26,18 @@ kotlin {
             implementation(projects.ui.uiMain)
             implementation(projects.ui.uiSplash)
             if (isFakeDataEnabled { gradleLocalProperties(rootDir, providers) }) {
-                // implementation(projects.core.coreAuthFake)
+                implementation(projects.core.coreAuthFake)
                 // implementation(projects.core.coreSyncFake)
             } else {
                 // implementation(projects.core.coreAuthFirebase)
                 // implementation(projects.core.coreSyncFirebase)
             }
+        }
+        commonTest.dependencies {
+            implementation(libs.koin.compose)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(projects.core.coreAuthApi)
         }
     }
 }

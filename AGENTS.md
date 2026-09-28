@@ -41,7 +41,7 @@ core/coreLlmApi         Provider-agnostic LLM chat interface (streaming, tool-ca
 core/coreLlmKoog        Koog - backed implementation (Ollama/OpenAI/Anthropic/Google)
 core/coreAuthApi        Auth state/session interface (signed-in user or none)
 core/coreAuthFirebase   KMPAuth (Google) + GitLive Firebase Auth implementation
-core/coreAuthFake       No-op implementation: always signed-out, bound when IS_FAKE_DATA_ENABLED
+core/coreAuthFake       In-memory fake: sign-in creates a user, sign-out clears it; bound when IS_FAKE_DATA_ENABLED
 core/coreSyncApi        Sync interface: start/stop, sync-state observation
 core/coreSyncFirebase   Firestore LWW sync implementation; internally no-ops until signed in
 core/coreSyncFake       No-op implementation: sync state permanently idle, bound when IS_FAKE_DATA_ENABLED

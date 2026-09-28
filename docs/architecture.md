@@ -35,7 +35,7 @@ core/coreLlmApi         Provider-agnostic chat/streaming interface
 core/coreLlmKoog        Koog implementation (Ollama/OpenAI/Anthropic/Google)
 core/coreAuthApi        Auth session interface: current user, sign-in, sign-out
 core/coreAuthFirebase   KMPAuth (kmpauth-google) + GitLive Firebase Auth implementation
-core/coreAuthFake       Always-signed-out no-op, bound (compile-time) when IS_FAKE_DATA_ENABLED
+core/coreAuthFake       In-memory fake: sign-in creates a user, sign-out clears it; bound (compile-time) when IS_FAKE_DATA_ENABLED
 core/coreSyncApi        Sync interface: start/stop, sync-state observation
 core/coreSyncFirebase   Firestore LWW sync implementation; internally no-ops until signed in
 core/coreSyncFake       No-op, sync state permanently idle, bound (compile-time) when IS_FAKE_DATA_ENABLED
@@ -119,10 +119,12 @@ letting `@ComponentScan` pick up whichever one happens to exist:
   }
   ```
 
-  One flag selects both trios together — never a mix of fake and Firebase. **This
-  wiring does not exist in `diApp/build.gradle.kts` yet** — the lines above are
-  commented placeholders until `docs/TASKS.md` rows 6/7 build the `*Fake`/`*Firebase`
-  modules and row 9 flips the `if`/`else` live. CI (`.github/workflows/ci.yml`,
+  One flag selects both trios together — never a mix of fake and Firebase. **Only the
+  `coreAuthFake` line is live so far** (row 6, fake half); the other three are
+  commented placeholders until rows 6/7 build the remaining modules and row 9 finishes
+  the `if`/`else`. Each auth/sync backend module's Koin `@Module` is also annotated
+  `@Configuration`, so `DiKoinApplication` auto-includes whichever variant is on the
+  classpath without naming either class (see `docs/DECISIONS.md`). CI (`.github/workflows/ci.yml`,
   `screenshots.yml`) already passes `-DIS_FAKE_DATA_ENABLED=true`, so CI and screenshot
   builds always run against the fake modules and never touch real Firebase. A developer
   without a Firebase project sets `IS_FAKE_DATA_ENABLED=true` in `local.properties`;

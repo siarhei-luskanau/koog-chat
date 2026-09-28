@@ -393,3 +393,32 @@ property builds against real Firebase and needs the setup in `docs/setup-firebas
 before it links. Anyone who wants the offline-only fake build locally must explicitly
 set `IS_FAKE_DATA_ENABLED=true` in `local.properties`; it is not inferred from the
 absence of Firebase config files.
+
+## Auth/sync backend Koin modules auto-load via `@Configuration`, not `DiKoinApplication`'s list
+
+**Decision:** `coreAuthFake`'s `CoreAuthFakeModule` (and, by the same rule, the future
+`coreAuthFirebase`/`coreSyncFake`/`coreSyncFirebase` modules) is annotated
+`@Module @Configuration @ComponentScan`. `DiKoinApplication`'s `@KoinApplication` picks up
+every `@Configuration` module on the classpath, so it never names an auth/sync module
+class. Verified with a throwaway `diApp` test resolving `AuthService` under
+`-DIS_FAKE_DATA_ENABLED=true` (2026-09-28).
+
+**Rejected alternatives:** listing `CoreAuthFakeModule::class` in `DiKoinApplication`
+doesn't compile in the Firebase variant, where `coreAuthFake` isn't a dependency. Giving
+the fake and Firebase modules the same fully qualified class name would compile both
+ways, but two modules would declare one class, and it breaks the moment both are on a
+test classpath. Per-flag `diApp` source sets would add build logic just to choose one
+class reference.
+
+**Non-obvious cost:** nothing in `diApp`'s source lists the auth/sync modules. Whether one
+is bound depends on the Gradle `if`/`else` alone. Under `IS_FAKE_DATA_ENABLED=false`, with
+`coreAuthFirebase` not built yet, the graph has no `AuthService` binding. That's harmless
+until a consumer injects it (row 10+), and row 9's `KoinAppCommonTest` extension must
+cover both flag values. `diApp/src/commonTestFake` (compiled only when the flag is true)
+holds `AuthServiceCommonTest`, which resolves `AuthService` from `DiKoinApplication`.
+It passes on jvm/js/wasmJs/iOS sim. The Koin compile-safety check still reports it as
+KOIN-D002 "missing definition" on JS/WasmJs, because it can't see `@Configuration` modules
+from dependency klibs. So `diApp` sets `koinCompiler { compileSafety = false }`, as
+`corePrefDatastore`/`coreDatabaseRoom` already do. That also turns the compile-time check
+off for `diApp`'s own graph. Passing a test-only `compileSafety=false` compiler argument
+was tried and rejected by the plugin ("Multiple values are not allowed").

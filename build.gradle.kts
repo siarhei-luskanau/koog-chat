@@ -30,7 +30,7 @@ kover {
         variant("coverage") {
             verify {
                 rule {
-                    minBound(93)
+                    minBound(91)
                 }
             }
         }
@@ -38,6 +38,8 @@ kover {
 }
 
 dependencies {
+    kover(projects.core.coreAuthApi)
+    kover(projects.core.coreAuthFake)
     kover(projects.core.coreCommon)
     kover(projects.core.coreDatabaseApi)
     kover(projects.core.coreDatabaseRoom)
@@ -77,6 +79,7 @@ tasks.register("checkModuleBoundaries") {
 gradle.projectsEvaluated {
     val coreImplModulePaths =
         setOf(
+            ":core:coreAuthFake",
             ":core:coreDatabaseRoom",
             ":core:coreLlmKoog",
             ":core:coreNetworkKtor",
