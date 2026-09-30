@@ -89,7 +89,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
-      - run: ./gradlew clean ${{ matrix.gradle-tasks }} --stacktrace
+      - run: ./gradlew clean ${{ matrix.gradle-tasks }} -DIS_FAKE_DATA_ENABLED=true --stacktrace
 
       - name: Get task name
         if: always()
@@ -205,7 +205,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
-      - run: ./gradlew assembleDebug assembleRelease --stacktrace
+      - run: ./gradlew assembleDebug assembleRelease -DIS_FAKE_DATA_ENABLED=true --stacktrace
+      - run: ./gradlew assembleDebug assembleRelease -DIS_FAKE_DATA_ENABLED=false --stacktrace
 
 
 
@@ -223,7 +224,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
-      - run: ./gradlew :app:desktopApp:jar --stacktrace
+      - run: ./gradlew :app:desktopApp:jar -DIS_FAKE_DATA_ENABLED=true --stacktrace
+      - run: ./gradlew :app:desktopApp:jar -DIS_FAKE_DATA_ENABLED=false --stacktrace
 
 
 
@@ -241,8 +243,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
-      - run: ./gradlew :app:webApp:jsMainClasses --stacktrace
-      - run: ./gradlew :app:webApp:jsBrowserDistribution --stacktrace
+      - run: ./gradlew :app:webApp:jsMainClasses -DIS_FAKE_DATA_ENABLED=true --stacktrace
+      - run: ./gradlew :app:webApp:jsBrowserDistribution -DIS_FAKE_DATA_ENABLED=true --stacktrace
+      - run: ./gradlew :app:webApp:jsMainClasses -DIS_FAKE_DATA_ENABLED=false --stacktrace
 
 
 
@@ -260,8 +263,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
-      - run: ./gradlew :app:webApp:wasmJsMainClasses --stacktrace
-      - run: ./gradlew :app:webApp:wasmJsBrowserDistribution --stacktrace
+      - run: ./gradlew :app:webApp:wasmJsMainClasses -DIS_FAKE_DATA_ENABLED=false --stacktrace
+      - run: ./gradlew :app:webApp:wasmJsBrowserDistribution -DIS_FAKE_DATA_ENABLED=false --stacktrace
+      - run: ./gradlew :app:webApp:wasmJsMainClasses -DIS_FAKE_DATA_ENABLED=true --stacktrace
 
 
 
