@@ -34,7 +34,7 @@ ktlint = "1.8.0"
 ktor = "3.6.0"
 leakcanary = "2.14"
 robolectric = "4.17"
-roborazzi = "1.75.0"
+roborazzi = "1.76.0"
 
 [libraries]
 android-tools-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
