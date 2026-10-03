@@ -7,6 +7,7 @@ include(
     ":app:webApp",
     ":core:coreAuthApi",
     ":core:coreAuthFake",
+    ":core:coreAuthFirebase",
     ":core:coreCommon",
     ":core:coreDatabaseApi",
     ":core:coreDatabaseRoom",

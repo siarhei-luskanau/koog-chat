@@ -412,7 +412,7 @@ class reference.
 
 **Non-obvious cost:** nothing in `diApp`'s source lists the auth/sync modules. Whether one
 is bound depends on the Gradle `if`/`else` alone. Under `IS_FAKE_DATA_ENABLED=false`, with
-`coreAuthFirebase` not built yet, the graph has no `AuthService` binding. That's harmless
+`coreAuthFirebase` still empty (KMPAuth dependency only, no sources), the graph has no `AuthService` binding. That's harmless
 until a consumer injects it (row 10+), and row 9's `KoinAppCommonTest` extension must
 cover both flag values. `diApp/src/commonTestFake` (compiled only when the flag is true)
 holds `AuthServiceCommonTest`, which resolves `AuthService` from `DiKoinApplication`.

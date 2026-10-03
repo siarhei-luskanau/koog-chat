@@ -40,6 +40,7 @@ kover {
 dependencies {
     kover(projects.core.coreAuthApi)
     kover(projects.core.coreAuthFake)
+    kover(projects.core.coreAuthFirebase)
     kover(projects.core.coreCommon)
     kover(projects.core.coreDatabaseApi)
     kover(projects.core.coreDatabaseRoom)
@@ -80,6 +81,7 @@ gradle.projectsEvaluated {
     val coreImplModulePaths =
         setOf(
             ":core:coreAuthFake",
+            ":core:coreAuthFirebase",
             ":core:coreDatabaseRoom",
             ":core:coreLlmKoog",
             ":core:coreNetworkKtor",
@@ -147,8 +149,6 @@ tasks.register("ciIos") {
     val injected = project.objects.newInstance<Injected>()
     doLast {
         if (Os.isFamily(Os.FAMILY_MAC)) {
-            injected.runExec(listOf("brew", "install", "kdoctor"))
-            injected.runExec(listOf("kdoctor"))
             val devicesJson =
                 injected.runExec(
                     listOf(

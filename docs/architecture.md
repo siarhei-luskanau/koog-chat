@@ -120,9 +120,10 @@ letting `@ComponentScan` pick up whichever one happens to exist:
   ```
 
   One flag selects both trios together — never a mix of fake and Firebase. **Only the
-  `coreAuthFake` line is live so far** (row 6, fake half); the other three are
-  commented placeholders until rows 6/7 build the remaining modules and row 9 finishes
-  the `if`/`else`. Each auth/sync backend module's Koin `@Module` is also annotated
+  `coreAuthFake` and `coreAuthFirebase` lines are live so far** (row 6; `coreAuthFirebase`
+  carries only the KMPAuth dependency, no sources yet); the two sync lines are
+  commented placeholders until row 7 builds those modules and row 9 finishes the
+  `if`/`else`. Each auth/sync backend module's Koin `@Module` is also annotated
   `@Configuration`, so `DiKoinApplication` auto-includes whichever variant is on the
   classpath without naming either class (see `docs/DECISIONS.md`). CI (`.github/workflows/ci.yml`,
   `screenshots.yml`) already passes `-DIS_FAKE_DATA_ENABLED=true`, so CI and screenshot

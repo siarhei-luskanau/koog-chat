@@ -21,6 +21,7 @@ jetbrains-navigation3 = "1.1.2"
 jetbrains-savedstate = "1.4.0"
 jetbrains-window = "1.5.1"
 junit = "4.13.2"
+kmpauth = "3.0.6"
 koin-bom = "4.2.2"
 koin-plugin = "1.2.1"
 koog = "1.3.0"
@@ -72,6 +73,8 @@ jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:naviga
 jetbrains-savedstate-compose = { module = "org.jetbrains.androidx.savedstate:savedstate-compose", version.ref = "jetbrains-savedstate" }
 jetbrains-window-core = { module = "org.jetbrains.androidx.window:window-core", version.ref = "jetbrains-window" }
 junit = { module = "junit:junit", version.ref = "junit" }
+kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauth" }
+kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauth" }
 koin-annotations = { module = "io.insert-koin:koin-annotations" }
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-compose = { module = "io.insert-koin:koin-compose" }

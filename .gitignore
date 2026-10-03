@@ -20,3 +20,5 @@ Pods/
 /app/iosApp/Podfile.lock
 /app/iosApp/iosApp.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 /app/iosApp/iosApp.xcworkspace/contents.xcworkspacedata
+.swiftpm-locks/
+/app/iosApp/KotlinMultiplatformLinkedPackage/
