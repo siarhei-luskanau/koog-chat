@@ -422,3 +422,27 @@ from dependency klibs. So `diApp` sets `koinCompiler { compileSafety = false }`,
 `corePrefDatastore`/`coreDatabaseRoom` already do. That also turns the compile-time check
 off for `diApp`'s own graph. Passing a test-only `compileSafety=false` compiler argument
 was tried and rejected by the plugin ("Multiple values are not allowed").
+
+## iOS native SDKs via Swift Package Manager, with Kotlin's linkage package committed
+
+**Decision:** KMPAuth 3.x needs GoogleSignIn through SwiftPM (it dropped CocoaPods). So
+`app/iosApp/iosApp.xcodeproj` references the `GoogleSignIn-iOS` remote package (product
+`GoogleSignIn`, up to next major from 9.1.0, matching KMPAuth's sample app). It also
+references the local `app/iosApp/KotlinMultiplatformLinkedPackage` that
+`:diApp:integrateLinkagePackage` generates, and both are committed along with
+`Package.resolved`. Added 2026-10-04.
+
+**Rejected alternatives:** CocoaPods isn't supported by KMPAuth 3.x. Leaving out the
+linkage package isn't an option, because Kotlin 2.4's `embedAndSign` integration fails the
+Xcode build ("SwiftPM linkage package not integrated into Xcode project") whenever any
+dependency declares `swiftPMDependencies`. Generating it in CI instead would mean CI
+mutates the Xcode project on every run.
+
+**Non-obvious cost:** the linkage package is generated from the Firebase variant's
+dependency graph (`-DIS_FAKE_DATA_ENABLED=false`). Its subpackage names encode the
+artifact and version (e.g. `io_github_mirzemehdi_kmpauth_google_3_0_6`), so every
+SwiftPM-backed dependency change needs `integrateLinkagePackage` re-run and committed.
+The command is in `docs/setup-firebase.md`. The fake variant still builds with that
+package in place: verified with `xcodebuild` under both flag values. Running the task also
+rewrote `project.pbxproj` without Xcode's inline `/* ... */` comments. That's
+cosmetic, and Xcode restores them the next time it saves the project.

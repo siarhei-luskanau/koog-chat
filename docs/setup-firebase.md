@@ -32,7 +32,22 @@ verification needs a real project to run against, not after.
 1. Add an iOS app in the Firebase console with bundle ID `koog.chat.app`.
 2. Download `GoogleService-Info.plist` into `app/iosApp/iosApp/`.
 3. Add the **reversed client ID** (from that plist) as a URL scheme under iosApp's
-   Info.plist / URL Types, required for the Google sign-in redirect to complete.
+   Info.plist / URL Types, required for the Google sign-in redirect to complete. Per
+   KMPAuth's Google guide, also add `GIDClientID`/`GIDServerClientID` to Info.plist and
+   forward `onOpenURL` to `GIDSignIn.sharedInstance.handle(url)` in `iosApp.swift`.
+
+The native SDK side is already in the Xcode project (no CocoaPods — KMPAuth 3.x dropped
+it): the `GoogleSignIn-iOS` Swift package (product `GoogleSignIn`, up to next major from
+9.1.0) and Kotlin's generated `app/iosApp/KotlinMultiplatformLinkedPackage` local package.
+`kmpauth-google` declares GoogleSignIn through Kotlin's `swiftPMDependencies {}`, and
+`embedAndSignAppleFrameworkForXcode` fails with "SwiftPM linkage package not integrated
+into Xcode project" until that linkage package is wired in. Whenever a SwiftPM-backed
+dependency is added or bumped (e.g. a KMPAuth version change, or GitLive's Firebase
+modules in rows 6/7), regenerate it with the Firebase variant active and commit the result:
+
+```
+XCODEPROJ_PATH="$PWD/app/iosApp/iosApp.xcodeproj" ./gradlew -DIS_FAKE_DATA_ENABLED=false :diApp:integrateLinkagePackage
+```
 
 ## 4. Desktop (JVM) and Web (JS/WasmJs)
 

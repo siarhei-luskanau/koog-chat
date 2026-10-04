@@ -7,23 +7,63 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A93A953B29CC810C00F8E227 /* iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93A953A29CC810C00F8E227 /* iosApp.swift */; };
-		A93A953F29CC810D00F8E227 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A93A953E29CC810D00F8E227 /* Assets.xcassets */; };
-		A93A954229CC810D00F8E227 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A93A954129CC810D00F8E227 /* Preview Assets.xcassets */; };
+		9C29FD35498773673F1629A8 = {
+			isa = PBXBuildFile;
+			productRef = F7548170986977E88E6BB9CE;
+		};
+		A93A953B29CC810C00F8E227 = {
+			isa = PBXBuildFile;
+			fileRef = A93A953A29CC810C00F8E227;
+		};
+		A93A953F29CC810D00F8E227 = {
+			isa = PBXBuildFile;
+			fileRef = A93A953E29CC810D00F8E227;
+		};
+		A93A954229CC810D00F8E227 = {
+			isa = PBXBuildFile;
+			fileRef = A93A954129CC810D00F8E227;
+		};
+		B10C5A012E9F000100A1B2C3 = {
+			isa = PBXBuildFile;
+			productRef = B10C5A022E9F000100A1B2C3;
+		};
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A93A953729CC810C00F8E227 /* koog-chat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "koog-chat.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A93A953A29CC810C00F8E227 /* iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosApp.swift; sourceTree = "<group>"; };
-		A93A953E29CC810D00F8E227 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A93A954129CC810D00F8E227 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A93A953729CC810C00F8E227 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = "koog-chat.app";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A93A953A29CC810C00F8E227 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = iosApp.swift;
+			sourceTree = "<group>";
+		};
+		A93A953E29CC810D00F8E227 = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Assets.xcassets;
+			sourceTree = "<group>";
+		};
+		A93A954129CC810D00F8E227 = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = "Preview Assets.xcassets";
+			sourceTree = "<group>";
+		};
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A93A953429CC810C00F8E227 /* Frameworks */ = {
+		A93A953429CC810C00F8E227 = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B10C5A012E9F000100A1B2C3,
+				9C29FD35498773673F1629A8,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,39 +73,39 @@
 		A93A952E29CC810C00F8E227 = {
 			isa = PBXGroup;
 			children = (
-				A93A953929CC810C00F8E227 /* iosApp */,
-				A93A953829CC810C00F8E227 /* Products */,
-				C4127409AE3703430489E7BC /* Frameworks */,
+				A93A953929CC810C00F8E227,
+				A93A953829CC810C00F8E227,
+				C4127409AE3703430489E7BC,
 			);
 			sourceTree = "<group>";
 		};
-		A93A953829CC810C00F8E227 /* Products */ = {
+		A93A953829CC810C00F8E227 = {
 			isa = PBXGroup;
 			children = (
-				A93A953729CC810C00F8E227 /* koog-chat.app */,
+				A93A953729CC810C00F8E227,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A93A953929CC810C00F8E227 /* iosApp */ = {
+		A93A953929CC810C00F8E227 = {
 			isa = PBXGroup;
 			children = (
-				A93A953A29CC810C00F8E227 /* iosApp.swift */,
-				A93A953E29CC810D00F8E227 /* Assets.xcassets */,
-				A93A954029CC810D00F8E227 /* Preview Content */,
+				A93A953A29CC810C00F8E227,
+				A93A953E29CC810D00F8E227,
+				A93A954029CC810D00F8E227,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
 		};
-		A93A954029CC810D00F8E227 /* Preview Content */ = {
+		A93A954029CC810D00F8E227 = {
 			isa = PBXGroup;
 			children = (
-				A93A954129CC810D00F8E227 /* Preview Assets.xcassets */,
+				A93A954129CC810D00F8E227,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		C4127409AE3703430489E7BC /* Frameworks */ = {
+		C4127409AE3703430489E7BC = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -75,28 +115,32 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A93A953629CC810C00F8E227 /* iosApp */ = {
+		A93A953629CC810C00F8E227 = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A93A954529CC810D00F8E227 /* Build configuration list for PBXNativeTarget "iosApp" */;
+			buildConfigurationList = A93A954529CC810D00F8E227;
 			buildPhases = (
-				A9D80A052AAB5CDE006C8738 /* ShellScript */,
-				A93A953329CC810C00F8E227 /* Sources */,
-				A93A953429CC810C00F8E227 /* Frameworks */,
-				A93A953529CC810C00F8E227 /* Resources */,
+				A9D80A052AAB5CDE006C8738,
+				A93A953329CC810C00F8E227,
+				A93A953429CC810C00F8E227,
+				A93A953529CC810C00F8E227,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = iosApp;
+			packageProductDependencies = (
+				B10C5A022E9F000100A1B2C3,
+				F7548170986977E88E6BB9CE,
+			);
 			productName = iosApp;
-			productReference = A93A953729CC810C00F8E227 /* koog-chat.app */;
+			productReference = A93A953729CC810C00F8E227;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A93A952F29CC810C00F8E227 /* Project object */ = {
+		A93A952F29CC810C00F8E227 = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1420;
@@ -107,7 +151,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A93A953229CC810C00F8E227 /* Build configuration list for PBXProject "iosApp" */;
+			buildConfigurationList = A93A953229CC810C00F8E227;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -116,29 +160,33 @@
 				Base,
 			);
 			mainGroup = A93A952E29CC810C00F8E227;
-			productRefGroup = A93A953829CC810C00F8E227 /* Products */;
+			packageReferences = (
+				B10C5A032E9F000100A1B2C3,
+				152CABB17FF84BFC523C9260,
+			);
+			productRefGroup = A93A953829CC810C00F8E227;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A93A953629CC810C00F8E227 /* iosApp */,
+				A93A953629CC810C00F8E227,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A93A953529CC810C00F8E227 /* Resources */ = {
+		A93A953529CC810C00F8E227 = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A93A954229CC810D00F8E227 /* Preview Assets.xcassets in Resources */,
-				A93A953F29CC810D00F8E227 /* Assets.xcassets in Resources */,
+				A93A954229CC810D00F8E227,
+				A93A953F29CC810D00F8E227,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		A9D80A052AAB5CDE006C8738 /* ShellScript */ = {
+		A9D80A052AAB5CDE006C8738 = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -158,18 +206,18 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A93A953329CC810C00F8E227 /* Sources */ = {
+		A93A953329CC810C00F8E227 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A93A953B29CC810C00F8E227 /* iosApp.swift in Sources */,
+				A93A953B29CC810C00F8E227,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		A93A954329CC810D00F8E227 /* Debug */ = {
+		A93A954329CC810D00F8E227 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -229,7 +277,7 @@
 			};
 			name = Debug;
 		};
-		A93A954429CC810D00F8E227 /* Release */ = {
+		A93A954429CC810D00F8E227 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -283,7 +331,7 @@
 			};
 			name = Release;
 		};
-		A93A954629CC810D00F8E227 /* Debug */ = {
+		A93A954629CC810D00F8E227 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -309,7 +357,7 @@
 			};
 			name = Debug;
 		};
-		A93A954729CC810D00F8E227 /* Release */ = {
+		A93A954729CC810D00F8E227 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -337,25 +385,55 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A93A953229CC810C00F8E227 /* Build configuration list for PBXProject "iosApp" */ = {
+		A93A953229CC810C00F8E227 = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A93A954329CC810D00F8E227 /* Debug */,
-				A93A954429CC810D00F8E227 /* Release */,
+				A93A954329CC810D00F8E227,
+				A93A954429CC810D00F8E227,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A93A954529CC810D00F8E227 /* Build configuration list for PBXNativeTarget "iosApp" */ = {
+		A93A954529CC810D00F8E227 = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A93A954629CC810D00F8E227 /* Debug */,
-				A93A954729CC810D00F8E227 /* Release */,
+				A93A954629CC810D00F8E227,
+				A93A954729CC810D00F8E227,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		152CABB17FF84BFC523C9260 = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = KotlinMultiplatformLinkedPackage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B10C5A032E9F000100A1B2C3 = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B10C5A022E9F000100A1B2C3 = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10C5A032E9F000100A1B2C3;
+			productName = GoogleSignIn;
+		};
+		F7548170986977E88E6BB9CE = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KotlinMultiplatformLinkedPackage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = A93A952F29CC810C00F8E227 /* Project object */;
+	rootObject = A93A952F29CC810C00F8E227;
 }

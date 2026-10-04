@@ -22,7 +22,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
   Rows 1 (rename/initialization), 2 (database layer), 3 (Koog non-JVM spike) and 4
-  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), so there are now 19 Gradle modules; the
+  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), and `coreAuthFirebase` was added with only its KMPAuth dependency, so there are now 20 Gradle modules; the
   remaining target-map modules are still `not_started` in `docs/TASKS.md`.
 - One open risk is flagged rather than resolved, because it needs an actual build to
   answer, not more research: whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
@@ -39,6 +39,24 @@ to `main`, don't let this turn into a changelog (git history already is one).
 - (none)
 
 ## Recently done
+
+- KMPAuth dependency added on every target (row 6, Firebase half started). New
+  `core/coreAuthFirebase` has no sources yet. Its `commonMain` depends on `coreAuthApi` and
+  `kmpauth-google` 3.0.6 (`libs.kmpauth.google`). It's registered in settings, kover and
+  `coreImplModulePaths`, and live in `diApp`'s `IS_FAKE_DATA_ENABLED=false` branch, so the
+  Firebase variant still has no `AuthService` binding. iOS: the `GoogleSignIn-iOS` SwiftPM
+  package and Kotlin's `KotlinMultiplatformLinkedPackage` are wired into the Xcode
+  project (see `docs/DECISIONS.md`, and `docs/setup-firebase.md` for the regenerate
+  command). Verified under `-DIS_FAKE_DATA_ENABLED=false`: `:app:desktopApp:jar`,
+  `:diApp:compileKotlinJs`/`WasmJs`, `:app:androidApp:assembleDebug` + `lint`,
+  `:diApp:linkDebugFrameworkIosSimulatorArm64`, `:diApp:iosSimulatorArm64Test`,
+  `:diApp:jvmTest`. `xcodebuild` (iOS simulator, arm64) passes under both flag values.
+  `ktlintCheck detekt checkModuleBoundaries` are clean. Added a shared
+  `xcshareddata/xcschemes/iosApp.xcscheme`: `ciIos` runs `xcodebuild -scheme iosApp`, and
+  with Swift packages in the project Xcode no longer reliably auto-generates that scheme.
+  `./gradlew ciIos` passes. Not done: Info.plist client IDs,
+  the `onOpenURL` handler, `KMPAuth.initialize`, and the `AuthService` implementation. All
+  of these need row 5's real Firebase project.
 
 - `docs/TASKS.md` row 6, **fake half only**, done at the user's request. Row 5
   (real Firebase project) needs console access, so it was skipped. New

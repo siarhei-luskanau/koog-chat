@@ -29,7 +29,7 @@ kotlin {
                 implementation(projects.core.coreAuthFake)
                 // implementation(projects.core.coreSyncFake)
             } else {
-                // implementation(projects.core.coreAuthFirebase)
+                implementation(projects.core.coreAuthFirebase)
                 // implementation(projects.core.coreSyncFirebase)
             }
         }
