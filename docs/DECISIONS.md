@@ -446,3 +446,23 @@ The command is in `docs/setup-firebase.md`. The fake variant still builds with t
 package in place: verified with `xcodebuild` under both flag values. Running the task also
 rewrote `project.pbxproj` without Xcode's inline `/* ... */` comments. That's
 cosmetic, and Xcode restores them the next time it saves the project.
+
+## Google ID token comes from a `@Composable` `GoogleIdTokenProvider`, not from `AuthService`
+
+**Decision:** `coreAuthApi` exposes `GoogleIdTokenProvider.rememberGoogleSignInLauncher(onResult)`
+(`@Composable`, returns a `GoogleSignInLauncher`), bound by both `coreAuthFirebase` (KMPAuth)
+and `coreAuthFake` (fixed token). `AuthService` keeps `signInWithGoogleIdToken(idToken)`. The UI
+wires the two together. Added 2026-10-04.
+
+**Rejected alternatives:** a `suspend fun signInWithGoogle()` on `AuthService` doesn't work,
+because KMPAuth 3.x only gives out its sign-in UI provider from a `@Composable`
+(`GoogleAuthProvider.getUiProvider()`), and on Android it needs the current Activity's
+context. Calling KMPAuth's `rememberGoogleSignInState` directly from `ui/uiAuth` was also
+rejected: `ui/*` can't depend on `coreAuthFirebase` (constraint #2), and a fake-mode build
+would have no token source without a runtime branch (constraint #11).
+
+**Non-obvious cost:** an `*Api` module now has a Compose-typed member. That's fine, since
+every module applies `composeMultiplatformConvention` and gets Compose runtime anyway, but it
+means `coreAuthApi` can't be consumed by a non-Compose module. `KMPAuth.initialize` runs in
+the `@Single`'s constructor, not at app start. KMPAuth keeps the first configuration, so
+repeated Koin graphs (tests) are harmless.

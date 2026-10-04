@@ -26,9 +26,6 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.androidx.sqlite.bundled)
         }
-        commonTest.dependencies {
-            implementation(libs.kotlinx.coroutines.test)
-        }
         jvmMain.dependencies {
             implementation(libs.androidx.sqlite.bundled)
         }

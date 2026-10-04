@@ -121,8 +121,8 @@ letting `@ComponentScan` pick up whichever one happens to exist:
 
   One flag selects both trios together — never a mix of fake and Firebase. **Only the
   two auth lines are live so far**: `coreAuthFake` (row 6, fake half) and
-  `coreAuthFirebase`, which so far only carries the `kmpauth-google` dependency (no sources,
-  no `AuthService` binding yet). The two sync lines are commented placeholders until row 7
+  `coreAuthFirebase`, which so far binds only `GoogleIdTokenProvider` via KMPAuth (no
+  `AuthService` binding until GitLive lands). The two sync lines are commented placeholders until row 7
   builds those modules and row 9 finishes the `if`/`else`. Each auth/sync backend module's Koin `@Module` is also annotated
   `@Configuration`, so `DiKoinApplication` auto-includes whichever variant is on the
   classpath without naming either class (see `docs/DECISIONS.md`). CI (`.github/workflows/ci.yml`,
@@ -199,6 +199,24 @@ finalizes the `ChatEntry` to `SUCCESS_RESPONSE`/`ERROR_RESPONSE` on `End`/failur
 `kmpauth-firebase` is deliberately **not used** — it ships its own, separate Firebase
 Auth client that does not share session state with GitLive's, so using both would leave
 GitLive's `Firebase.auth`/`Firebase.firestore` unauthenticated. See `docs/DECISIONS.md`.
+
+**Getting the ID token from the UI:** KMPAuth's sign-in is a Compose state
+(`rememberGoogleSignInState`; on Android it needs the Activity), so it can't sit behind a
+plain `suspend` call on `AuthService`. `coreAuthApi` therefore has a second interface,
+`GoogleIdTokenProvider`, with one `@Composable` member, `rememberGoogleSignInLauncher(onResult:
+(Result<String>) -> Unit): GoogleSignInLauncher`. A screen calls `launcher.launch()`, gets the
+ID token in `onResult`, and passes it to `AuthService.signInWithGoogleIdToken`. It never knows
+which variant is bound:
+
+- `coreAuthFirebase`'s `GoogleIdTokenProviderKmpAuth` calls `KMPAuth.initialize { google(serverId
+  = GoogleAuthConfig.WEB_CLIENT_ID) }` when Koin creates it. `GoogleAuthConfig` is generated
+  at build time by the module's `generateGoogleAuthConfig` task from `local.properties`'
+  `GOOGLE_WEB_CLIENT_ID`. If that key is blank, KMPAuth isn't initialized and `launch()`
+  delivers a failure `Result` (no crash). Desktop uses KMPAuth's default loopback redirect
+  `http://localhost:8080/callback`.
+- `coreAuthFake`'s `GoogleIdTokenProviderFake` returns the fixed token
+  `fake-google-id-token` immediately on `launch()`.
+- iOS: `iosApp.swift` forwards `onOpenURL` to `GIDSignIn.sharedInstance.handle(url)`.
 
 **Sync model:** Room is the local source of truth. Every synced row (`ChatEntity`,
 `ChatEntryEntity`, `LlmConfigEntity` minus `apiKey`) carries `updatedAt: Long`,

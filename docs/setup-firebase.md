@@ -33,8 +33,10 @@ verification needs a real project to run against, not after.
 2. Download `GoogleService-Info.plist` into `app/iosApp/iosApp/`.
 3. Add the **reversed client ID** (from that plist) as a URL scheme under iosApp's
    Info.plist / URL Types, required for the Google sign-in redirect to complete. Per
-   KMPAuth's Google guide, also add `GIDClientID`/`GIDServerClientID` to Info.plist and
-   forward `onOpenURL` to `GIDSignIn.sharedInstance.handle(url)` in `iosApp.swift`.
+   KMPAuth's Google guide, also add `GIDClientID` (iOS client ID) and `GIDServerClientID`
+   (the Web client ID, same as `GOOGLE_WEB_CLIENT_ID` below) to Info.plist. The
+   `onOpenURL` → `GIDSignIn.sharedInstance.handle(url)` forwarding in `iosApp.swift` is
+   already done. Without these Info.plist keys, tapping Google sign-in on iOS fails at runtime.
 
 The native SDK side is already in the Xcode project (no CocoaPods — KMPAuth 3.x dropped
 it): the `GoogleSignIn-iOS` Swift package (product `GoogleSignIn`, up to next major from
@@ -75,7 +77,15 @@ described by the rest of this doc; set it to `true` — or pass
 `GOOGLE_WEB_CLIENT_ID` is the **Web** OAuth client ID from Firebase console → Project
 Settings → General → Your apps (or Google Cloud Console → Credentials) — this is also
 the `serverId` KMPAuth's `GoogleAuthCredentials` needs on every platform, including
-Android/iOS, not just desktop/web.
+Android/iOS, not just desktop/web. `core/coreAuthFirebase`'s `generateGoogleAuthConfig` task
+already reads it into a generated `GoogleAuthConfig.WEB_CLIENT_ID` (rebuild after changing it).
+If it's missing, the app still runs; only the Google sign-in launcher fails. On the same Web
+OAuth client, also:
+
+- add `http://localhost:8080/callback` to **Authorized redirect URIs** (desktop: KMPAuth opens
+  the browser and catches the redirect on that local port, so it must be free), and
+- add each web origin you serve the app from (e.g. the `jsBrowserDevelopmentRun` dev server
+  URL) to **Authorized JavaScript origins** (JS/WasmJs use Google One Tap/FedCM).
 
 ## 5. Firestore security rules
 

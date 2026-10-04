@@ -100,7 +100,7 @@ finding into a new Gradle-enforced check.
   `docs/DECISIONS.md` — never silently.
 - **Which metrics may move vs. must stay frozen?** WIP=1 and "an agent never marks its
   own work `passing`" (hard constraint #13) are frozen invariants for this repo — relaxing
-  either requires a `docs/DECISIONS.md` entry, not a one-off exception. The 70% coverage
+  either requires a `docs/DECISIONS.md` entry, not a one-off exception. The 94% coverage
   floor (`docs/quality-gates.md`) and which `docs/features.json` entries exist are allowed
   to move as the app's scope evolves.
 

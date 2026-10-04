@@ -22,7 +22,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
   Rows 1 (rename/initialization), 2 (database layer), 3 (Koog non-JVM spike) and 4
-  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), and `coreAuthFirebase` was added with only its KMPAuth dependency, so there are now 20 Gradle modules; the
+  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), and `coreAuthFirebase` now binds a KMPAuth-backed `GoogleIdTokenProvider` (no `AuthService` yet), so there are now 20 Gradle modules; the
   remaining target-map modules are still `not_started` in `docs/TASKS.md`.
 - One open risk is flagged rather than resolved, because it needs an actual build to
   answer, not more research: whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
@@ -39,6 +39,24 @@ to `main`, don't let this turn into a changelog (git history already is one).
 - (none)
 
 ## Recently done
+
+- KMPAuth Google ID-token flow (row 6, KMPAuth half). New `coreAuthApi`
+  `GoogleIdTokenProvider`/`GoogleSignInLauncher` (a `@Composable` launcher. See
+  `docs/DECISIONS.md` for why it isn't on `AuthService`). `coreAuthFirebase` now has sources:
+  `CoreAuthFirebaseModule` (`@Configuration`) and `GoogleIdTokenProviderKmpAuth`, which
+  initializes KMPAuth with `GoogleAuthConfig.WEB_CLIENT_ID`. A `generateGoogleAuthConfig`
+  task generates that from `local.properties`' `GOOGLE_WEB_CLIENT_ID`. This is the first
+  piece of row 5's `local.properties` reader, covering only that key. `coreAuthFake` binds
+  `GoogleIdTokenProviderFake`. `iosApp.swift` forwards `onOpenURL` to GoogleSignIn.
+  **Fixed a pre-existing gap:** `diApp/src/commonTestFake` was never added to any source set,
+  so `AuthServiceCommonTest` hadn't been compiling or running since it landed. It is now added
+  to `commonTest` when `IS_FAKE_DATA_ENABLED=true`. `AuthServiceCommonTest` (6) and the new
+  `GoogleIdTokenProviderCommonTest` (2) pass on jvm/js/wasmJs/iOS sim. Verified under
+  `-DIS_FAKE_DATA_ENABLED=false`: `:app:desktopApp:jar`, `:diApp:compileKotlinJs`/`WasmJs`,
+  `:app:androidApp:assembleDebug` + `lint`, `:diApp:linkDebugFrameworkIosSimulatorArm64`,
+  `:diApp:jvmTest`, `ciIos` (xcodebuild). `ktlintCheck detekt checkModuleBoundaries` are clean.
+  Independent validator: PASS. Not done: actual sign-in on any platform. Nothing consumes
+  the launcher until `ui/uiAuth` (row 12), and iOS also needs the Info.plist keys from row 5.
 
 - KMPAuth dependency added on every target (row 6, Firebase half started). New
   `core/coreAuthFirebase` has no sources yet. Its `commonMain` depends on `coreAuthApi` and
@@ -142,8 +160,6 @@ to `main`, don't let this turn into a changelog (git history already is one).
 - Start `docs/TASKS.md` row 5: set up a real (test) Firebase project per
   `docs/setup-firebase.md` and implement the desktop/web `local.properties` reader. This
   needs the user: Firebase console access and Google sign-in configuration.
-- Doc drift, not yet fixed: `AGENTS.md`/`docs/quality-gates.md` say the Kover floor is
-  70%, but the root `build.gradle.kts` enforces 88%.
 
 ## 2026-09-28: auth/sync selection approach changed
 

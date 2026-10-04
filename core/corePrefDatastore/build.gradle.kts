@@ -18,17 +18,8 @@ kotlin {
             implementation(projects.core.coreCommon)
             implementation(projects.core.corePrefApi)
         }
-        commonTest.dependencies {
-            implementation(libs.kotlinx.coroutines.test)
-        }
         androidMain.dependencies {
             implementation(libs.androidx.datastore.tink)
-        }
-
-        getByName("androidHostTest") {
-            dependencies {
-                implementation(libs.kotlinx.coroutines.test)
-            }
         }
     }
 }

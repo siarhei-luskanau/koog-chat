@@ -1,11 +1,16 @@
 import SwiftUI
 import ComposeApp
+import GoogleSignIn
 
 @main
 struct ComposeApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView().ignoresSafeArea(.all)
+            ContentView()
+                .ignoresSafeArea(.all)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

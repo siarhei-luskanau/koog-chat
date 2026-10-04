@@ -106,6 +106,7 @@ kotlin {
             implementation(kotlin("test"))
             implementation(libs.jetbrains.compose.ui.test)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.test)
         }
 
         androidMain.dependencies {
@@ -118,6 +119,7 @@ kotlin {
                 implementation(libs.androidx.uitest.junit4)
                 implementation(libs.androidx.uitest.testManifest)
                 implementation(libs.junit)
+                implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.robolectric)
             }
         }

@@ -33,9 +33,11 @@ kotlin {
                 // implementation(projects.core.coreSyncFirebase)
             }
         }
+        if (isFakeDataEnabled { gradleLocalProperties(rootDir, providers) }) {
+            commonTest { kotlin.srcDir("src/commonTestFake/kotlin") }
+        }
         commonTest.dependencies {
             implementation(libs.koin.compose)
-            implementation(libs.kotlinx.coroutines.test)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(projects.core.coreAuthApi)
         }

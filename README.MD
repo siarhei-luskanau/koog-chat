@@ -45,8 +45,4 @@ Verify a screenshot: `./gradlew verifyRoborazzi`
 Code coverage is measured with [Kotlinx Kover](https://github.com/Kotlin/kotlinx-kover). Each library module merges
 its `jvm` and `android` test coverage (the AGP KMP library plugin exposes an `android` variant, not `debug`/`release`)
 into a custom `coverage` report variant, which is then aggregated into a single report at the root project.
-
-Generate the aggregated reports (run tests first, or let the report tasks trigger them):
-- HTML report: `./gradlew koverHtmlReportCoverage` — open `build/reports/kover/htmlCoverage/index.html`
-- XML report: `./gradlew koverXmlReportCoverage` — output at `build/reports/kover/reportCoverage.xml`
-- Verify coverage against the rule: `./gradlew koverVerifyCoverage` — fails the build if coverage drops below the threshold
+`./gradlew koverXmlReportCoverage koverHtmlReportCoverage koverVerifyCoverage`

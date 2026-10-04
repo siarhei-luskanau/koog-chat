@@ -77,7 +77,7 @@ configured Firebase project (`docs/setup-firebase.md`).
 ```
 
 - `koverVerifyCoverage` fails the build if the aggregated `coverage` variant drops below
-  the **70% minBound** rule in the root `build.gradle.kts`.
+  the **94% minBound** rule in the root `build.gradle.kts`.
 - HTML report: `build/reports/kover/htmlCoverage/index.html`
 - XML report: `build/reports/kover/reportCoverage.xml`
 - Excluded from coverage: `*ComposableSingletons*`, generated `*_Impl` classes, Koin KSP

@@ -56,7 +56,7 @@ Full dependency graph, the `*Api`/`*Impl`/`*Fake` rule, and the auth/sync wiring
 ./gradlew ktlintFormat                                   # auto-fix style before anything else
 ./gradlew ktlintCheck detekt lint checkModuleBoundaries  # static analysis gate
 ./gradlew jvmTest testAndroidHostTest                    # fastest test targets for local iteration
-./gradlew koverVerifyCoverage                            # coverage gate (70% floor)
+./gradlew koverVerifyCoverage                            # coverage gate (94% floor)
 ```
 
 Full command list per gate/target: `docs/quality-gates.md`.

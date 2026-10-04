@@ -25,12 +25,13 @@ kover {
                 classes("*_Impl", "*_Impl$*")
                 packages("org.koin.ksp.generated")
                 packages("*.generated.resources")
+                packages("koog.chat.ui.common.resources")
             }
         }
         variant("coverage") {
             verify {
                 rule {
-                    minBound(91)
+                    minBound(94)
                 }
             }
         }

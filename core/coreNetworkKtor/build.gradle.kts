@@ -14,7 +14,6 @@ kotlin {
             implementation(projects.core.coreNetworkApi)
         }
         commonTest.dependencies {
-            implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
         }
     }
