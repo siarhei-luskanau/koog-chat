@@ -39,8 +39,12 @@ verification needs a real project to run against, not after.
    already done. Without these Info.plist keys, tapping Google sign-in on iOS fails at runtime.
 
 The native SDK side is already in the Xcode project (no CocoaPods — KMPAuth 3.x dropped
-it): the `GoogleSignIn-iOS` Swift package (product `GoogleSignIn`, up to next major from
-9.1.0) and Kotlin's generated `app/iosApp/KotlinMultiplatformLinkedPackage` local package.
+it): Kotlin's generated `app/iosApp/KotlinMultiplatformLinkedPackage` local package, which
+pulls in `GoogleSignIn-iOS` transitively. Don't add `GoogleSignIn` to the app target
+directly: Xcode then splits it into its own framework, and launch crashes with
+`dyld: Symbol not found: _OBJC_CLASS_$_GIDSignIn` because `ComposeApp` expects it inside
+`KotlinMultiplatformLinkedPackageDylib`. `import GoogleSignIn` in Swift still resolves
+through the linkage package.
 `kmpauth-google` declares GoogleSignIn through Kotlin's `swiftPMDependencies {}`, and
 `embedAndSignAppleFrameworkForXcode` fails with "SwiftPM linkage package not integrated
 into Xcode project" until that linkage package is wired in. Whenever a SwiftPM-backed

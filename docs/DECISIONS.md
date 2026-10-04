@@ -426,11 +426,18 @@ was tried and rejected by the plugin ("Multiple values are not allowed").
 ## iOS native SDKs via Swift Package Manager, with Kotlin's linkage package committed
 
 **Decision:** KMPAuth 3.x needs GoogleSignIn through SwiftPM (it dropped CocoaPods). So
-`app/iosApp/iosApp.xcodeproj` references the `GoogleSignIn-iOS` remote package (product
-`GoogleSignIn`, up to next major from 9.1.0, matching KMPAuth's sample app). It also
-references the local `app/iosApp/KotlinMultiplatformLinkedPackage` that
-`:diApp:integrateLinkagePackage` generates, and both are committed along with
-`Package.resolved`. Added 2026-10-04.
+`app/iosApp/iosApp.xcodeproj` references only the local
+`app/iosApp/KotlinMultiplatformLinkedPackage` that `:diApp:integrateLinkagePackage`
+generates; `GoogleSignIn-iOS` comes in transitively through it. Both are committed along
+with `Package.resolved`. Added 2026-10-04.
+
+**Amended 2026-10-04:** the app target first also linked the `GoogleSignIn` product
+directly (as KMPAuth's sample app does). With both the app and the dynamic
+`KotlinMultiplatformLinkedPackageDylib` using it, Xcode moved GoogleSignIn into a separate
+`GoogleSignIn_*_PackageProduct.framework`, leaving the dylib empty, while `ComposeApp` was
+linked to resolve `GIDSignIn` from the dylib. Launch failed with
+`dyld: Symbol not found: _OBJC_CLASS_$_GIDSignIn`. The direct product reference was
+removed; Swift's `import GoogleSignIn` still resolves transitively.
 
 **Rejected alternatives:** CocoaPods isn't supported by KMPAuth 3.x. Leaving out the
 linkage package isn't an option, because Kotlin 2.4's `embedAndSign` integration fails the

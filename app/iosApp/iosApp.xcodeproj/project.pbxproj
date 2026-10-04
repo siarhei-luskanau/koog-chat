@@ -23,10 +23,6 @@
 			isa = PBXBuildFile;
 			fileRef = A93A954129CC810D00F8E227;
 		};
-		B10C5A012E9F000100A1B2C3 = {
-			isa = PBXBuildFile;
-			productRef = B10C5A022E9F000100A1B2C3;
-		};
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,7 +58,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B10C5A012E9F000100A1B2C3,
 				9C29FD35498773673F1629A8,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -130,7 +125,6 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
-				B10C5A022E9F000100A1B2C3,
 				F7548170986977E88E6BB9CE,
 			);
 			productName = iosApp;
@@ -161,7 +155,6 @@
 			);
 			mainGroup = A93A952E29CC810C00F8E227;
 			packageReferences = (
-				B10C5A032E9F000100A1B2C3,
 				152CABB17FF84BFC523C9260,
 			);
 			productRefGroup = A93A953829CC810C00F8E227;
@@ -412,23 +405,7 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		B10C5A032E9F000100A1B2C3 = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 9.1.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		B10C5A022E9F000100A1B2C3 = {
-			isa = XCSwiftPackageProductDependency;
-			package = B10C5A032E9F000100A1B2C3;
-			productName = GoogleSignIn;
-		};
 		F7548170986977E88E6BB9CE = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KotlinMultiplatformLinkedPackage;
