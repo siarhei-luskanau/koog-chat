@@ -473,3 +473,59 @@ every module applies `composeMultiplatformConvention` and gets Compose runtime a
 means `coreAuthApi` can't be consumed by a non-Compose module. `KMPAuth.initialize` runs in
 the `@Single`'s constructor, not at app start. KMPAuth keeps the first configuration, so
 repeated Koin graphs (tests) are harmless.
+
+## Zero-setup first launch: runtime `DefaultLlmSelector` with virtual configs, not a seeded row
+
+**Decision:** a fresh install chats immediately. A chat without an explicit `LlmConfig`
+uses `DefaultLlmSelector` (`coreLlmApi`, implemented in `coreLlmKoog`), which picks the
+user's default config, else the on-device model, else a reachable local Ollama with an
+installed model, else `None` (inline, non-modal "set up a model" state). The on-device and
+local-Ollama choices are in-memory `LlmConfig`s with fixed ids (`builtin:on-device`,
+`builtin:ollama-local`) that are never written to Room. Nothing gates the first chat on
+config, sign-in, or sync (`AGENTS.md` constraint #14). Added 2026-10-07 from the
+requirement "launch the app and chat immediately; set up, sign in, and sync later".
+
+**Rejected alternatives:** (a) seeding a default `LlmConfig` row on first run. It
+re-creates the problems in "`LlmConfigRepository.getAllFlow()` does not seed a default
+config": it would sync a device-specific choice (a phone's Gemini Nano) to every device,
+and it would need "re-seed?" logic after the user deletes it. (b) A first-run onboarding
+screen that asks for a provider. That is exactly the setup step the requirement removes.
+(c) Making sign-in a prerequisite for a "free" hosted model. That needs a backend and an
+account, which contradicts both the requirement and the offline-first design.
+
+**Non-obvious cost:** where no model is available (no supported device, no Chrome built-in
+AI, no Ollama running), "chat immediately" degrades to "the chat screen opens immediately
+and explains how to get a model". The requirement is fully met only on supported phones,
+desktop Chrome, and desktops with Ollama installed. Because virtual configs aren't Room
+rows, entries they answer are persisted with `llmConfigId = null`: `chat_entries` has a
+foreign key to `llm_configs`. The denormalized `llmProvider`/`llmModelId` columns still
+record the model. The rejected alternative was dropping that foreign key, which would
+let dangling ids accumulate and would need a schema migration.
+
+## On-device LLM via thin per-platform wrappers in `coreLlmOnDevice`, not `koog-ondevice`
+
+**Decision:** `coreLlmApi.OnDeviceLlm` is implemented by our own `coreLlmOnDevice` module:
+ML Kit GenAI Prompt API on Android, a Swift bridge to Apple `FoundationModels` on iOS
+(implemented in `app/iosApp`, injected at startup), and Chrome's `LanguageModel` Prompt API
+on js/wasmJs. JVM reports `Unavailable`. `LlmServiceKoog` routes `LlmProvider.OnDevice` to
+it. Added 2026-10-07.
+
+**Rejected alternatives:** (a) `dev.ynagai.koog:koog-ondevice` (a Koog `LLMClient` for
+Gemini Nano and Foundation Models). It is v0.1.0 from a single maintainer with no
+dependents, compatibility with Koog is unverified, and it has no web support. Each
+platform wrapper is small, so owning it costs less than tracking an early dependency. Revisit
+if that library matures. (b) Implementing Koog's `LLMClient` for on-device. That interface
+is shaped around HTTP model catalogues and tool calling, which these system models don't
+offer; a narrow `stream()` interface is easier to fake and test. (c) Bundled or downloadable
+models (LiteRT-LM + Gemma on Android, WebLLM on WebGPU browsers, llama.cpp on desktop) as the
+default. A 0.5–5 GB download is not "zero setup". They are deferred as an opt-in fallback, not
+rejected.
+
+**Non-obvious cost:** every backend is device-gated (supported phone models, iOS 26 +
+Apple Intelligence, desktop Chrome with 22 GB free disk). That makes availability a runtime
+fact this design has to model (`OnDeviceAvailability`) rather than a build-time one. CI
+hardware always sees `Unavailable`, so real verification is manual on specific devices.
+Context is about 4K tokens, which forces history trimming. ML Kit GenAI is still beta and
+Chrome's Prompt API differs by version, so pin versions and keep availability checks
+defensive. The iOS bridge adds Swift code to `app/iosApp`, the first non-trivial Swift in
+the repo.

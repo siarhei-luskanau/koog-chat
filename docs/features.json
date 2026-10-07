@@ -4,10 +4,10 @@
   "features": [
     {
       "id": "F01",
-      "behavior": "User can chat with a local Ollama model with no sign-in and no network beyond localhost.",
-      "verificationCommand": "manual: fresh install, no Firebase config, no sign-in, send a message, get a response from a local Ollama server",
+      "behavior": "User can chat with a local Ollama model with no sign-in and no network beyond localhost; on desktop a running Ollama with an installed model is auto-detected and used with no configuration at all.",
+      "verificationCommand": "manual: fresh desktop install, no Firebase config, no sign-in, no LlmConfig, `ollama serve` running with one model pulled — send a message from the first screen, get a response",
       "state": "not_started",
-      "relatedTasks": [1, 2, 4]
+      "relatedTasks": [1, 2, 4, 18]
     },
     {
       "id": "F02",
@@ -92,6 +92,48 @@
       "verificationCommand": "./gradlew checkFeatureList",
       "state": "not_started",
       "relatedTasks": [13]
+    },
+    {
+      "id": "F14",
+      "behavior": "Zero-setup first launch: on a fresh install the app opens straight into a usable chat (new empty chat, composer focused) with no onboarding, provider setup, sign-in or registration screen in between, on every target.",
+      "verificationCommand": "./gradlew :diApp:jvmTest --tests \"koog.chat.di.KoinAppCommonTest\"; manual: fresh install on Android/iOS/Desktop/JS/WasmJs — first screen after splash accepts a message without any prior step",
+      "state": "not_started",
+      "relatedTasks": [10, 11, 18]
+    },
+    {
+      "id": "F15",
+      "behavior": "When no model is available (no user config, no on-device model, no reachable local Ollama), the chat screen shows an inline, non-modal 'set up a model' state with actions to add a provider, point at an Ollama server, or download the on-device model — never a redirect or blocking dialog.",
+      "verificationCommand": "manual: fresh desktop install with Ollama stopped — chat screen opens, shows the inline state, adding an LlmConfig from it lets the same chat continue",
+      "state": "not_started",
+      "relatedTasks": [10, 12, 18]
+    },
+    {
+      "id": "F16",
+      "behavior": "On a supported Android device (Gemini Nano via ML Kit GenAI / AICore), a fresh install chats with the on-device model with no setup and no network.",
+      "verificationCommand": "manual: fresh install on a supported device (e.g. Pixel 9+), airplane mode, send a message, get a streamed on-device response",
+      "state": "not_started",
+      "relatedTasks": [16, 17, 18]
+    },
+    {
+      "id": "F17",
+      "behavior": "On an iOS 26+ device with Apple Intelligence enabled, a fresh install chats with Apple Foundation Models with no setup and no network.",
+      "verificationCommand": "manual: fresh install on a supported iPhone (iOS 26+, Apple Intelligence on), airplane mode, send a message, get a streamed on-device response",
+      "state": "not_started",
+      "relatedTasks": [16, 17, 18]
+    },
+    {
+      "id": "F18",
+      "behavior": "In desktop Chrome with built-in AI (Prompt API / Gemini Nano) available, the js and wasmJs web apps chat with the browser's built-in model with no setup; in browsers without it (Firefox, Safari) the inline 'set up a model' state appears instead of an error.",
+      "verificationCommand": "manual: open the js and wasmJs builds in desktop Chrome with built-in AI available and get a streamed response; open them in Firefox and see the inline setup state",
+      "state": "not_started",
+      "relatedTasks": [16, 17, 18]
+    },
+    {
+      "id": "F19",
+      "behavior": "Chats created before the user ever signs in are uploaded on the first sign-in and appear on the user's other devices, with nothing lost or duplicated; built-in on-device/local-Ollama selections are never synced.",
+      "verificationCommand": "manual: create chats signed out on device A, sign in, sign in on device B — chats appear once on B; Firestore has no builtin:* llmConfigs documents",
+      "state": "not_started",
+      "relatedTasks": [5, 7, 18]
     }
   ]
 }

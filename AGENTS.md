@@ -3,7 +3,11 @@
 **Koog Chat** — a Kotlin Multiplatform LLM chat client (Android / Desktop / iOS / JS /
 WasmJs from one shared codebase, Koin DI) with local-first chat history, optional Google
 sign-in, and optional cross-device sync. The app is fully usable offline and
-unauthenticated; signing in only turns sync on, it never gates chat.
+unauthenticated; signing in only turns sync on, it never gates chat. **Zero-setup first
+launch:** a user opens the app and can chat immediately — no onboarding, no provider
+setup, no sign-in — using whatever model the device already has (on-device LLM on
+Android/iOS/Chrome, a local Ollama on desktop). Provider setup, sign-in, and sync are
+all things a user can do *later*, never prerequisites.
 
 This repo started as `koog-chat` and is being evolved into Koog
 Chat. **Current status: documentation/design phase only — no Koog Chat code has been
@@ -39,6 +43,7 @@ core/corePrefApi        Preferences interface only
 core/corePrefDatastore  AndroidX DataStore implementation of corePrefApi
 core/coreLlmApi         Provider-agnostic LLM chat interface (streaming, tool-calling)
 core/coreLlmKoog        Koog - backed implementation (Ollama/OpenAI/Anthropic/Google)
+core/coreLlmOnDevice    On-device LLM: Gemini Nano (Android), Apple Foundation Models (iOS), Chrome Prompt API (web)
 core/coreAuthApi        Auth state/session interface (signed-in user or none)
 core/coreAuthFirebase   KMPAuth (Google) + GitLive Firebase Auth implementation
 core/coreAuthFake       In-memory fake: sign-in creates a user, sign-out clears it; bound when IS_FAKE_DATA_ENABLED
@@ -111,6 +116,13 @@ Full command list per gate/target: `docs/quality-gates.md`.
     no automatable check). Vague criteria like "the code looks right" don't count. A
     feature's state moves to `passing` only after that procedure has actually been
     carried out and succeeded — never self-declared by the implementing agent.
+14. Nothing gates the first chat. Splash routes straight to a usable chat; no screen,
+    dialog, or navigation step blocks sending a message on having an `LlmConfig`, a
+    signed-in user, or sync. When no model is available at all (no user config, no
+    on-device model, no reachable local Ollama), the chat screen shows an inline,
+    non-modal "set up a model" state — it never redirects. The zero-setup model choice is
+    resolved at runtime by `DefaultLlmSelector` (`docs/architecture.md`), never by seeding
+    a row into Room (`docs/DECISIONS.md`).
 
 ## Skills
 
@@ -126,7 +138,8 @@ Before making any change:
 
 1. Read `docs/PROGRESS.md` — what's actually implemented, in progress, or blocked.
 2. Read `docs/TASKS.md` — pick up the single `active` row, or the next `not_started` row
-   if none is active (WIP=1 — don't start a second row).
+   if none is active (WIP=1 — don't start a second row). "Next" means dependency order,
+   not row number: rows 16–18 slot between rows 4 and 5 (see the table's preamble).
 3. Confirm the baseline still builds: `./gradlew :app:desktopApp:jar` (or `jvmTest` if
    desktop isn't the target you're touching).
 4. If the row you're picking up depends on an earlier row that isn't `passing` yet, stop

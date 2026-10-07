@@ -137,3 +137,16 @@ every target when one is running, and passes as a no-op (printing "Skipping") ot
 so CI stays offline. For real coverage, run `ollama serve` before
 `:core:coreLlmKoog:allTests`. Browser runs need the raised Mocha timeout in
 `core/coreLlmKoog/karma.config.d/`.
+
+## On-device LLM and zero-setup selection — test doubles, plus manual device checks
+
+`DefaultLlmSelector`'s resolution order (user default → on-device → local Ollama → `None`)
+and the inline "set up a model" state are `commonTest` material. Use an in-test
+`OnDeviceLlm` double whose `availability` you drive, and a `MockEngine` answering (or
+failing) `GET /api/tags`. Also cover context trimming for `OnDevice` turns there.
+`coreLlmOnDevice`'s platform backends can't run on CI hardware (no AICore, no Apple
+Intelligence, no Chrome built-in AI in headless test browsers), so its automated tests
+only assert that each target reports `Unavailable` without crashing. A real on-device
+response is a `manual:` check per platform on a supported device or browser (see
+`docs/features.json`).
+

@@ -155,6 +155,19 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Next steps
 
+- **New requirement (2026-10-07): zero-setup first launch.** A user launches the app and
+  chats immediately, with no setup, sign-in or registration; those can happen later.
+  This is documented in `AGENTS.md` (intro + constraint #14), `docs/architecture.md`
+  (*Zero-setup first launch*, *On-device LLM*), `docs/DECISIONS.md` (two entries),
+  `docs/TASKS.md` (new rows 16–18; rows 7, 10, 11 and 12 amended) and `docs/features.json`
+  (F01 updated, F14–F19 added). The research findings are in the architecture doc's
+  on-device table: Android has Gemini Nano via ML Kit GenAI Prompt API (beta, supported
+  devices only); iOS 26+ has Apple Foundation Models (Swift-only, so it needs a Swift
+  bridge); desktop Chrome has the Prompt API; desktop uses the local Ollama probe. No code
+  exists yet. Rows 16–18 don't need Firebase and must land before row 10, so **row 16
+  (on-device spike) is the next unblocked row**. It needs a supported Android device, an
+  iOS 26 + Apple Intelligence device or simulator, and desktop Chrome with built-in AI.
+
 - Without Firebase access, the next fake-only step is row 7's fake half:
   `coreSyncApi` + `coreSyncFake`, mirroring `coreAuthFake` including `@Configuration`.
 - Start `docs/TASKS.md` row 5: set up a real (test) Firebase project per

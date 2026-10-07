@@ -32,7 +32,9 @@ core/coreNetworkKtor    Ktor implementation of coreNetworkApi
 core/corePrefApi        Preferences/storage interface only
 core/corePrefDatastore  AndroidX DataStore implementation of corePrefApi
 core/coreLlmApi         Provider-agnostic chat/streaming interface
-core/coreLlmKoog        Koog implementation (Ollama/OpenAI/Anthropic/Google)
+core/coreLlmKoog        Koog implementation (Ollama/OpenAI/Anthropic/Google) + DefaultLlmSelector
+core/coreLlmOnDevice    OnDeviceLlm per platform: ML Kit GenAI (Android), Swift bridge to
+                        FoundationModels (iOS), Chrome LanguageModel (js/wasmJs), Unavailable (JVM)
 core/coreAuthApi        Auth session interface: current user, sign-in, sign-out
 core/coreAuthFirebase   KMPAuth (kmpauth-google) + GitLive Firebase Auth implementation
 core/coreAuthFake       In-memory fake: sign-in creates a user, sign-out clears it; bound (compile-time) when IS_FAKE_DATA_ENABLED
@@ -42,7 +44,7 @@ core/coreSyncFake       No-op, sync state permanently idle, bound (compile-time)
 ```
 
 Note: `ui/uiMain` (the template's placeholder home screen) is removed as part of
-`docs/TASKS.md` row 9 — `uiChatList` takes over as the splash destination.
+`docs/TASKS.md` row 10 — `uiChatList` takes over as the splash destination.
 
 `coreNetworkApi`/`coreNetworkKtor` and `corePrefApi`/`corePrefDatastore` carry over from
 the template with a narrower, specific purpose in Koog Chat rather than being generic
@@ -62,7 +64,7 @@ Every core capability is split into an `*Api` module plus one or more backend mo
   Ktor, DataStore, Firebase, KMPAuth, or Koog provider clients). Anything can depend on
   these.
 - `core/*Impl` (`coreDatabaseRoom`, `coreNetworkKtor`, `corePrefDatastore`,
-  `coreLlmKoog`, `coreAuthFirebase`, `coreSyncFirebase`) — a concrete, real-backend
+  `coreLlmKoog`, `coreLlmOnDevice`, `coreAuthFirebase`, `coreSyncFirebase`) — a concrete, real-backend
   implementation. **Only `diApp` may depend on one.**
 - `core/*Fake` (`coreAuthFake`, `coreSyncFake`) — a concrete, no-op implementation with
   the same restriction. Introduced specifically for `coreAuthApi`/`coreSyncApi` because
@@ -189,6 +191,100 @@ Streaming reuses koog-chat-1's proven shape: `executeStreaming(prompt, model)` r
 `Flow` of `StreamFrame` (`TextDelta`, `ReasoningDelta`, `End`); `LlmSessionManagerImpl`
 persists the growing response to Room every ~150ms rather than on every delta, and
 finalizes the `ChatEntry` to `SUCCESS_RESPONSE`/`ERROR_RESPONSE` on `End`/failure.
+
+## Zero-setup first launch
+
+Product requirement: *a user launches the app and chats immediately — no setup, no
+sign-in, no registration. Provider setup, sign-in, and sync can happen later.* Concretely:
+
+1. **Navigation.** Splash → `ChatList`. With zero chats, `navigation` immediately opens a
+   new, empty `Chat` (detail pane; on a narrow screen it's pushed on top of the list),
+   composer focused. Nothing is pushed before it: no onboarding, no `Auth`, no
+   `LlmConfig`.
+2. **Model choice without a config.** A chat with no explicitly chosen `LlmConfig` uses
+   `DefaultLlmSelector.selected: StateFlow<SelectedLlm>` (`coreLlmApi`, implemented in
+   `coreLlmKoog`). It resolves in this order, re-evaluating when any input changes:
+   1. the user's own default `LlmConfig`, if one exists. `isDefault` is unique per
+      provider, so several can exist; the one with the latest `updatedAt` wins. An
+      existing chat keeps whatever config its last assistant entry used, if that config
+      still exists;
+   2. the on-device model, if `OnDeviceLlm.availability` is `Available`;
+   3. a local Ollama at `http://localhost:11434` that answers `GET /api/tags` with at least
+      one installed model (the first one is picked) — primarily desktop, but probed on every
+      target since a browser app served from `localhost` can reach it too (Ollama's default
+      `OLLAMA_ORIGINS` allows localhost);
+   4. `SelectedLlm.None(reason, canDownload)` — the chat screen shows an inline
+      "set up a model" state (add an API key / point at an Ollama server / download the
+      on-device model when `availability` is `Downloadable`). Non-modal, never a redirect
+      (`AGENTS.md` constraint #14).
+
+   Options 2–3 are **virtual** `LlmConfig`s with fixed well-known ids
+   (`builtin:on-device`, `builtin:ollama-local`), built in memory and never written to Room.
+   That keeps the "no seeded config" decision intact, means they never sync (a phone's
+   Gemini Nano is meaningless on a desktop), and makes deleting every user config fall back
+   to them rather than re-seeding. Because they aren't Room rows, a `ChatEntry` produced by
+   one stores `llmConfigId = null` (the `chat_entries.llmConfigId` foreign key to
+   `llm_configs` would reject `builtin:*`). Its `llmProvider`/`llmModelId` columns still
+   record what answered. `LlmSessionManagerImpl` maps any `builtin:` id to `null` when it
+   builds the entry. The model picker in `ui/uiChat` lists them alongside the
+   user's configs, labelled as on-device/local.
+3. **Sign-in and sync later.** Chats created before sign-in are ordinary Room rows with
+   `isDirty = true`; the first `coreSyncFirebase.start()` after sign-in pushes them, so
+   nothing the user did while anonymous is lost or duplicated. Entries answered by a
+   built-in model carry `llmConfigId = null`, so they sync like any other entry. The sync
+   pull must also null out an incoming `llmConfigId` that has no local `llm_configs` row
+   yet (same foreign key) rather than fail the insert. A chat whose last config doesn't
+   exist on this device falls back to this device's `DefaultLlmSelector`.
+4. **Discoverability, not gating.** `ui/uiAuth`/`ui/uiSettings`/`ui/uiLlmConfig` are reached
+   from the chat list's settings action and from the inline "set up a model" state. An
+   optional, dismissible "sign in to sync" hint may appear after the user has some chats;
+   its dismissal lives in `corePrefDatastore`.
+
+## On-device LLM (`coreLlmOnDevice`)
+
+Koog has no on-device provider — its providers are all HTTP APIs (Ollama
+included). So `coreLlmApi` defines its own small interface, and `coreLlmKoog`'s
+`LlmServiceKoog` routes `LlmProvider.OnDevice` turns to it instead of to a Koog
+`LLMClient`:
+
+```
+interface OnDeviceLlm {
+    val availability: StateFlow<OnDeviceAvailability>  // Available | Downloadable | Downloading(progress) | Unavailable(reason)
+    suspend fun download()                              // only meaningful when Downloadable
+    fun stream(history: List<ChatEntry>, prompt: String): Flow<LlmChunk>  // new sealed type: Text | Reasoning | End(tokensUsed?)
+    val maxContextTokens: Int
+}
+```
+
+`LlmProvider` gains `OnDevice` (no `apiKey`, no `providerUrl`). This is a fifth value on
+top of the four listed under *LLM provider abstraction*. `LlmServiceKoog` adapts the
+`LlmChunk` flow to the same chunk callbacks and `ChatResult` that Koog-backed turns produce. `coreLlmOnDevice` is a
+regular `*Impl` (only `diApp` depends on it); `coreLlmKoog` sees only the interface. It is
+bound in both `IS_FAKE_DATA_ENABLED` variants — it has no backend to fake, and on CI
+hardware it simply reports `Unavailable`.
+
+| Target | Backend | Availability | Notes |
+|---|---|---|---|
+| Android | ML Kit GenAI Prompt API (Gemini Nano via AICore), `com.google.mlkit:genai-prompt` (beta) | `checkStatus()` → AVAILABLE / DOWNLOADABLE / DOWNLOADING / UNAVAILABLE | Supported devices only (Pixel 9+, Galaxy S26, recent OnePlus/OPPO/Xiaomi …), locked bootloader; AICore downloads the model, not the app. ~4K-token input, per-app quotas, no session API — history is rebuilt into each prompt. |
+| iOS | Apple `FoundationModels` (`SystemLanguageModel`, `LanguageModelSession.streamResponse`) | `SystemLanguageModel.default.availability` | iOS 26+, Apple Intelligence device with Apple Intelligence enabled. **Swift-only**, so Kotlin/Native can't call it: `iosMain` declares an `AppleFoundationModelsBridge` interface, `app/iosApp` implements it in Swift and hands it to Koin at startup (`diApp` exports the interface in its framework). Without a bridge (or below iOS 26) → `Unavailable`. |
+| js / wasmJs | Chrome built-in AI Prompt API (`LanguageModel.availability()`, `create({ monitor })`, `promptStreaming()`) via `external` declarations | `LanguageModel.availability()`; missing global → `Unavailable` | Desktop Chrome only (not Android/iOS Chrome); multi-GB first-use download, 22 GB free disk, GPU ≥4 GB VRAM or 16 GB RAM. Firefox/Safari: no API → `Unavailable`. Edge's Phi-4-mini Prompt API is flag-only/experimental — treated as a bonus if the same `LanguageModel` global exists, never relied on. |
+| Desktop JVM | none | always `Unavailable` | Desktop's zero-setup path is the local-Ollama probe in `DefaultLlmSelector`. |
+
+Things every implementer of this module must account for:
+
+- **Small context.** Gemini Nano / Foundation Models / Chrome Nano have roughly a 4K-token
+  window. `LlmSessionManagerImpl` trims the oldest turns to `maxContextTokens` before an
+  `OnDevice` turn (rough token estimate is fine) rather than letting the call fail.
+- **No tool calling** is assumed for `OnDevice` — feature code must not depend on it.
+- **Download is user-initiated.** `Downloadable` is surfaced in the "set up a model" state
+  as an explicit action (size warning on web); never auto-started on a metered connection.
+- **Same output contract** as every other provider: `stream` emits text/reasoning chunks
+  and an end frame, so persistence, the 150 ms throttle, and stats work unchanged
+  (`tokensUsed` may be `null` where the platform doesn't report it).
+- **Deferred, not rejected:** an opt-in downloadable model for devices without a system
+  model (LiteRT-LM + Gemma on Android, WebLLM on WebGPU browsers, a bundled llama.cpp on
+  desktop). Each is a multi-hundred-MB-to-GB download, so none is "zero setup"; revisit
+  after the system-model path ships (`docs/DECISIONS.md`).
 
 ## Auth & sync design
 
