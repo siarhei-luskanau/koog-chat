@@ -134,6 +134,13 @@
       "verificationCommand": "manual: create chats signed out on device A, sign in, sign in on device B — chats appear once on B; Firestore has no builtin:* llmConfigs documents",
       "state": "not_started",
       "relatedTasks": [5, 7, 18]
+    },
+    {
+      "id": "F20",
+      "behavior": "On Android, a fresh install auto-detects the development host's Ollama with no configuration: an emulator reaches it through 10.0.2.2, and a physical device reaches it through `adb reverse tcp:11434 tcp:11434`. A reachable local Ollama is preferred over the on-device model.",
+      "verificationCommand": "manual: host running `ollama serve` with one model pulled — fresh install on an Android emulator, send a message from the first screen and get a response from the Ollama model; fresh install on a physical device after `adb reverse tcp:11434 tcp:11434`, same result; on a Gemini Nano-capable device with Ollama reachable, the chat uses Ollama, and after `adb reverse --remove tcp:11434` and an app resume it switches to the on-device model",
+      "state": "not_started",
+      "relatedTasks": [17, 18]
     }
   ]
 }

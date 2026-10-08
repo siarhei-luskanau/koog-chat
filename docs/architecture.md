@@ -208,18 +208,35 @@ sign-in, no registration. Provider setup, sign-in, and sync can happen later.* C
       provider, so several can exist; the one with the latest `updatedAt` wins. An
       existing chat keeps whatever config its last assistant entry used, if that config
       still exists;
-   2. the on-device model, if `OnDeviceLlm.availability` is `Available`;
-   3. a local Ollama at `http://localhost:11434` that answers `GET /api/tags` with at least
-      one installed model (the first one is picked) — primarily desktop, but probed on every
-      target since a browser app served from `localhost` can reach it too (Ollama's default
-      `OLLAMA_ORIGINS` allows localhost);
+   2. a local Ollama that answers `GET /api/tags` with at least one installed model (the
+      first one is picked). It ranks above the on-device model because a running Ollama is
+      a deliberate choice by the person at the keyboard, and its models aren't held to the
+      ~4K-token window and per-app quotas of the system models (`docs/DECISIONS.md`). The
+      candidate base URLs are per platform, from `expect fun localOllamaBaseUrls()` in
+      `coreLlmKoog`:
+
+      | Target | Candidates, in priority order | How the host's Ollama is reached |
+      |---|---|---|
+      | Desktop JVM | `http://localhost:11434` | directly |
+      | js / wasmJs | `http://localhost:11434` | directly; Ollama's default `OLLAMA_ORIGINS` allows a `localhost` origin |
+      | Android | `http://localhost:11434`, then `http://10.0.2.2:11434` | `localhost`: a physical device or emulator after `adb reverse tcp:11434 tcp:11434` tunnels the host's port over adb. `10.0.2.2`: the emulator's alias for the host's loopback, so no `adb reverse` and no `OLLAMA_HOST=0.0.0.0` are needed |
+      | iOS | `http://localhost:11434` | the simulator shares the Mac's loopback; a physical iPhone has no adb-reverse equivalent, so it finds nothing here |
+
+      All candidates are probed in parallel with a short timeout (about 1 s) so a missing
+      server never delays the first chat. Of the ones that answer, the first in priority
+      order wins, and its base URL becomes the virtual config's `providerUrl`. Android
+      blocks cleartext HTTP by default, so `app/androidApp` ships a
+      `network_security_config.xml` that permits cleartext **only** for `localhost`,
+      `127.0.0.1` and `10.0.2.2`, never globally. iOS needs `NSAllowsLocalNetworking` in
+      `Info.plist` for the same reason;
+   3. the on-device model, if `OnDeviceLlm.availability` is `Available`;
    4. `SelectedLlm.None(reason, canDownload)` — the chat screen shows an inline
       "set up a model" state (add an API key / point at an Ollama server / download the
       on-device model when `availability` is `Downloadable`). Non-modal, never a redirect
       (`AGENTS.md` constraint #14).
 
    Options 2–3 are **virtual** `LlmConfig`s with fixed well-known ids
-   (`builtin:on-device`, `builtin:ollama-local`), built in memory and never written to Room.
+   (`builtin:ollama-local`, `builtin:on-device`), built in memory and never written to Room.
    That keeps the "no seeded config" decision intact, means they never sync (a phone's
    Gemini Nano is meaningless on a desktop), and makes deleting every user config fall back
    to them rather than re-seeding. Because they aren't Room rows, a `ChatEntry` produced by

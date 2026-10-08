@@ -478,8 +478,8 @@ repeated Koin graphs (tests) are harmless.
 
 **Decision:** a fresh install chats immediately. A chat without an explicit `LlmConfig`
 uses `DefaultLlmSelector` (`coreLlmApi`, implemented in `coreLlmKoog`), which picks the
-user's default config, else the on-device model, else a reachable local Ollama with an
-installed model, else `None` (inline, non-modal "set up a model" state). The on-device and
+user's default config, else a reachable local Ollama with an installed model, else the
+on-device model, else `None` (inline, non-modal "set up a model" state). The on-device and
 local-Ollama choices are in-memory `LlmConfig`s with fixed ids (`builtin:on-device`,
 `builtin:ollama-local`) that are never written to Room. Nothing gates the first chat on
 config, sign-in, or sync (`AGENTS.md` constraint #14). Added 2026-10-07 from the
@@ -529,3 +529,32 @@ Context is about 4K tokens, which forces history trimming. ML Kit GenAI is still
 Chrome's Prompt API differs by version, so pin versions and keep availability checks
 defensive. The iOS bridge adds Swift code to `app/iosApp`, the first non-trivial Swift in
 the repo.
+
+## Local Ollama outranks the on-device model; Android also probes the adb/emulator host
+
+**Decision:** `DefaultLlmSelector` tries a reachable local Ollama **before** the on-device
+model (user config → local Ollama → on-device → `None`). The probe isn't just
+`localhost:11434`: `coreLlmKoog`'s `expect fun localOllamaBaseUrls()` adds
+`http://10.0.2.2:11434` on Android, after `localhost`. `localhost` covers a device or
+emulator where `adb reverse tcp:11434 tcp:11434` tunnels the development host's Ollama over
+adb; `10.0.2.2` is the emulator's alias for the host's loopback, which works with no setup.
+Candidates are probed in parallel with a ~1 s timeout, and the first responder in priority
+order becomes the `builtin:ollama-local` config's `providerUrl`. Added 2026-10-08 at the
+user's request; this changes the 2026-10-07 order recorded in "Zero-setup first launch".
+
+**Rejected alternatives:** (a) keeping on-device first. A running Ollama only exists
+because someone started it and pulled a model, which is a stronger signal of intent than a
+system model that happens to be on the phone. Ollama models also aren't limited to a ~4K
+window or per-app quotas. Ordinary users don't run Ollama, so for them the order doesn't
+change anything. (b) Scanning the LAN or using mDNS to find Ollama on other machines. That
+needs Ollama bound to `0.0.0.0`, Android's local-network permission and iOS's
+local-network prompt, and it can silently pick a stranger's server on shared Wi-Fi. A
+non-local server stays an explicit `LlmConfig`. (c) Allowing cleartext HTTP globally on
+Android. The `network_security_config.xml` exception is limited to `localhost`,
+`127.0.0.1` and `10.0.2.2`, so every remote provider stays HTTPS-only.
+
+**Non-obvious cost:** `adb reverse` lasts only as long as the adb connection, so Ollama can
+appear or vanish while the app is running. The selector already re-evaluates on app resume,
+but a turn already in flight against a vanished host fails like any other network error. A
+physical iPhone has no adb-reverse equivalent, so on iOS only the simulator ever finds a
+local Ollama.

@@ -168,6 +168,13 @@ to `main`, don't let this turn into a changelog (git history already is one).
   (on-device spike) is the next unblocked row**. It needs a supported Android device, an
   iOS 26 + Apple Intelligence device or simulator, and desktop Chrome with built-in AI.
 
+- **Amended (2026-10-08): local Ollama before on-device, plus the Android adb/emulator
+  host.** `DefaultLlmSelector` order is now user config → local Ollama → on-device →
+  `None`. On Android the Ollama probe also tries `10.0.2.2:11434` (emulator) after
+  `localhost:11434` (`adb reverse`), with a cleartext exception limited to those hosts.
+  These are docs-only changes to `docs/architecture.md`, row 18, `docs/DECISIONS.md`, and
+  `docs/features.json` (new F20). The code lands with row 18, and row 16 is still next.
+
 - Without Firebase access, the next fake-only step is row 7's fake half:
   `coreSyncApi` + `coreSyncFake`, mirroring `coreAuthFake` including `@Configuration`.
 - Start `docs/TASKS.md` row 5: set up a real (test) Firebase project per

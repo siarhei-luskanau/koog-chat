@@ -140,7 +140,7 @@ so CI stays offline. For real coverage, run `ollama serve` before
 
 ## On-device LLM and zero-setup selection — test doubles, plus manual device checks
 
-`DefaultLlmSelector`'s resolution order (user default → on-device → local Ollama → `None`)
+`DefaultLlmSelector`'s resolution order (user default → local Ollama → on-device → `None`)
 and the inline "set up a model" state are `commonTest` material. Use an in-test
 `OnDeviceLlm` double whose `availability` you drive, and a `MockEngine` answering (or
 failing) `GET /api/tags`. Also cover context trimming for `OnDevice` turns there.
