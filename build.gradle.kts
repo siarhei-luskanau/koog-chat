@@ -51,6 +51,8 @@ dependencies {
     kover(projects.core.coreNetworkKtor)
     kover(projects.core.corePrefApi)
     kover(projects.core.corePrefDatastore)
+    kover(projects.core.coreSyncApi)
+    kover(projects.core.coreSyncFake)
     kover(projects.diApp)
     kover(projects.navigation)
     kover(projects.ui.uiCommon)
@@ -87,6 +89,7 @@ gradle.projectsEvaluated {
             ":core:coreLlmKoog",
             ":core:coreNetworkKtor",
             ":core:corePrefDatastore",
+            ":core:coreSyncFake",
         )
     val violations =
         subprojects

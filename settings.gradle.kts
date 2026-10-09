@@ -17,6 +17,8 @@ include(
     ":core:coreNetworkKtor",
     ":core:corePrefApi",
     ":core:corePrefDatastore",
+    ":core:coreSyncApi",
+    ":core:coreSyncFake",
     ":diApp",
     ":navigation",
     ":ui:uiCommon",

@@ -49,7 +49,7 @@ core/coreAuthFirebase   KMPAuth (Google) + GitLive Firebase Auth implementation
 core/coreAuthFake       In-memory fake: sign-in creates a user, sign-out clears it; bound when IS_FAKE_DATA_ENABLED
 core/coreSyncApi        Sync interface: start/stop, sync-state observation
 core/coreSyncFirebase   Firestore LWW sync implementation; internally no-ops until signed in
-core/coreSyncFake       No-op implementation: sync state permanently idle, bound when IS_FAKE_DATA_ENABLED
+core/coreSyncFake       In-memory fake: start() sets sync state Syncing, stop() sets Idle; bound when IS_FAKE_DATA_ENABLED
 ```
 
 Full dependency graph, the `*Api`/`*Impl`/`*Fake` rule, and the auth/sync wiring: see
