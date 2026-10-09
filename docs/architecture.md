@@ -40,7 +40,7 @@ core/coreAuthFirebase   KMPAuth (kmpauth-google) + GitLive Firebase Auth impleme
 core/coreAuthFake       In-memory fake: sign-in creates a user, sign-out clears it; bound (compile-time) when IS_FAKE_DATA_ENABLED
 core/coreSyncApi        Sync interface: start/stop, sync-state observation
 core/coreSyncFirebase   Firestore LWW sync implementation; internally no-ops until signed in
-core/coreSyncFake       No-op, sync state permanently idle, bound (compile-time) when IS_FAKE_DATA_ENABLED
+core/coreSyncFake       In-memory: start() → Syncing, stop() → Idle, bound (compile-time) when IS_FAKE_DATA_ENABLED
 ```
 
 Note: `ui/uiMain` (the template's placeholder home screen) is removed as part of
@@ -121,11 +121,12 @@ letting `@ComponentScan` pick up whichever one happens to exist:
   }
   ```
 
-  One flag selects both trios together — never a mix of fake and Firebase. **Only the
-  two auth lines are live so far**: `coreAuthFake` (row 6, fake half) and
-  `coreAuthFirebase`, which so far binds only `GoogleIdTokenProvider` via KMPAuth (no
-  `AuthService` binding until GitLive lands). The two sync lines are commented placeholders until row 7
-  builds those modules and row 9 finishes the `if`/`else`. Each auth/sync backend module's Koin `@Module` is also annotated
+  One flag selects both trios together — never a mix of fake and Firebase. **Three of the
+  four lines are live so far**: `coreAuthFake` (row 6, fake half), `coreSyncFake` (row 7,
+  fake half), and `coreAuthFirebase`, which so far binds only `GoogleIdTokenProvider` via
+  KMPAuth (no `AuthService` binding until GitLive lands). The `coreSyncFirebase` line is a
+  commented placeholder until row 7's Firebase half builds that module and row 9 finishes
+  the `if`/`else`. Each auth/sync backend module's Koin `@Module` is also annotated
   `@Configuration`, so `DiKoinApplication` auto-includes whichever variant is on the
   classpath without naming either class (see `docs/DECISIONS.md`). CI (`.github/workflows/ci.yml`,
   `screenshots.yml`) already passes `-DIS_FAKE_DATA_ENABLED=true`, so CI and screenshot

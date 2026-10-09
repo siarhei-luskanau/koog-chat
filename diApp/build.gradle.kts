@@ -27,7 +27,7 @@ kotlin {
             implementation(projects.ui.uiSplash)
             if (isFakeDataEnabled { gradleLocalProperties(rootDir, providers) }) {
                 implementation(projects.core.coreAuthFake)
-                // implementation(projects.core.coreSyncFake)
+                implementation(projects.core.coreSyncFake)
             } else {
                 implementation(projects.core.coreAuthFirebase)
                 // implementation(projects.core.coreSyncFirebase)
@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(projects.core.coreAuthApi)
+            implementation(projects.core.coreSyncApi)
         }
     }
 }

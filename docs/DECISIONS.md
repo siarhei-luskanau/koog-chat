@@ -558,3 +558,25 @@ appear or vanish while the app is running. The selector already re-evaluates on 
 but a turn already in flight against a vanished host fails like any other network error. A
 physical iPhone has no adb-reverse equivalent, so on iOS only the simulator ever finds a
 local Ollama.
+
+## `SyncState` is `Idle`/`Syncing`/`Error`, with no `Disabled`/`SignedOut` state
+
+**Decision:** `coreSyncApi.SyncService` exposes `syncState: StateFlow<SyncState>` with three
+states: `Idle`, `Syncing` and `Error(message)`. `Idle` means "not syncing right now", whether
+the user is signed out, sync is stopped, or everything is caught up. `start()`/`stop()` are
+non-suspend; `coreSyncFirebase` will own its Firestore listeners in its own scope, and
+`start()` must be idempotent there. `coreSyncFake` follows the calls with no backend:
+`start()` → `Syncing`, `stop()` → `Idle`, ignoring auth, so a UI can exercise both states. Added 2026-10-08
+(row 7, fake half). This supersedes the "`Idle`/`Disabled`" wording in the
+`IS_FAKE_DATA_ENABLED` entry above.
+
+**Rejected alternative:** a `Disabled`/`SignedOut` state. It would duplicate
+`AuthService.currentUser`, and keeping the two consistent would become `coreSyncFirebase`'s
+job. `ui/uiSettings` already reads `currentUser` to show the account, so it can say
+"signed out" or "synced" from the two flows without branching on which variant is bound
+(`AGENTS.md` #11).
+
+**Non-obvious cost:** a richer status line ("last synced 2 min ago", "3 changes pending")
+needs new fields or states later. That's a source change for every exhaustive `when` over
+`SyncState`, which is cheap only while there are no consumers (before row 12).
+

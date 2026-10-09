@@ -22,7 +22,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
   tasks that need it, a constraint that contradicted the sync-gating design it was meant
   to describe) — see `docs/DECISIONS.md` for anything that changed a stated decision.
   Rows 1 (rename/initialization), 2 (database layer), 3 (Koog non-JVM spike) and 4
-  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), and `coreAuthFirebase` now binds a KMPAuth-backed `GoogleIdTokenProvider` (no `AuthService` yet), so there are now 20 Gradle modules; the
+  (`coreLlmApi`/`coreLlmKoog`) are `passing`, and row 6's fake half landed (`coreAuthApi`/`coreAuthFake`), and `coreAuthFirebase` now binds a KMPAuth-backed `GoogleIdTokenProvider` (no `AuthService` yet), and row 7's fake half landed (`coreSyncApi`/`coreSyncFake`), so there are now 22 Gradle modules; the
   remaining target-map modules are still `not_started` in `docs/TASKS.md`.
 - One open risk is flagged rather than resolved, because it needs an actual build to
   answer, not more research: whether `kotlinx-coroutines 1.11.0` (this repo's pin) conflicts with GitLive
@@ -39,6 +39,20 @@ to `main`, don't let this turn into a changelog (git history already is one).
 - (none)
 
 ## Recently done
+
+- `docs/TASKS.md` row 7, **fake half only** (2026-10-08). New `core/coreSyncApi`
+  (`SyncService`: `syncState: StateFlow<SyncState>`, non-suspend `start()`/`stop()`;
+  `SyncState` = `Idle`/`Syncing`/`Error(message)`, no `Disabled` state — see
+  `docs/DECISIONS.md`) and `core/coreSyncFake` (`SyncServiceFake`: starts `Idle`, `start()` →
+  `Syncing`, `stop()` → `Idle`, ignores auth; `CoreSyncFakeModule` is `@Configuration`). Registered in settings,
+  kover and `coreImplModulePaths`; live in `diApp`'s `IS_FAKE_DATA_ENABLED=true` branch (the
+  `coreSyncFirebase` line stays commented). Tests: `SyncServiceFakeCommonTest` (4) and
+  `diApp`'s `SyncServiceCommonTest` (5, `src/commonTestFake`, resolves from the real app
+  graph) pass on jvm/js/wasmJs/iOS sim. Verified under both flag values:
+  `:app:desktopApp:jar`, `:app:androidApp:assembleDebug` + `lint`,
+  `:diApp:compileKotlinJs`/`WasmJs`, `:diApp:jvmTest`. `ktlintCheck detekt
+  checkModuleBoundaries` clean. Independent validator: PASS. Nothing consumes
+  `SyncService` yet. Row 7 is `blocked` on row 5 for `coreSyncFirebase`.
 
 - KMPAuth Google ID-token flow (row 6, KMPAuth half). New `coreAuthApi`
   `GoogleIdTokenProvider`/`GoogleSignInLauncher` (a `@Composable` launcher. See
@@ -175,8 +189,9 @@ to `main`, don't let this turn into a changelog (git history already is one).
   These are docs-only changes to `docs/architecture.md`, row 18, `docs/DECISIONS.md`, and
   `docs/features.json` (new F20). The code lands with row 18, and row 16 is still next.
 
-- Without Firebase access, the next fake-only step is row 7's fake half:
-  `coreSyncApi` + `coreSyncFake`, mirroring `coreAuthFake` including `@Configuration`.
+- Without Firebase access, the remaining unblocked rows are 16 → 17 → 18 (row 16 needs
+  on-device-capable hardware). Rows 6 and 7 both have their fake halves done and wait on
+  row 5.
 - Start `docs/TASKS.md` row 5: set up a real (test) Firebase project per
   `docs/setup-firebase.md` and implement the desktop/web `local.properties` reader. This
   needs the user: Firebase console access and Google sign-in configuration.
