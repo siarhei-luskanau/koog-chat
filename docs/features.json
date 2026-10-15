@@ -141,6 +141,13 @@
       "verificationCommand": "manual: host running `ollama serve` with one model pulled — fresh install on an Android emulator, send a message from the first screen and get a response from the Ollama model; fresh install on a physical device after `adb reverse tcp:11434 tcp:11434`, same result; on a Gemini Nano-capable device with Ollama reachable, the chat uses Ollama, and after `adb reverse --remove tcp:11434` and an app resume it switches to the on-device model",
       "state": "not_started",
       "relatedTasks": [17, 18]
+    },
+    {
+      "id": "F21",
+      "behavior": "On desktop JVM with no reachable Ollama, and on an Android device without Gemini Nano, the inline 'set up a model' state offers an opt-in download of a small on-device model (with its size shown first); after the download completes the user chats with it offline. Nothing is ever downloaded without the user asking, and the downloaded model can be deleted, which returns the state to 'download available'.",
+      "verificationCommand": "./gradlew :core:coreLlmOnDevice:allTests checkModuleBoundaries; manual: fresh desktop install with Ollama stopped — the chat screen shows the inline setup state with a download action and size, nothing downloads until it is pressed; press it, wait for completion, disconnect the network, send a message and get a streamed response; delete the model and see the download action again; repeat the download-and-chat steps on an Android device without Gemini Nano support",
+      "state": "not_started",
+      "relatedTasks": [17, 18, 19]
     }
   ]
 }

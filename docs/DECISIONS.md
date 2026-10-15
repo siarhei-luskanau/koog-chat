@@ -580,3 +580,68 @@ job. `ui/uiSettings` already reads `currentUser` to show the account, so it can 
 needs new fields or states later. That's a source change for every exhaustive `when` over
 `SyncState`, which is cheap only while there are no consumers (before row 12).
 
+
+## Opt-in downloadable model on Android + desktop JVM via LiteRT-LM; not Llamatik, not wllama
+
+**Decision:** the "bundled or downloadable model" fallback deferred in the
+`coreLlmOnDevice` entry above is implemented with Google's LiteRT-LM
+(`com.google.ai.edge.litertlm:litertlm-android` / `litertlm-jvm`), on **Android and desktop
+JVM only**. It is a second backend inside `coreLlmOnDevice` behind the same `OnDeviceLlm`
+interface, not a new module or `LlmProvider`. On Android it is consulted only when the
+system model (Gemini Nano) is `Unavailable`. On JVM it replaces the always-`Unavailable`
+stub. Before the user downloads a model it reports `Downloadable`; `download()` (only ever
+user-initiated, per the on-device entry) fetches one `.litertlm` file from Hugging Face
+`litert-community` into app storage, and after that it reports `Available`.
+`DefaultLlmSelector`'s order is unchanged. iOS keeps Apple Foundation Models and web keeps
+Chrome's Prompt API, with no downloadable fallback on those targets for now. Added
+2026-10-15 (`docs/TASKS.md` row 19), based on web research done that day.
+
+**Facts this rests on (2026-10-15; release pages omit years, so 2026 is inferred from
+commit history):**
+- **LiteRT-LM:** v0.18.0 (Oct 6), a release every 1–4 weeks, 35 commits in the three days
+  before the research, Apache-2.0, maintained by Google. The Kotlin API is labelled Stable
+  on Android (CPU/GPU/NPU) and desktop JVM (macOS/Linux/Windows). Swift and JS are Early
+  Preview. There is no KMP artifact. Streaming is `sendMessageAsync(): Flow<Message>`;
+  cancellation and context-size configuration are not documented. MediaPipe LLM Inference
+  is now maintenance-only and points to LiteRT-LM. Example model sizes: Qwen3-0.6B 586 MB,
+  Gemma3-1B 1005 MB, Qwen2.5-1.5B 1598 MB, Gemma 4 E2B 2583 MB (Apache-2.0, no sign-in
+  needed).
+- **Llamatik** (`com.llamatik:core`, KMP wrapper over llama.cpp, GGUF models): 2.0.0
+  published 2026-10-14, the first release under that artifact ID. One effective
+  maintainer, MIT licence, 202 stars. Targets are android, iOS, jvm and wasmJs, with **no
+  js target**. The AAR is 111 MB and the JVM jar 77 MB (whisper and stable-diffusion are
+  bundled). Needs JVM 21. Built with Kotlin 2.3.21. On wasmJs it has no sessions and no
+  GPU.
+- **wllama** (`@wllama/wllama`, llama.cpp compiled to wasm, GGUF models): 3.8.1 (Oct 2),
+  one effective maintainer (a llama.cpp maintainer), MIT licence, about 20k npm downloads
+  a week. The package is ESM-only with worker and wasm assets. Multi-threading needs
+  COOP/COEP headers. Files over 2 GB must be split. No Kotlin bindings or examples exist.
+  Streaming and abort were not confirmed in the README.
+- **WebLLM:** 0.2.86 (Oct 11), well maintained, but needs WebGPU and uses its own MLC
+  model format.
+
+**Rejected alternatives:**
+- (a) **Llamatik for all targets.** It is the only real KMP artifact, but it is one day
+  old under new coordinates and has one maintainer. Its artifacts are very large, it has
+  no js target, it needs JVM 21, and nobody has checked it against Kotlin 2.4. Revisit in
+  3–6 months, since it would replace three wrappers with one dependency.
+- (b) **wllama (or WebLLM) for web.** Chrome already covers web through the Prompt API.
+  A browser download fallback adds ESM interop from Kotlin/JS and Kotlin/Wasm, webpack
+  asset copying, COOP/COEP serving and model splitting, all for a path few users would
+  take. WebLLM would also bring a third model format.
+- (c) **LiteRT-LM on iOS and web too.** Both are Early Preview. iOS would also need a
+  second Swift bridge next to Foundation Models.
+- (d) **A mix of LiteRT-LM and GGUF engines.** That means two model formats to host,
+  cache and keep in step.
+
+**Non-obvious cost:**
+- Native libraries add size to the Android app and to the desktop distribution. Measure
+  how much before shipping.
+- The model file (0.6–1 GB) needs a resumable download, a checksum check, a deletion path,
+  and a place in storage the user can see. These are app concerns, not library concerns.
+- Calling `initialize()` can take about 10 s, so `availability` needs a loading phase that
+  doesn't block the composer.
+- The 0.x version means API churn even though the Kotlin API is labelled Stable. Pin an
+  exact version; don't use `latest.release` as the docs show.
+- Whether Gemma 3 models still require accepting Google's terms is unverified. The
+  default model must be one that downloads without signing in.
