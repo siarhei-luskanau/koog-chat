@@ -285,8 +285,8 @@ hardware it simply reports `Unavailable`.
 |---|---|---|---|
 | Android | ML Kit GenAI Prompt API (Gemini Nano via AICore), `com.google.mlkit:genai-prompt` (beta) | `checkStatus()` → AVAILABLE / DOWNLOADABLE / DOWNLOADING / UNAVAILABLE | Supported devices only (Pixel 9+, Galaxy S26, recent OnePlus/OPPO/Xiaomi …), locked bootloader; AICore downloads the model, not the app. ~4K-token input, per-app quotas, no session API — history is rebuilt into each prompt. |
 | iOS | Apple `FoundationModels` (`SystemLanguageModel`, `LanguageModelSession.streamResponse`) | `SystemLanguageModel.default.availability` | iOS 26+, Apple Intelligence device with Apple Intelligence enabled. **Swift-only**, so Kotlin/Native can't call it: `iosMain` declares an `AppleFoundationModelsBridge` interface, `app/iosApp` implements it in Swift and hands it to Koin at startup (`diApp` exports the interface in its framework). Without a bridge (or below iOS 26) → `Unavailable`. |
-| js / wasmJs | Chrome built-in AI Prompt API (`LanguageModel.availability()`, `create({ monitor })`, `promptStreaming()`) via `external` declarations | `LanguageModel.availability()`; missing global → `Unavailable` | Desktop Chrome only (not Android/iOS Chrome); multi-GB first-use download, 22 GB free disk, GPU ≥4 GB VRAM or 16 GB RAM. Firefox/Safari: no API → `Unavailable`. Edge's Phi-4-mini Prompt API is flag-only/experimental — treated as a bonus if the same `LanguageModel` global exists, never relied on. |
-| Desktop JVM | none | always `Unavailable` | Desktop's zero-setup path is the local-Ollama probe in `DefaultLlmSelector`. |
+| js / wasmJs | Chrome built-in AI Prompt API (`LanguageModel.availability()`, `create({ monitor })`, `promptStreaming()`) via `external` declarations | `LanguageModel.availability()`; missing global → `Unavailable` | Desktop Chrome only (not Android/iOS Chrome); multi-GB first-use download, 22 GB free disk, GPU ≥4 GB VRAM or 16 GB RAM. Firefox/Safari: no API → `Unavailable`; there, and in Chrome without Gemini Nano, the opt-in wllama download (`docs/TASKS.md` row 20) is consulted instead. Edge's Phi-4-mini Prompt API is flag-only/experimental — treated as a bonus if the same `LanguageModel` global exists, never relied on. |
+| Desktop JVM | no system model; opt-in LiteRT-LM download (`docs/TASKS.md` row 19) | `Downloadable` until the model is downloaded, else `Unavailable` | Desktop's zero-setup path is the local-Ollama probe in `DefaultLlmSelector`. |
 
 Things every implementer of this module must account for:
 
@@ -295,14 +295,15 @@ Things every implementer of this module must account for:
   `OnDevice` turn (rough token estimate is fine) rather than letting the call fail.
 - **No tool calling** is assumed for `OnDevice` — feature code must not depend on it.
 - **Download is user-initiated.** `Downloadable` is surfaced in the "set up a model" state
-  as an explicit action (size warning on web); never auto-started on a metered connection.
+  as an explicit action, with the size shown before the download starts; never auto-started on a metered connection.
 - **Same output contract** as every other provider: `stream` emits text/reasoning chunks
   and an end frame, so persistence, the 150 ms throttle, and stats work unchanged
   (`tokensUsed` may be `null` where the platform doesn't report it).
-- **Deferred, not rejected:** an opt-in downloadable model for devices without a system
-  model (LiteRT-LM + Gemma on Android, WebLLM on WebGPU browsers, a bundled llama.cpp on
-  desktop). Each is a multi-hundred-MB-to-GB download, so none is "zero setup"; revisit
-  after the system-model path ships (`docs/DECISIONS.md`).
+- **Opt-in downloadable model** for devices without a system model: LiteRT-LM on Android
+  and desktop JVM (`docs/TASKS.md` row 19), and wllama (llama.cpp on WebAssembly, CPU,
+  single-threaded) on web for Firefox, Safari and Chrome without Gemini Nano (row 20).
+  Each is a multi-hundred-MB download, so none is "zero setup"; both sit behind
+  `Downloadable` in the "set up a model" state (`docs/DECISIONS.md`).
 
 ## Auth & sync design
 

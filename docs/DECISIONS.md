@@ -583,6 +583,10 @@ needs new fields or states later. That's a source change for every exhaustive `w
 
 ## Opt-in downloadable model on Android + desktop JVM via LiteRT-LM; not Llamatik, not wllama
 
+**Superseded in part (2026-10-16):** rejected alternative (b) is reversed for web, so
+"web keeps Chrome's Prompt API, with no downloadable fallback" below no longer holds. See
+*Opt-in downloadable model on web via wllama (WebAssembly)*.
+
 **Decision:** the "bundled or downloadable model" fallback deferred in the
 `coreLlmOnDevice` entry above is implemented with Google's LiteRT-LM
 (`com.google.ai.edge.litertlm:litertlm-android` / `litertlm-jvm`), on **Android and desktop
@@ -645,3 +649,88 @@ commit history):**
   exact version; don't use `latest.release` as the docs show.
 - Whether Gemma 3 models still require accepting Google's terms is unverified. The
   default model must be one that downloads without signing in.
+
+## Opt-in downloadable model on web via wllama (WebAssembly); supersedes (b) of the LiteRT-LM entry
+
+**Decision:** the web targets (js and wasmJs) get an opt-in downloadable model that runs on
+the CPU through WebAssembly, using wllama (`@wllama/wllama`, llama.cpp compiled to wasm)
+with GGUF models. It is a second backend in `coreLlmOnDevice`'s `webMain`, behind the same
+`OnDeviceLlm` interface, consulted only when Chrome's Prompt API backend is `Unavailable`
+(Firefox, Safari, Chrome without Gemini Nano); a Chrome whose Gemini Nano is `Downloadable`
+keeps Chrome's own download, as Android does with Gemini Nano. No new module, no new `LlmProvider`, and
+`DefaultLlmSelector`'s order is unchanged. It reuses row 19's availability states:
+`Downloadable(sizeBytes)` → `Downloading(progress)` → initializing → `Available`, with a
+delete path, and it never downloads unless the user asks. The default model is
+Qwen2.5-0.5B-Instruct Q4_K_M from the official `Qwen/Qwen2.5-0.5B-Instruct-GGUF` repo.
+The app ships **without** COOP/COEP headers, so wllama runs single-threaded. Added
+2026-10-16 (`docs/TASKS.md` row 20).
+
+**Why the earlier rejection no longer holds:** rejected alternative (b) of *Opt-in
+downloadable model on Android + desktop JVM via LiteRT-LM* (2026-10-15) said Chrome's
+Prompt API already covers web, so a browser download fallback served too few users to
+justify the interop and serving work. The new requirement (2026-10-16) is that Firefox and
+Safari users can chat with a local model too. Neither browser exposes a built-in model to
+web pages (Mozilla and Apple formally oppose the Prompt API), so a downloaded model is the
+only on-device option there. Only (b) is superseded; (a), (c) and (d) still stand, and
+LiteRT-LM remains the engine for Android and desktop JVM.
+
+**Facts this rests on (2026-10-16; [U] = unverified, measure in the row-20 spike):**
+- **wllama:** 3.8.1 (2026-10-02), MIT, actively maintained but effectively one maintainer.
+  OpenAI-style `createChatCompletion` with `stream: true` (async iterable) and an
+  `abortSignal` that also cancels prompt processing. Runs inference in its own internal
+  worker. `n_ctx` defaults to 1024, so set it explicitly. Picks the multi-thread wasm build
+  only when the page is cross-origin isolated, otherwise single-thread. Files are capped at
+  2 GB each (split larger GGUFs into ≤512 MB shards). No Memory64. WebGPU offload is on by
+  default since 3.1 (`n_gpu_layers` 99999) and needs a compat mode with "significant
+  performance loss" on Firefox and Safari. The cache layer (OPFS or Cross-Origin Storage)
+  checks size and ETag; which backend is the 3.8.x default is unclear [U].
+- **Transformers.js** (`@huggingface/transformers` 4.3.1, Apache-2.0): wasm and WebGPU
+  backends, WebGPU on Safari 26+ since 4.3.0. Its ONNX q4 files are about twice the size
+  of the same model as GGUF Q4_K_M (Qwen2.5-0.5B: 786 MB vs 491 MB).
+- **Models (GGUF Q4_K_M, all anonymous downloads):** Qwen2.5-0.5B-Instruct 491 MB
+  (Apache-2.0, official repo); Qwen2.5-1.5B-Instruct 986 MB; Qwen3-0.6B about 378 MiB but
+  only from a third-party quant, and it emits `<think>` tokens; Gemma-3-1B 806 MB under the
+  Gemma Terms of Use (use restrictions and flow-down obligations, not Apache-style).
+- **Speed:** no citable tokens/s figures exist for 0.5–1.5B Q4 models on CPU wasm. One
+  secondary source reports 2–5 tok/s for TinyLlama 1.1B. Single-thread is expected to be
+  2–3× slower than multi-thread [U].
+- **Cross-origin isolation:** multi-threading needs `COOP: same-origin` plus
+  `COEP: require-corp` or `credentialless`. Isolation is per page; a worker can't be
+  isolated on its own. `COOP: same-origin` breaks popup-based Google sign-in, because the
+  opener loses its handle to the popup, and `same-origin-allow-popups` doesn't make the page
+  isolated. Safari doesn't support `credentialless` (WebKit bug 230550), so Safari threads
+  would need `require-corp` and CORP/CORS on every cross-origin subresource.
+- **Browsers:** WebGPU is stable in Chrome desktop and Safari 26, and in Firefox on Windows
+  (141+) and Apple Silicon macOS (147+, secondary source), but not stable on Linux.
+  Memory64 is in Chrome 133+ and Firefox 134+, not in Safari.
+
+**Rejected alternatives:**
+- (a) **Transformers.js as the baseline.** It has the better WebGPU path, but its ONNX
+  downloads are about twice as large and its wasm CPU path has no advantage over
+  llama.cpp's. Revisit as an optional WebGPU accelerator behind the same interface once
+  the CPU baseline ships.
+- (b) **WebLLM or MediaPipe LLM Inference.** Both need WebGPU, so neither works in
+  Firefox on Linux or with GPU acceleration turned off. WebLLM also brings its own MLC
+  model format, and MediaPipe is maintenance-only.
+- (c) **Cross-origin isolation for multi-threaded inference.** It breaks popup-based
+  Google sign-in (row 6 on web) and needs CORP on every cross-origin asset for Safari.
+  Revisit only if the row-20 spike shows single-thread speed is unusable, and then prefer
+  a separate isolated route over isolating the whole app.
+- (d) **Gemma 3 as the default model.** Its terms carry flow-down obligations that need a
+  licence review; the Qwen2.5 models are Apache-2.0.
+- (e) **Llamatik's wasmJs target.** Still rejected for the reasons in (a) of the LiteRT-LM
+  entry, and it has no js target.
+- (f) **Running Kotlin inside the worker.** wllama already has its own worker. Kotlin
+  calls a small hand-written ESM glue file through `external` declarations, the same way
+  for js and wasmJs.
+
+**Non-obvious cost:**
+- Single-thread CPU speed is the main risk. If the spike measures it as unusable on a
+  typical laptop, the fallback is a smaller model or (c), not silently shipping a slow chat.
+- wllama's wasm and worker assets have to survive webpack in both Kotlin/JS and
+  Kotlin/Wasm builds. This is undocumented; wllama's explicit wasm-path option is the
+  fallback.
+- The model lives in browser storage, which the browser may evict. `availability` must
+  check the cache on every launch rather than remember that a download happened.
+- Pin wllama to an exact version and set `n_gpu_layers = 0` for the CPU baseline, so
+  behaviour doesn't change with the browser's WebGPU state.

@@ -189,6 +189,13 @@ to `main`, don't let this turn into a changelog (git history already is one).
   These are docs-only changes to `docs/architecture.md`, row 18, `docs/DECISIONS.md`, and
   `docs/features.json` (new F20). The code lands with row 18, and row 16 is still next.
 
+- **Added (2026-10-16): opt-in downloadable model on web.** Firefox and Safari have no
+  built-in model for web pages, so web gets a wllama (llama.cpp on WebAssembly, CPU,
+  single-threaded, no COOP/COEP) backend in `coreLlmOnDevice`, reversing (b) of the
+  2026-10-15 LiteRT-LM decision. Docs only: new `docs/DECISIONS.md` entry, `docs/TASKS.md`
+  row 20 (after row 19, starts with a speed spike), `docs/features.json` F22, and the
+  `docs/architecture.md` on-device table and bullet. Row 16 is `active`; its web part is in progress.
+
 - Without Firebase access, the remaining unblocked rows are 16 → 17 → 18 (row 16 needs
   on-device-capable hardware). Rows 6 and 7 both have their fake halves done and wait on
   row 5.

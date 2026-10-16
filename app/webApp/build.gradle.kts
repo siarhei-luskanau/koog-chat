@@ -20,5 +20,8 @@ kotlin {
             implementation(libs.jetbrains.compose.ui)
             implementation(projects.diApp)
         }
+        webMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+        }
     }
 }

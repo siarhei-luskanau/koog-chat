@@ -148,6 +148,13 @@
       "verificationCommand": "./gradlew :core:coreLlmOnDevice:allTests checkModuleBoundaries; manual: fresh desktop install with Ollama stopped — the chat screen shows the inline setup state with a download action and size, nothing downloads until it is pressed; press it, wait for completion, disconnect the network, send a message and get a streamed response; delete the model and see the download action again; repeat the download-and-chat steps on an Android device without Gemini Nano support",
       "state": "not_started",
       "relatedTasks": [17, 18, 19]
+    },
+    {
+      "id": "F22",
+      "behavior": "In a browser without a built-in model (Firefox, Safari, or Chrome without Gemini Nano) and with no reachable Ollama, the inline 'set up a model' state offers an opt-in download of a small model that runs in the page via WebAssembly (with its size shown first); after the download completes the user chats with it, and after a reload the model is used again without re-downloading. Nothing is ever downloaded without the user asking, and deleting the model returns the state to 'download available'.",
+      "verificationCommand": "./gradlew :core:coreLlmOnDevice:allTests checkModuleBoundaries; manual: in Firefox with Ollama stopped, open the web app (js build) — the chat screen shows the inline setup state with a download action and size, nothing downloads until it is pressed; press it, wait for completion, send a message and get a streamed response; reload the page and chat again without a new download; delete the model and see the download action again; repeat on the wasmJs build and in Safari",
+      "state": "not_started",
+      "relatedTasks": [17, 18, 19, 20]
     }
   ]
 }
