@@ -734,3 +734,57 @@ LiteRT-LM remains the engine for Android and desktop JVM.
   check the cache on every launch rather than remember that a download happened.
 - Pin wllama to an exact version and set `n_gpu_layers = 0` for the CPU baseline, so
   behaviour doesn't change with the browser's WebGPU state.
+
+## Row-16 spike, web part: Chrome Prompt API findings for the js/wasmJs `OnDeviceLlm` backend
+
+**Decision:** The web backend of `coreLlmOnDevice` (row 17) calls Chrome's global
+`LanguageModel` with hand-written `js("...")` interop in one shared `webMain` source set
+used by both js and wasmJs, with no npm or Maven artifact. It feature-detects with
+`typeof LanguageModel !== 'undefined'`, maps `availability()`'s strings to
+`OnDeviceAvailability`, treats `promptStreaming()` chunks as **deltas**, and reads the
+context limit from the session at runtime. Recorded 2026-10-19 from a manual spike run;
+the spike code was removed afterwards.
+
+**What the spike observed** (one run each, on macOS):
+- Versions: Chrome 155.0 and Firefox 157, with Kotlin 2.4.21, kotlinx-coroutines 1.11.0 and
+  Compose Multiplatform 1.13.0-alpha02. The Prompt API is a browser built-in, so there is
+  no artifact version to pin.
+- Chrome, js and wasmJs: `availability()` (with `expectedInputs`/`expectedOutputs` of
+  English text) returned `available` both on load and on click. `LanguageModel.create()`
+  gave a session with `contextWindow = 9216` tokens and `contextUsage = 0`, and
+  `contextUsage` was 50–57 after one short prompt.
+- Streaming: `promptStreaming()` returns a `ReadableStream` read with `getReader()`. Each
+  chunk is a delta (`" Multi"`, `"platform"`), never the text so far. Concatenating them
+  gave the full reply. The last chunk was only whitespace or newlines. One reply took
+  29 chunks in 2.5 s on js and 36 chunks in 1.2 s on wasmJs. These are single runs, not
+  a benchmark, and time to first token was not measured.
+- The `create()` monitor fired `downloadprogress` at 0% and 100% even though the model was
+  already `available`. So a progress event does not mean a download is happening.
+- Firefox, js and wasmJs: `LanguageModel` is undefined. The spike reported `Unavailable`,
+  and the app loaded normally with no crash.
+- js and wasmJs behaved the same. The only differences were in how Kotlin formats numbers
+  (`9216` vs `9216.0`) and unwraps errors (wasmJs needs `JsException.thrownValue` to show
+  the JS error). Unlike row 3's Koog finding, no `flowOn` or dispatcher change was needed:
+  awaiting the promise from `MainScope` ran on the page's main thread on both targets.
+
+**Rejected alternatives:**
+- (a) **A hardcoded ~4K context limit**, as the *On-device LLM* entry assumed. Chrome 155
+  reports 9216, and the value is per-version and per-device. Row 17 should read
+  `maxContextTokens` from `session.contextWindow` and trim against `contextUsage`.
+- (b) **Separate `jsMain`/`wasmJsMain` interop.** The same `js("...")` bodies and
+  `external interface ... : JsAny` declarations compiled and ran on both, so only the
+  error-text helper needs an `expect`/`actual`.
+- (c) **Treating chunks as cumulative.** Chrome 155 sends deltas. The spike covered only
+  this one version, so a test should pin the expected chunk form.
+
+**Non-obvious cost:**
+- Strip the trailing whitespace from a finished reply. Otherwise every on-device message
+  ends in blank lines.
+- Untested paths: `downloadable`/`downloading` (the model was already on this machine),
+  Safari, Chrome on Windows/Linux/Android, and Chrome without enough free disk. Chrome
+  requires a user gesture to `create()` a session that still has to download. The spike
+  called `create()` synchronously in the click handler for that reason, but never
+  exercised it. Row 17's download action must start `create()` before its first `await`.
+- `availability()` and `create()` take the same `expectedInputs`/`expectedOutputs`
+  options. Pass both identical options, or `availability()` can answer for a different
+  configuration than the one `create()` builds.

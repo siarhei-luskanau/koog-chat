@@ -40,6 +40,17 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## Recently done
 
+- `docs/TASKS.md` row 16, **web part only** (2026-10-19). The Chrome Prompt API spike in
+  `app/webApp` was run by hand. Chrome 155 (macOS) streamed one reply on both js and
+  wasmJs: `available`, `contextWindow=9216`, delta chunks, trailing whitespace on the last
+  chunk, no dispatcher issue. Firefox 157 reported `Unavailable` on both, with no crash.
+  Findings are in `docs/DECISIONS.md` → *Row-16 spike, web part*. Among them, the real
+  context limit is 9216, not the ~4K assumed earlier, so row 17 must read it at runtime.
+  Spike code removed: `app/webApp` is back to its pre-spike layout. `ktlintCheck detekt
+  checkModuleBoundaries`, js/wasmJs distributions and `:app:desktopApp:jar` pass. Row 16
+  stays `active`, because the Android (supported physical device) and iOS (iOS 26 + Apple
+  Intelligence) parts are still open.
+
 - `docs/TASKS.md` row 7, **fake half only** (2026-10-08). New `core/coreSyncApi`
   (`SyncService`: `syncState: StateFlow<SyncState>`, non-suspend `start()`/`stop()`;
   `SyncState` = `Idle`/`Syncing`/`Error(message)`, no `Disabled` state — see
@@ -194,7 +205,7 @@ to `main`, don't let this turn into a changelog (git history already is one).
   single-threaded, no COOP/COEP) backend in `coreLlmOnDevice`, reversing (b) of the
   2026-10-15 LiteRT-LM decision. Docs only: new `docs/DECISIONS.md` entry, `docs/TASKS.md`
   row 20 (after row 19, starts with a speed spike), `docs/features.json` F22, and the
-  `docs/architecture.md` on-device table and bullet. Row 16 is `active`; its web part is in progress.
+  `docs/architecture.md` on-device table and bullet. Row 16 is `active`; its web part is done (see *Recently done*).
 
 - Without Firebase access, the remaining unblocked rows are 16 → 17 → 18 (row 16 needs
   on-device-capable hardware). Rows 6 and 7 both have their fake halves done and wait on
