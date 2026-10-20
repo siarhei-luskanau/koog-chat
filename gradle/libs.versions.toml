@@ -34,6 +34,7 @@ ksp = "2.3.12"
 ktlint = "1.8.0"
 ktor = "3.6.0"
 leakcanary = "2.14"
+mlkit-genai-prompt = "1.0.0-beta4"
 robolectric = "4.17"
 roborazzi = "1.76.0"
 
@@ -98,6 +99,7 @@ ktor-client-engine-defaults = { module = "io.ktor:ktor-client-engine-defaults" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
+mlkit-genai-prompt = { module = "com.google.mlkit:genai-prompt", version.ref = "mlkit-genai-prompt" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }

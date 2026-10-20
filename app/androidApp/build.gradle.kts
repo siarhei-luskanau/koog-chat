@@ -75,6 +75,7 @@ dependencies {
     androidTestImplementation(libs.androidx.uitest.junit4)
     debugImplementation(libs.androidx.uitest.testManifest)
     debugImplementation(libs.leakcanary.android)
+    debugImplementation(libs.mlkit.genai.prompt)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.datastore.core.okio)
     implementation(projects.diApp)

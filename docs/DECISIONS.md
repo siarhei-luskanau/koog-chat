@@ -788,3 +788,59 @@ the spike code was removed afterwards.
 - `availability()` and `create()` take the same `expectedInputs`/`expectedOutputs`
   options. Pass both identical options, or `availability()` can answer for a different
   configuration than the one `create()` builds.
+
+## Row-16 spike, iOS part (partial): FoundationModels bridge findings for the iOS `OnDeviceLlm` backend
+
+**Status: partial.** The Kotlin ↔ Swift bridge was proven end to end, but no streamed reply
+was produced on iOS. The simulator available here could not generate (see below), and no
+physical iOS 26 Apple Intelligence device was available. Row 16's iOS part stays open until
+one streamed reply is seen on such a device, or on a simulator runtime that matches the host
+OS. The spike code is kept for that run (see `docs/PROGRESS.md`). Recorded 2026-10-19.
+
+**Decision (provisional, pending the device run):** the iOS backend of `coreLlmOnDevice`
+(row 17) is a Swift class in `app/iosApp` that implements a Kotlin interface declared in
+`iosMain` and exported through the `ComposeApp` framework, as `docs/architecture.md` already
+describes. The Swift side reports progress through a callback interface, and Kotlin wraps
+it in `callbackFlow`, whose `awaitClose` calls the bridge's `cancel()` (a Swift
+`Task.cancel()`). The backend converts FoundationModels' **cumulative snapshots into
+deltas**, so `OnDeviceLlm` streams deltas on every platform, matching Chrome. Use a fixed
+context limit of 4096 tokens (Apple's documented value) on iOS.
+
+**What the spike observed** (Xcode 26.1, iOS 26.1 simulator on iPhone 17 Pro and iPhone 17,
+macOS 27.0.1 host on Apple Silicon, Kotlin 2.4.21, kotlinx-coroutines 1.11.0):
+- Interop: Kotlin interfaces (`FoundationModelsSpikeBridge`, `…Listener`, `…Cancellable`)
+  were exported as ObjC protocols, and Swift classes implemented them as `NSObject`
+  subclasses. Swift called the listener from a background thread (not the main thread), and
+  `callbackFlow.trySend` handled that without any dispatcher change. Errors passed to Kotlin
+  as strings, and cancelling the Kotlin collector reached `Task.cancel()`. Unlike row 3's
+  Koog finding, no `flowOn` was needed.
+- `SystemLanguageModel.default.availability` returned `.available` in the simulator.
+- Every `streamResponse` in the simulator failed after 0.4–1.4 s with no chunks, with
+  `LanguageModelSession.GenerationError -1` ← `com.apple.SensitiveContentAnalysisML 15` ←
+  `ModelManagerServices.ModelManagerError 1001`. The guardrail step failed before
+  generation. This happened on two simulator devices and on repeated runs.
+- The same prompt, in a plain Swift script run directly on the macOS 27 host, streamed 16
+  snapshots. Each snapshot is the **whole text so far** (`"Kotlin Multiplatform is"` →
+  `"Kotlin Multiplatform is a development approach that"` → …), and consecutive snapshots
+  can be identical (lengths 68, 68, 88, 88, …, 131 × 4). So the host model works, and the
+  likely cause is the iOS 26.1 simulator runtime on a macOS 27 host. That cause is not
+  proven: only Xcode 26.1 with its 26.1 runtime was installed.
+- The iOS 26.1 SDK has no API to read the context size, so it can't be read at runtime the
+  way Chrome's `contextWindow` is. The SDK reports overflow as
+  `GenerationError.exceededContextWindowSize`.
+
+**Rejected alternatives:**
+- (a) **Forwarding cumulative snapshots as-is** and letting consumers handle two chunk
+  forms. Chrome sends deltas, so the iOS backend converts at the edge instead: it emits the
+  suffix past the previous snapshot and skips identical snapshots.
+- (b) **Trusting `availability == .available` to mean generation will succeed.** The
+  simulator reported `available` and then failed every request. Row 17 must turn a
+  generation error into a normal failed turn, not a crash or a hung stream. Row 18 should
+  treat that as a runtime failure, not as a reason to re-rank the on-device model.
+- (c) **Reading the context limit at runtime on iOS.** The 26.1 SDK has no API for it.
+
+**Still to verify on a device:** one streamed reply from Kotlin; that snapshots stay
+cumulative and only grow (each one extends the previous one) on iOS; time to first chunk;
+how `Task.cancel()` ends the stream (`CancellationError` or a normal finish); and the actual
+overflow point with the spike's 2,000–6,000-word probes. Also verify `Unavailable` with
+Apple Intelligence turned off (`appleIntelligenceNotEnabled`) and on an ineligible device.

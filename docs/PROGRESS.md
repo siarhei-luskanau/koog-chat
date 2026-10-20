@@ -32,7 +32,33 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## In progress
 
-- (none)
+- `docs/TASKS.md` row 16, **Android part** (2026-10-19). A debug-only spike,
+  `app/androidApp/src/debug/.../PromptApiSpikeActivity.kt`, uses
+  `com.google.mlkit:genai-prompt:1.0.0-beta4` (a `debugImplementation`; its minSdk is 26).
+  It builds, and `ktlintCheck detekt checkModuleBoundaries lintDebug` pass. It has not
+  been run on a device yet. Launch it with
+  `adb shell am start -n koog.chat.app/.PromptApiSpikeActivity` and read the output with
+  `adb logcat -s PromptApiSpike`. After the run, record the findings in
+  `docs/DECISIONS.md`, then remove the spike code: the `src/debug` files plus the catalog
+  entry and dependency. Waiting for a supported Android device.
+- `docs/TASKS.md` row 16, **iOS part** (2026-10-19). Spike code:
+  `diApp/src/iosMain/kotlin/PromptApiSpike.kt` (Kotlin protocols `FoundationModelsSpikeBridge`/
+  `Listener`/`Cancellable`, exported in `ComposeApp`, plus a Compose screen that runs status →
+  stream → cancel-after-3-chunks → overflow probes and logs `PromptApiSpike:` lines) and a
+  Swift `FoundationModelsSpikeBridgeImpl` in `app/iosApp/iosApp/iosApp.swift`, shown only
+  when the app is launched with `-promptSpike`
+  (`xcrun simctl launch --console-pty <sim> koog.chat.app -promptSpike`). Status so far, on
+  Xcode 26.1 / iOS 26.1 simulator / macOS 27.0.1 host: the Kotlin↔Swift bridge works end to
+  end (protocol export, Swift calls back from a background thread into `callbackFlow`,
+  errors propagate, collector cancel reaches `Task.cancel()`), and `availability` reports
+  `available`, but **every generation fails in the simulator** with `GenerationError -1` ←
+  `SensitiveContentAnalysisML 15` ← `ModelManagerError 1001` (guardrail asset), on two
+  simulator devices. The same prompt streams fine in a host-macOS Swift script, which shows
+  `streamResponse` yields **cumulative snapshots**, not deltas. The SDK 26.1 has no
+  `contextSize` API. Recorded as partial in `docs/DECISIONS.md` → *Row-16 spike, iOS part
+  (partial)*. Still needed: one streamed reply on a physical iOS 26 Apple Intelligence
+  device (or a simulator runtime that matches the host OS), then complete that entry and
+  remove the spike code.
 
 ## Blocked
 
