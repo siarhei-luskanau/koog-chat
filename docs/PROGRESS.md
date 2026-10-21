@@ -40,7 +40,13 @@ to `main`, don't let this turn into a changelog (git history already is one).
   `adb shell am start -n koog.chat.app/.PromptApiSpikeActivity` and read the output with
   `adb logcat -s PromptApiSpike`. After the run, record the findings in
   `docs/DECISIONS.md`, then remove the spike code: the `src/debug` files plus the catalog
-  entry and dependency. Waiting for a supported Android device.
+  entry and dependency. **Run on a Pixel 6 (2026-10-21):** an unsupported device, so only the
+  `Unavailable` path was covered: `checkStatus()` returned `UNAVAILABLE`, `generateContentStream()`
+  threw `GenAiException 601` (`BINDING_FAILURE`) with no crash, and `download()` reported
+  `DownloadCompleted` while the status stayed `UNAVAILABLE`. Findings are in `docs/DECISIONS.md` →
+  *Row-16 spike, Android part (partial)*. **Second run, Pixel 10a (2026-10-21):** also unsupported
+  (not on ML Kit's device list; AICore error `606 FEATURE_NOT_FOUND`), with the same results.
+  Still waiting for a supported device: a Pixel 9, 10 or 11 non-"a" model.
 - `docs/TASKS.md` row 16, **iOS part** (2026-10-19). Spike code:
   `diApp/src/iosMain/kotlin/PromptApiSpike.kt` (Kotlin protocols `FoundationModelsSpikeBridge`/
   `Listener`/`Cancellable`, exported in `ComposeApp`, plus a Compose screen that runs status →

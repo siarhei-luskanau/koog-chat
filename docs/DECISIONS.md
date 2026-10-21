@@ -844,3 +844,63 @@ cumulative and only grow (each one extends the previous one) on iOS; time to fir
 how `Task.cancel()` ends the stream (`CancellationError` or a normal finish); and the actual
 overflow point with the spike's 2,000–6,000-word probes. Also verify `Unavailable` with
 Apple Intelligence turned off (`appleIntelligenceNotEnabled`) and on an ineligible device.
+
+## Row-16 spike, Android part (partial): ML Kit Prompt API on an unsupported device
+
+**Status: partial.** The spike ran on a physical device, but that device doesn't support
+Gemini Nano, so it covers only the `Unavailable` path. Row 16's Android part stays open
+until one streamed reply is seen on a supported device (a Pixel 9 or newer, or another
+device on ML Kit's GenAI list). The spike code is kept for that run (see
+`docs/PROGRESS.md`). Recorded 2026-10-21.
+
+**Decision (provisional, pending the supported-device run):** the Android backend of
+`coreLlmOnDevice` (row 17) maps `checkStatus()` straight to `OnDeviceAvailability`, and
+treats only `AVAILABLE` as usable. It never treats a finished `download()` as proof that
+the model is ready: it calls `checkStatus()` again afterwards. A `GenAiException` thrown
+from `generateContentStream` becomes a normal failed turn.
+
+**What the spike observed** (Pixel 6 `oriole`, Android SDK 37,
+`com.google.mlkit:genai-prompt:1.0.0-beta4`, AICore
+`0.stub.stub_aicore_20260302.01_RC00.877448964`, a stub build):
+- `checkStatus()` returned `UNAVAILABLE` (0) on launch and again later. It returned in
+  about 60 ms.
+- `generateContentStream()` threw
+  `GenAiException errorCode=601` (`4-CONNECTION_ERROR` / `601-BINDING_FAILURE`, "AiCore
+  service failed to bind to primary or fallback") after 38 ms, with no chunks. The
+  exception arrives through the flow, so a normal `catch` handles it. The app didn't crash.
+- `download()` on this `UNAVAILABLE` device emitted `DownloadCompleted` (with no
+  `DownloadStarted` or progress) about 8 s after the call, but `checkStatus()` still
+  returned `UNAVAILABLE` afterwards.
+
+**Second run, Pixel 10a** (`stallion`, Tensor G4, about 8 GB RAM, Android SDK 37, AICore
+`0.release.prod_aicore_20260917.00_RC01`, a production build; locked bootloader, about 8 days
+since the last boot). The 10a isn't on ML Kit's Prompt API device list
+(https://developers.google.com/ml-kit/genai): that list has the Pixel 9 and 10 families on
+nano-v3 and the Pixel 11 family on nano-v4, with no "a" models. The results match the
+Pixel 6, but AICore reports a different error:
+- `checkStatus()` returned `UNAVAILABLE`. Internally ML Kit logs
+  `GenAiException 606` (`3-PREPARATION_ERROR` / `606-FEATURE_NOT_FOUND`, "Feature 636 is
+  not available") and turns it into the status. It doesn't throw.
+- `generateContentStream()` threw that same 606 after 31 ms, with no chunks and no crash.
+- `download()` asked AICore for features 636, 643, 644, 648 and 654. Each one failed with
+  606, and `download()` still emitted `DownloadCompleted`. The status stayed `UNAVAILABLE`.
+- Google documents 606 as "AICore hasn't finished downloading its configurations" (it
+  usually clears within hours while the device is online) or as an unlocked bootloader
+  (https://developers.google.com/ml-kit/genai/prompt/android/get-started). Neither fits
+  this phone: the bootloader is locked and it has been running for days. So it is
+  treated as unsupported.
+
+So two different unsupported devices both reached `UNAVAILABLE` with no crash, through two
+different AICore errors (601 and 606). Row 17 shouldn't branch on the error code. Any
+`GenAiException` from prompting is a failed turn.
+
+**Rejected alternatives:**
+- (a) **Treating `DownloadCompleted` as "now available".** On this device it was reported
+  even though nothing could be downloaded.
+- (b) **Offering the ML Kit download as row 18's `canDownload` path when `checkStatus()` is
+  `UNAVAILABLE`.** Only `DOWNLOADABLE` should offer it.
+
+**Still to verify on a supported device** (a Pixel 9, 10 or 11 non-"a" model, or another listed device): one streamed reply; whether chunks are deltas or
+cumulative (the spike logs both readings); `getTokenLimit()`; time to first chunk and which
+thread chunks arrive on (whether a `flowOn` is needed, as in row 3); `DOWNLOADABLE` →
+`download()` → `AVAILABLE`; and how cancelling the collector ends generation.
