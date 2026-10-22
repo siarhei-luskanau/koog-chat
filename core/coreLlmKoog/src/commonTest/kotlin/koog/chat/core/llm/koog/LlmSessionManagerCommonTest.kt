@@ -51,6 +51,37 @@ internal class LlmSessionManagerCommonTest {
         }
 
     @Test
+    fun builtinOnDeviceConfigIsRecordedWithoutConfigId() =
+        runTest {
+            val repository = FakeChatEntryRepository()
+            val config = llmConfig(LlmProvider.OnDevice, apiKey = null).copy(id = "${BUILTIN_CONFIG_ID_PREFIX}on-device")
+
+            sessionManager(repository, FakeLlmService()).sendMessage("chat", "Hello", config)
+            advanceUntilIdle()
+
+            assertEquals(2, repository.entries.size)
+            repository.entries.forEach { entry ->
+                assertNull(entry.llmConfigId)
+                assertEquals("OnDevice", entry.llmProvider)
+                assertEquals(config.modelId, entry.llmModelId)
+            }
+            assertEquals(ChatEntryType.USER_PROMPT, repository.entries.first().type)
+            assertEquals(ChatEntryType.SUCCESS_RESPONSE, repository.entries.last().type)
+        }
+
+    @Test
+    fun regularConfigIsRecordedWithItsId() =
+        runTest {
+            val repository = FakeChatEntryRepository()
+            val config = llmConfig(LlmProvider.Ollama)
+
+            sessionManager(repository, FakeLlmService()).sendMessage("chat", "Hello", config)
+            advanceUntilIdle()
+
+            assertEquals(config.id, repository.entries.first().llmConfigId)
+        }
+
+    @Test
     fun streamingPersistsPartialResponseBeforeCompletion() =
         runTest {
             val repository = FakeChatEntryRepository()

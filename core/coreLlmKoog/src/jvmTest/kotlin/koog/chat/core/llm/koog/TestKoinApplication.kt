@@ -2,6 +2,7 @@ package koog.chat.core.llm.koog
 
 import koog.chat.core.common.DispatcherSet
 import koog.chat.core.database.api.repository.ChatEntryRepository
+import koog.chat.core.llm.OnDeviceLlm
 import org.koin.core.annotation.KoinApplication
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
@@ -13,6 +14,9 @@ internal class TestProvidedModule {
 
     @Single
     fun chatEntryRepository(): ChatEntryRepository = FakeChatEntryRepository()
+
+    @Single
+    fun onDeviceLlm(): OnDeviceLlm = FakeOnDeviceLlm()
 }
 
 @KoinApplication(modules = [CoreLlmKoogModule::class, TestProvidedModule::class])

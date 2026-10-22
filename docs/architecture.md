@@ -267,10 +267,11 @@ included). So `coreLlmApi` defines its own small interface, and `coreLlmKoog`'s
 
 ```
 interface OnDeviceLlm {
-    val availability: StateFlow<OnDeviceAvailability>  // Available | Downloadable | Downloading(progress) | Unavailable(reason)
+    val availability: StateFlow<OnDeviceAvailability>  // Available | Downloadable | Downloading(progress: Float?) | Unavailable(reason)
+    val maxContextTokens: Int
+    suspend fun refreshAvailability()                   // re-probe the platform backend
     suspend fun download()                              // only meaningful when Downloadable
     fun stream(history: List<ChatEntry>, prompt: String): Flow<LlmChunk>  // new sealed type: Text | Reasoning | End(tokensUsed?)
-    val maxContextTokens: Int
 }
 ```
 
@@ -284,15 +285,15 @@ hardware it simply reports `Unavailable`.
 | Target | Backend | Availability | Notes |
 |---|---|---|---|
 | Android | ML Kit GenAI Prompt API (Gemini Nano via AICore), `com.google.mlkit:genai-prompt` (beta) | `checkStatus()` → AVAILABLE / DOWNLOADABLE / DOWNLOADING / UNAVAILABLE | Supported devices only (Pixel 9+, Galaxy S26, recent OnePlus/OPPO/Xiaomi …), locked bootloader; AICore downloads the model, not the app. ~4K-token input, per-app quotas, no session API — history is rebuilt into each prompt. |
-| iOS | Apple `FoundationModels` (`SystemLanguageModel`, `LanguageModelSession.streamResponse`) | `SystemLanguageModel.default.availability` | iOS 26+, Apple Intelligence device with Apple Intelligence enabled. **Swift-only**, so Kotlin/Native can't call it: `iosMain` declares an `AppleFoundationModelsBridge` interface, `app/iosApp` implements it in Swift and hands it to Koin at startup (`diApp` exports the interface in its framework). Without a bridge (or below iOS 26) → `Unavailable`. |
+| iOS | Apple `FoundationModels` (`SystemLanguageModel`, `LanguageModelSession.streamResponse`) | `SystemLanguageModel.default.availability` | iOS 26+, Apple Intelligence device with Apple Intelligence enabled. **Swift-only**, so Kotlin/Native can't call it: `iosMain` declares an `AppleFoundationModelsBridge` interface, and the Swift `AppleFoundationModelsBridgeImpl` is registered at app start in `AppleFoundationModelsBridgeRegistry.shared.bridge` (a Kotlin object in `coreLlmOnDevice`'s `iosMain`, exported through `diApp`'s `ComposeApp` framework), which the Koin-bound `OnDeviceLlmIos` reads. No bridge (or below iOS 26) → `Unavailable`. |
 | js / wasmJs | Chrome built-in AI Prompt API (`LanguageModel.availability()`, `create({ monitor })`, `promptStreaming()`) via `external` declarations | `LanguageModel.availability()`; missing global → `Unavailable` | Desktop Chrome only (not Android/iOS Chrome); multi-GB first-use download, 22 GB free disk, GPU ≥4 GB VRAM or 16 GB RAM. Firefox/Safari: no API → `Unavailable`; there, and in Chrome without Gemini Nano, the opt-in wllama download (`docs/TASKS.md` row 20) is consulted instead. Edge's Phi-4-mini Prompt API is flag-only/experimental — treated as a bonus if the same `LanguageModel` global exists, never relied on. |
 | Desktop JVM | no system model; opt-in LiteRT-LM download (`docs/TASKS.md` row 19) | `Downloadable` until the model is downloaded, else `Unavailable` | Desktop's zero-setup path is the local-Ollama probe in `DefaultLlmSelector`. |
 
 Things every implementer of this module must account for:
 
 - **Small context.** Gemini Nano / Foundation Models / Chrome Nano have roughly a 4K-token
-  window. `LlmSessionManagerImpl` trims the oldest turns to `maxContextTokens` before an
-  `OnDevice` turn (rough token estimate is fine) rather than letting the call fail.
+  window. `LlmServiceKoog` trims the oldest turns before an `OnDevice` turn, using a
+  ~4 chars/token estimate and reserving 25% of `maxContextTokens` for the reply, rather than letting the call fail.
 - **No tool calling** is assumed for `OnDevice` — feature code must not depend on it.
 - **Download is user-initiated.** `Downloadable` is surfaced in the "set up a model" state
   as an explicit action, with the size shown before the download starts; never auto-started on a metered connection.

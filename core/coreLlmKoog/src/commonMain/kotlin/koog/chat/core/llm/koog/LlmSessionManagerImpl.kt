@@ -23,6 +23,8 @@ import org.koin.core.annotation.Single
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
+internal const val BUILTIN_CONFIG_ID_PREFIX = "builtin:"
+
 @Single
 internal class LlmSessionManagerImpl(
     @Provided private val chatEntryRepository: ChatEntryRepository,
@@ -91,7 +93,7 @@ internal class LlmSessionManagerImpl(
         type = type,
         content = content,
         thinkingContent = if (type == ChatEntryType.THINKING) "" else null,
-        llmConfigId = config.id,
+        llmConfigId = config.id.takeUnless { it.startsWith(BUILTIN_CONFIG_ID_PREFIX) },
         llmProvider = config.provider.name,
         llmModelId = config.modelId,
         tokensUsed = null,

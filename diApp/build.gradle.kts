@@ -1,5 +1,7 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
+import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     id("composeMultiplatformConvention")
@@ -19,6 +21,7 @@ kotlin {
             implementation(projects.core.coreCommon)
             implementation(projects.core.coreDatabaseRoom)
             implementation(projects.core.coreLlmKoog)
+            implementation(projects.core.coreLlmOnDevice)
             implementation(projects.core.coreNetworkKtor)
             implementation(projects.core.corePrefDatastore)
             implementation(projects.navigation)
@@ -40,7 +43,18 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(projects.core.coreAuthApi)
+            implementation(projects.core.coreDatabaseApi)
+            implementation(projects.core.coreLlmApi)
             implementation(projects.core.coreSyncApi)
+        }
+        iosMain.dependencies {
+            api(projects.core.coreLlmOnDevice)
+        }
+    }
+
+    targets.withType<KotlinNativeTarget>().configureEach {
+        binaries.withType<Framework>().configureEach {
+            export(projects.core.coreLlmOnDevice)
         }
     }
 }

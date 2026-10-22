@@ -47,6 +47,7 @@ dependencies {
     kover(projects.core.coreDatabaseRoom)
     kover(projects.core.coreLlmApi)
     kover(projects.core.coreLlmKoog)
+    kover(projects.core.coreLlmOnDevice)
     kover(projects.core.coreNetworkApi)
     kover(projects.core.coreNetworkKtor)
     kover(projects.core.corePrefApi)
@@ -87,6 +88,7 @@ gradle.projectsEvaluated {
             ":core:coreAuthFirebase",
             ":core:coreDatabaseRoom",
             ":core:coreLlmKoog",
+            ":core:coreLlmOnDevice",
             ":core:coreNetworkKtor",
             ":core:corePrefDatastore",
             ":core:coreSyncFake",

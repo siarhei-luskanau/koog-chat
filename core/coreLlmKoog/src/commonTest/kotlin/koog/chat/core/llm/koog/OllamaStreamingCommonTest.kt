@@ -26,6 +26,7 @@ internal class OllamaStreamingCommonTest {
                 LlmServiceKoog(
                     llmClientFactory = LlmClientFactory(KtorKoogHttpClient.Factory(httpClient)),
                     dispatcherSet = platformIoDispatcherSet(),
+                    onDeviceLlm = FakeOnDeviceLlm(),
                 )
             val textChunks = mutableListOf<String>()
 

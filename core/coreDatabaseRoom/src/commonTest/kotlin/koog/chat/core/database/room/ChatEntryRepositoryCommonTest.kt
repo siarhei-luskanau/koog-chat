@@ -14,6 +14,7 @@ import org.koin.plugin.module.dsl.koinApplication
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -181,6 +182,23 @@ internal class ChatEntryRepositoryCommonTest {
 
             chatRepo.delete(chatA.id)
             chatRepo.delete(chatB.id)
+            koinApplication.close()
+        }
+
+    @Test
+    fun save_shouldFail_whenLlmConfigIdReferencesMissingConfigRow() =
+        runTest {
+            val koinApplication = koinApplication<TestKoinApplication>()
+            val chatRepo = koinApplication.koin.get<ChatRepository>()
+            val entryRepo = koinApplication.koin.get<ChatEntryRepository>()
+            val chat = Chat(id = uniqueId("chat"), title = "Builtin FK", createdAt = 1L)
+            chatRepo.save(chat)
+            val entry = testEntry(chatId = chat.id, llmConfigId = "builtin:on-device", llmProvider = "OnDevice", timestamp = 1L)
+
+            assertFails { entryRepo.save(entry) }
+            assertTrue(entryRepo.getAll(chat.id).isEmpty())
+
+            chatRepo.delete(chat.id)
             koinApplication.close()
         }
 }

@@ -5,6 +5,10 @@ import FoundationModels
 
 @main
 struct ComposeApp: App {
+    init() {
+        AppleFoundationModelsBridgeRegistry.shared.bridge = AppleFoundationModelsBridgeImpl()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -64,6 +68,51 @@ final class FoundationModelsSpikeBridgeImpl: NSObject, FoundationModelsSpikeBrid
             }
         }
         return SpikeTaskCancellable(task: task)
+    }
+}
+
+final class AppleFoundationModelsBridgeImpl: NSObject, AppleFoundationModelsBridge {
+    func availability() -> String {
+        guard #available(iOS 26.0, *) else { return "unavailable(osBelow26)" }
+        switch SystemLanguageModel.default.availability {
+        case .available:
+            return "available"
+        case .unavailable(let reason):
+            return "unavailable(\(reason))"
+        }
+    }
+
+    func stream(prompt: String, callback listener: AppleFoundationModelsListener) -> AppleFoundationModelsCancellable {
+        guard #available(iOS 26.0, *) else {
+            listener.onComplete(failure: "iOS 26 or newer is required")
+            return AppleFoundationModelsTaskCancellable(task: nil)
+        }
+        let task = Task {
+            do {
+                let session = LanguageModelSession()
+                for try await snapshot in session.streamResponse(to: prompt) {
+                    listener.onSnapshot(text: snapshot.content)
+                }
+                listener.onComplete(failure: nil)
+            } catch is CancellationError {
+                listener.onComplete(failure: "Cancelled")
+            } catch {
+                listener.onComplete(failure: "\(error)")
+            }
+        }
+        return AppleFoundationModelsTaskCancellable(task: task)
+    }
+}
+
+final class AppleFoundationModelsTaskCancellable: NSObject, AppleFoundationModelsCancellable {
+    private let task: Task<Void, Never>?
+
+    init(task: Task<Void, Never>?) {
+        self.task = task
+    }
+
+    func cancel() {
+        task?.cancel()
     }
 }
 

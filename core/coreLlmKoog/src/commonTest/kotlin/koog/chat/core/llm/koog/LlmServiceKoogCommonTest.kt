@@ -151,7 +151,7 @@ internal class LlmServiceKoogCommonTest {
     @Test
     fun httpErrorFailsTheCall() =
         runTest {
-            LlmProvider.entries.forEach { provider ->
+            koogProviders.forEach { provider ->
                 val engine = RecordingMockEngine { respondError(HttpStatusCode.Unauthorized, "denied") }
                 assertFails("$provider must fail on HTTP 401") {
                     chat(engine, llmConfig(provider), Chunks())
@@ -167,6 +167,7 @@ internal class LlmServiceKoogCommonTest {
         LlmServiceKoog(
             llmClientFactory = LlmClientFactory(engine.httpClientFactory),
             dispatcherSet = platformIoDispatcherSet(),
+            onDeviceLlm = FakeOnDeviceLlm(),
         ).chat(
             messages = history,
             config = config,

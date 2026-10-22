@@ -3,6 +3,7 @@ package koog.chat.di
 import koog.chat.core.common.CoreCommonCommonModule
 import koog.chat.core.database.room.CoreDatabaseRoomCommonModule
 import koog.chat.core.llm.koog.CoreLlmKoogModule
+import koog.chat.core.llm.ondevice.CoreLlmOnDeviceModule
 import koog.chat.core.pref.CorePrefCommonModule
 import koog.chat.navigation.NavigationCommonModule
 import koog.chat.ui.main.MainCommonModule
@@ -14,6 +15,7 @@ import org.koin.core.annotation.KoinApplication
         CoreCommonCommonModule::class,
         CoreDatabaseRoomCommonModule::class,
         CoreLlmKoogModule::class,
+        CoreLlmOnDeviceModule::class,
         CorePrefCommonModule::class,
         DiCommonModule::class,
         MainCommonModule::class,

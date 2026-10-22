@@ -57,6 +57,10 @@ internal class LlmClientFactory(
                     contextLength = DEFAULT_CONTEXT_LENGTH,
                 )
             }
+
+            LlmProvider.OnDevice -> {
+                rejectOnDevice()
+            }
         }
 
     fun createClient(
@@ -98,8 +102,14 @@ internal class LlmClientFactory(
                     httpClientFactory = httpClientFactory,
                 )
             }
+
+            LlmProvider.OnDevice -> {
+                rejectOnDevice()
+            }
         }
     }
+
+    private fun rejectOnDevice(): Nothing = throw IllegalArgumentException("OnDevice is not a Koog provider")
 
     private fun LlmConfig.requireApiKey(): String =
         requireNotNull(apiKey?.takeIf { it.isNotBlank() }) { "API key is required for $provider" }

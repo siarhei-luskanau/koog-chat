@@ -23,8 +23,15 @@ import koog.chat.core.database.api.entity.ChatEntryType
 import koog.chat.core.database.api.entity.LlmConfig
 import koog.chat.core.database.api.entity.LlmProvider
 import koog.chat.core.database.api.repository.ChatEntryRepository
+import koog.chat.core.llm.LlmChunk
+import koog.chat.core.llm.OnDeviceAvailability
+import koog.chat.core.llm.OnDeviceLlm
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 
 internal class FakeDispatcherSet(
     private val default: CoroutineDispatcher = Dispatchers.Default,
@@ -39,6 +46,32 @@ internal class FakeDispatcherSet(
 
 // Mirrors production DispatcherSet.ioDispatcher(): Koog's streaming flowOn must match it (docs/DECISIONS.md)
 internal expect fun platformIoDispatcherSet(): FakeDispatcherSet
+
+internal class FakeOnDeviceLlm(
+    availability: OnDeviceAvailability = OnDeviceAvailability.Available,
+    override val maxContextTokens: Int = 4096,
+    private val chunks: List<LlmChunk> = listOf(LlmChunk.Text("Hello"), LlmChunk.End(tokensUsed = null)),
+    private val failure: Throwable? = null,
+) : OnDeviceLlm {
+    val streamCalls = mutableListOf<Pair<List<ChatEntry>, String>>()
+
+    override val availability: StateFlow<OnDeviceAvailability> = MutableStateFlow(availability)
+
+    override suspend fun refreshAvailability() = Unit
+
+    override suspend fun download() = Unit
+
+    override fun stream(
+        history: List<ChatEntry>,
+        prompt: String,
+    ): Flow<LlmChunk> {
+        streamCalls += history to prompt
+        return flow {
+            chunks.forEach { emit(it) }
+            failure?.let { throw it }
+        }
+    }
+}
 
 internal class FakeChatEntryRepository(
     initialEntries: List<ChatEntry> = emptyList(),
@@ -110,6 +143,8 @@ private class SseMockEngine(
         super.close()
     }
 }
+
+internal val koogProviders = LlmProvider.entries - LlmProvider.OnDevice
 
 internal fun llmConfig(
     provider: LlmProvider,

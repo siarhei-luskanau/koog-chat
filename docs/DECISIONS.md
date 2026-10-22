@@ -904,3 +904,62 @@ different AICore errors (601 and 606). Row 17 shouldn't branch on the error code
 cumulative (the spike logs both readings); `getTokenLimit()`; time to first chunk and which
 thread chunks arrive on (whether a `flowOn` is needed, as in row 3); `DOWNLOADABLE` →
 `download()` → `AVAILABLE`; and how cancelling the collector ends generation.
+
+## Row 17 starts on partial row-16 findings; row 16 parked as `blocked`
+
+**Decision (2026-10-21):** row 17 (`coreLlmOnDevice`) starts before row 16 is `passing`.
+Row 16 moves from `active` to `blocked` (waiting on hardware: a supported Pixel 9/10/11
+non-"a", and a physical iOS 26 Apple Intelligence device), and row 17 becomes the single
+`active` row, so WIP=1 still holds. The web findings are complete. The Android and iOS
+findings are partial: the interop shape and the `Unavailable` path are proven, but no streamed
+reply was seen. Row 17 builds the Android and iOS backends on the provisional decisions in
+the two partial entries above:
+- Android: `checkStatus()` maps straight to `OnDeviceAvailability`, only `AVAILABLE` is
+  usable, any `GenAiException` from prompting is a failed turn, and the status is re-checked
+  after `download()`.
+- iOS: the Swift bridge converts cumulative snapshots to deltas and skips identical ones.
+  The context limit is a fixed 4096.
+
+The row-16 Android and iOS spike code stays in place for the device runs.
+
+**Rejected alternative:** waiting for the devices before any row-17 work. The shared
+interfaces, `LlmServiceKoog` routing, history trimming, the `llmConfigId = null`
+persistence, and the web and JVM backends don't depend on the open findings. Only the
+Android/iOS backend details do, and the row-16 device runs can still correct those.
+
+**Non-obvious cost:** these points are unverified until row 16's device runs:
+- whether Android chunks are deltas or cumulative
+- which thread Android chunks arrive on (a `flowOn` may be needed, as in row 3)
+- Android's `getTokenLimit()`
+- iOS cancellation behaviour
+
+Row 16 must re-check the row-17 backends against what the device runs show and fix them
+there before it is marked `passing`. Row 17's own manual check, an `OnDevice` turn on one
+supported device, can be met by desktop Chrome, which the web spike already proved.
+
+## Row 17 parked as `blocked` on its manual check
+
+**Decision (2026-10-22):** row 17 (`coreLlmOnDevice`) moves from `active` to `blocked`. Its
+code is done and its automated checks pass (`ktlintCheck detekt lint checkModuleBoundaries`,
+`:core:coreLlmOnDevice:allTests` on 5 targets, `koverVerifyCoverage`, `:app:desktopApp:jar`,
+`ciIos`, the Firebase-variant compile, and `diApp`'s `OnDeviceTurnPersistenceCommonTest`
+against real Room). The one open item is the manual check: send an `OnDevice` turn through
+`LlmSessionManager` in desktop Chrome. Nothing in the app can send a turn with a
+`builtin:on-device` config until row 18 (`DefaultLlmSelector`) picks it and row 10
+(`ui/uiChat`) sends it. That makes row 17's own manual check depend on rows that come after
+it, so it can't reach `passing` first. Row 18 becomes the single `active` row, so WIP=1 still
+holds.
+
+The ordering rule in `docs/TASKS.md` ("rows 16–18 must be `passing` before row 10 starts") is
+amended for this one item: row 17's manual check runs as part of row 10's verification, and
+row 17 moves to `passing` then.
+
+**Rejected alternative:** a throwaway debug harness in `app/webApp` that calls
+`LlmSessionManager` directly, just to tick the box now. It would be spike code that duplicates
+row 10's send path and gets deleted afterwards. What it would prove is already covered:
+streaming from the Chrome Prompt API was seen in the row-16 web spike (js and wasmJs), and the
+`builtin:` → `llmConfigId = null` persistence is tested against real Room.
+
+**Non-obvious cost:** until row 10, nothing has run the full path end to end in a real app:
+selector → `LlmSessionManager` → `LlmServiceKoog` → Chrome Prompt API → Room. Wiring bugs
+across those layers will only surface in row 10.

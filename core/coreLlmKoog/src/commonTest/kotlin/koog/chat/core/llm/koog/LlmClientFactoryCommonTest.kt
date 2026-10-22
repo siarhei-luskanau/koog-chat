@@ -26,7 +26,7 @@ internal class LlmClientFactoryCommonTest {
                 LlmProvider.Anthropic to LLMProvider.Anthropic,
                 LlmProvider.Google to LLMProvider.Google,
             )
-        LlmProvider.entries.forEach { provider ->
+        koogProviders.forEach { provider ->
             val model = factory.createModel(llmConfig(provider))
             assertEquals(expected.getValue(provider), model.provider)
             assertEquals("model-${provider.name.lowercase()}", model.id)
@@ -42,10 +42,11 @@ internal class LlmClientFactoryCommonTest {
 
     @Test
     fun createClientDispatchesPerProvider() {
-        LlmProvider.entries.forEach { provider ->
+        koogProviders.forEach { provider ->
             val config = llmConfig(provider)
             val client = factory.createClient(config, factory.createModel(config))
             when (provider) {
+                LlmProvider.OnDevice -> error("OnDevice is not a Koog provider")
                 LlmProvider.Ollama -> assertIs<OllamaClient>(client)
                 LlmProvider.OpenAI -> assertIs<OpenAILLMClient>(client)
                 LlmProvider.Anthropic -> assertIs<AnthropicLLMClient>(client)
@@ -53,6 +54,14 @@ internal class LlmClientFactoryCommonTest {
             }
             client.close()
         }
+    }
+
+    @Test
+    fun onDeviceIsRejectedByModelAndClientCreation() {
+        val config = llmConfig(LlmProvider.OnDevice)
+        assertFailsWith<IllegalArgumentException> { factory.createModel(config) }
+        val model = factory.createModel(llmConfig(LlmProvider.Ollama))
+        assertFailsWith<IllegalArgumentException> { factory.createClient(config, model) }
     }
 
     @Test

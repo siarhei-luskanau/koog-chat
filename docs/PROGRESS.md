@@ -32,6 +32,39 @@ to `main`, don't let this turn into a changelog (git history already is one).
 
 ## In progress
 
+- `docs/TASKS.md` row 17, **`coreLlmOnDevice`** (2026-10-21), started on partial row-16 findings
+  (`docs/DECISIONS.md` → *Row 17 starts on partial row-16 findings*). Row 16 is parked as
+  `blocked` on hardware. What landed:
+  - `LlmProvider.OnDevice`.
+  - `OnDeviceLlm` (`availability`, `maxContextTokens`, `refreshAvailability()`, `download()`, `stream()`),
+    `OnDeviceAvailability` and `LlmChunk` in `coreLlmApi`.
+  - New `core/coreLlmOnDevice` (registered in settings, kover and `coreImplModulePaths`; bound in both
+    `IS_FAKE_DATA_ENABLED` variants), with these backends:
+    - JVM: always `Unavailable`.
+    - Android: ML Kit `genai-prompt 1.0.0-beta4` behind an internal `GeminiNanoModel` seam; chunks are
+      treated as deltas, which is **unverified**.
+    - web: Chrome Prompt API, with `js()` interop shared by js and wasmJs, an `AbortController`, and tests
+      against a scripted fake `LanguageModel`.
+    - iOS: Swift `AppleFoundationModelsBridgeImpl` registered in `AppleFoundationModelsBridgeRegistry` and
+      exported through `diApp`'s `ComposeApp` framework; snapshots are turned into deltas, and a rewrite
+      fails the turn.
+  - `LlmServiceKoog` routes `OnDevice` turns, trims history (≈4 chars/token, 25% kept for the reply) and
+    `trimEnd`s the reply.
+  - `LlmSessionManagerImpl` stores `llmConfigId = null` for `builtin:` ids. `diApp`'s
+    `OnDeviceTurnPersistenceCommonTest` proves this against real Room: with the mapping removed, both tests
+    fail on the foreign key.
+  - **Verified:** `ktlintCheck detekt lint checkModuleBoundaries`, the module `allTests` on 5 targets,
+    `koverVerifyCoverage`, `:app:desktopApp:jar`, `ciIos`, and the Firebase-variant compile. An independent
+    validator review was done and its major findings fixed.
+  - **Still open:** the row's manual check, one `OnDevice` turn through `LlmSessionManager` in desktop
+    Chrome. No UI can send a message with a `builtin:on-device` config until rows 18 and 10.
+  - **Parked as `blocked` (2026-10-22)** on that manual check, so row 18 can become the single `active` row
+    (`docs/DECISIONS.md` → *Row 17 parked as `blocked` on its manual check*). The manual check runs as part of
+    row 10's verification; row 17 moves to `passing` then.
+  - **Deferred to row 18:** a distinct "checking" availability state (web and Android start as
+    `Unavailable("Checking…")`).
+  - **Pre-existing risk, not fixed:** if saving the error entry in `LlmSessionManagerImpl` throws, the
+    exception escapes `sessionScope`, which has no handler.
 - `docs/TASKS.md` row 16, **Android part** (2026-10-19). A debug-only spike,
   `app/androidApp/src/debug/.../PromptApiSpikeActivity.kt`, uses
   `com.google.mlkit:genai-prompt:1.0.0-beta4` (a `debugImplementation`; its minSdk is 26).

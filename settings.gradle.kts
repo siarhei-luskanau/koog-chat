@@ -13,6 +13,7 @@ include(
     ":core:coreDatabaseRoom",
     ":core:coreLlmApi",
     ":core:coreLlmKoog",
+    ":core:coreLlmOnDevice",
     ":core:coreNetworkApi",
     ":core:coreNetworkKtor",
     ":core:corePrefApi",

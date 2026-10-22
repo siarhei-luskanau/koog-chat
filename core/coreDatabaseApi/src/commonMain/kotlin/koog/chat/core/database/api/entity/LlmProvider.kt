@@ -5,4 +5,5 @@ enum class LlmProvider {
     OpenAI,
     Anthropic,
     Google,
+    OnDevice,
 }
