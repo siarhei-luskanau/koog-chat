@@ -70,7 +70,14 @@ kotlin {
     }
 
     js {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                    useConfigDirectory(rootDir.resolve("karma.config.d/js"))
+                }
+            }
+        }
         binaries.executable()
     }
 
